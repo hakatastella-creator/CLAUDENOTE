@@ -2,6 +2,8 @@ import base64
 import email
 import re
 from email.mime.text import MIMEText
+from email.header import Header
+from email.utils import formataddr
 from datetime import datetime, timedelta, timezone
 
 from google.oauth2.credentials import Credentials
@@ -127,15 +129,31 @@ def fetch_past_exchanges_with(email_addr, limit):
     return items
 
 
+def _profile_from():
+    svc = _service()
+    profile = svc.users().getProfile(userId=GMAIL_USER).execute()
+    return profile.get("emailAddress", GMAIL_USER)
+
+
+def _build_message(to_addr, subject, body, from_addr, extra_headers=None):
+    msg = MIMEText(body, "plain", "utf-8")
+    msg["To"] = to_addr
+    msg["From"] = from_addr
+    msg["Subject"] = str(Header(subject, "utf-8"))
+    for k, v in (extra_headers or {}).items():
+        msg[k] = v
+    return base64.urlsafe_b64encode(msg.as_bytes()).decode("utf-8")
+
+
 def create_draft(thread_id, to_addr, subject, body, in_reply_to_id):
     svc = _service()
-    raw_msg = MIMEText(body, "plain", "utf-8")
-    raw_msg["To"] = to_addr
-    raw_msg["Subject"] = subject if subject.lower().startswith("re:") else f"Re: {subject}"
+    from_addr = _profile_from()
+    subj = subject if subject.lower().startswith("re:") else f"Re: {subject}"
+    extra = {}
     if in_reply_to_id:
-        raw_msg["In-Reply-To"] = in_reply_to_id
-        raw_msg["References"] = in_reply_to_id
-    raw = base64.urlsafe_b64encode(raw_msg.as_bytes()).decode("utf-8")
+        extra["In-Reply-To"] = in_reply_to_id
+        extra["References"] = in_reply_to_id
+    raw = _build_message(to_addr, subj, body, from_addr, extra)
     draft = svc.users().drafts().create(
         userId=GMAIL_USER,
         body={"message": {"raw": raw, "threadId": thread_id}},
@@ -145,8 +163,6 @@ def create_draft(thread_id, to_addr, subject, body, in_reply_to_id):
 
 def send_summary(to_addr, subject, body):
     svc = _service()
-    raw_msg = MIMEText(body, "plain", "utf-8")
-    raw_msg["To"] = to_addr
-    raw_msg["Subject"] = subject
-    raw = base64.urlsafe_b64encode(raw_msg.as_bytes()).decode("utf-8")
+    from_addr = _profile_from()
+    raw = _build_message(to_addr, subject, body, from_addr)
     svc.users().messages().send(userId=GMAIL_USER, body={"raw": raw}).execute()
