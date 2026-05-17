@@ -69,29 +69,53 @@
       };
     }
 
-    const text = container.innerText.trim();
-    const lines = text
-      .split("\n")
-      .map((l) => l.trim())
-      .filter((l) => l.length > 0);
-
-    // 最後の発言を「受信メッセージ」とみなす
-    // ※ LINE Managerの正確な構造が不明なので、ヒューリスティック
-    const latestIncoming = lines.slice(-3).join("\n");
-    const history = lines.join("\n");
+    // .chat-main 内の個別メッセージ要素から構造化して読み取る。
+    // .chat-item.baloon が1メッセージ、.chat-item-text がその本文。
+    const items = container.querySelectorAll(".chat-item.baloon, .chat-item");
+    let history = "";
+    let latestIncoming = "";
+    let count = 0;
+    if (items.length > 0) {
+      const formatted = [];
+      for (const item of items) {
+        const textEl = item.querySelector(".chat-item-text");
+        const body = (textEl ? textEl.innerText : item.innerText).trim();
+        if (!body) continue;
+        // 送信/受信の判定: クラス名に send/sent/self/my/own があれば本人発信
+        const cls = item.className.toLowerCase();
+        const isOutgoing = /(send|sent|self|own|my-|-my|outgoing)/.test(cls);
+        const role = isOutgoing ? "[本人]" : "[相手]";
+        formatted.push(`${role} ${body}`);
+        if (!isOutgoing) latestIncoming = body;
+        count++;
+      }
+      history = formatted.join("\n");
+    } else {
+      // 構造が想定と違った場合のフォールバック: テキスト全部
+      const text = container.innerText.trim();
+      const lines = text
+        .split("\n")
+        .map((l) => l.trim())
+        .filter((l) => l.length > 0);
+      history = lines.join("\n");
+      latestIncoming = lines.slice(-3).join("\n");
+      count = lines.length;
+    }
 
     return {
       history,
       latestIncoming,
-      count: lines.length,
+      count,
     };
   }
 
   // 開いている会話スレッドのスクロール領域を特定する。
-  // 戦略: 「メッセージ入力欄」を起点に DOM を上にたどり、
-  // その入力欄と同じカラム（＝右側のチャット領域）にあるスクロール可能要素を返す。
-  // こうすることで、左の「友だち一覧」を誤って読み取ることを防ぐ。
+  // 最優先: LINE Manager 既知のクラス `.chat-main`（今開いている1人分の会話）。
+  // それで取れない場合は、入力欄を起点にDOMを遡って探すヒューリスティック。
   function findThreadContainer() {
+    const known = document.querySelector(".chat-main");
+    if (known && known.innerText && known.innerText.length > 0) return known;
+
     const input = findMessageInput();
 
     // 入力欄が見つかった場合: 入力欄の祖先をたどり、その中で
