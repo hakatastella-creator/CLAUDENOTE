@@ -33,6 +33,9 @@
       <form id="taskForm">
         <input type="hidden" name="id">
         <label>タイトル<input name="title" type="text" required></label>
+        <label>やる必要性
+          <textarea name="necessity" rows="2" placeholder="なぜこのタスクが必要か（背景・目的）"></textarea>
+        </label>
         <div class="row">
           <label>担当者
             <input name="assignee" list="staffList" type="text">

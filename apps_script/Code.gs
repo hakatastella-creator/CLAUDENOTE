@@ -11,7 +11,7 @@ const TASKS_SHEET = 'Tasks';
 const COMMENTS_SHEET = 'Comments';
 
 const TASK_HEADERS = [
-  'id', 'title', 'assignee', 'due', 'status',
+  'id', 'title', 'necessity', 'assignee', 'due', 'status',
   'priority', 'tags', 'createdAt', 'updatedAt', 'createdBy'
 ];
 const COMMENT_HEADERS = ['id', 'taskId', 'author', 'body', 'createdAt'];
@@ -115,6 +115,7 @@ function normalizeTask_(t) {
   return {
     id: String(t.id),
     title: String(t.title || ''),
+    necessity: String(t.necessity || ''),
     assignee: String(t.assignee || ''),
     due: t.due ? Utilities.formatDate(new Date(t.due), Session.getScriptTimeZone(), 'yyyy-MM-dd') : '',
     status: String(t.status || DEFAULT_STATUSES[0]),
@@ -155,6 +156,7 @@ function createTask_(p) {
   const row = [
     id,
     String(p.title || '').trim() || '(無題)',
+    String(p.necessity || ''),
     String(p.assignee || ''),
     p.due || '',
     String(p.status || DEFAULT_STATUSES[0]),
@@ -171,7 +173,7 @@ function createTask_(p) {
 function updateTask_(p) {
   if (!p.id) throw new Error('id is required');
   const { sheet, row } = findTaskRow_(p.id);
-  const editable = ['title', 'assignee', 'due', 'status', 'priority', 'tags'];
+  const editable = ['title', 'necessity', 'assignee', 'due', 'status', 'priority', 'tags'];
   editable.forEach(field => {
     if (p[field] !== undefined) {
       const col = TASK_HEADERS.indexOf(field) + 1;

@@ -129,6 +129,7 @@
 
     card.innerHTML = `
       <div class="card-title">${esc(task.title)}</div>
+      ${task.necessity ? `<div class="card-necessity">${esc(task.necessity)}</div>` : ''}
       <div class="card-meta">
         ${task.assignee ? `<span class="chip assignee">👤 ${esc(task.assignee)}</span>` : ''}
         ${due ? `<span class="chip due${overdue ? ' overdue' : ''}">📅 ${esc(due)}</span>` : ''}
@@ -185,7 +186,7 @@
       if (!tags.includes(f.tag)) return false;
     }
     if (f.text) {
-      const hay = `${t.title} ${t.assignee} ${t.tags}`.toLowerCase();
+      const hay = `${t.title} ${t.necessity} ${t.assignee} ${t.tags}`.toLowerCase();
       if (!hay.includes(f.text.toLowerCase())) return false;
     }
     return true;
@@ -207,6 +208,7 @@
       $('#modalTitle').textContent = 'タスク詳細';
       form.id.value = task.id;
       form.title.value = task.title;
+      form.necessity.value = task.necessity || '';
       form.assignee.value = task.assignee;
       form.due.value = task.due;
       form.status.value = task.status;
