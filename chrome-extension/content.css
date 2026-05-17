@@ -149,3 +149,57 @@
 #stella-reply-panel .stella-status.info {
   color: #2563eb;
 }
+
+#stella-reply-panel .stella-section-title {
+  font-weight: bold;
+  font-size: 12px;
+  color: #4b5563;
+  padding: 4px 0 2px;
+  border-bottom: 1px solid #e5e7eb;
+  margin-top: 4px;
+}
+
+#stella-reply-panel .stella-morning {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+#stella-reply-panel .stella-morning .stella-section-title {
+  border-bottom: none;
+  padding: 0 0 2px;
+  margin-top: 0;
+  color: #92400e;
+}
+
+#stella-reply-panel .stella-btn-pin-unread,
+#stella-reply-panel .stella-btn-find-cancel {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+}
+
+#stella-reply-panel .stella-btn-pin-unread:hover,
+#stella-reply-panel .stella-btn-find-cancel:hover {
+  background: #fde68a;
+}
+
+#stella-reply-panel .stella-morning-result {
+  font-size: 11px;
+  line-height: 1.5;
+  color: #1f2937;
+  max-height: 200px;
+  overflow-y: auto;
+  background: white;
+  border-radius: 4px;
+  padding: 0;
+}
+
+#stella-reply-panel .stella-morning-result:not(:empty) {
+  padding: 6px 8px;
+  border: 1px solid #e5e7eb;
+}
