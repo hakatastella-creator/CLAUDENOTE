@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "ステラ返信下書きアシスタント",
+  "version": "1.0.0",
+  "description": "LINE公式アカウントマネージャーで返信下書きをAIで自動生成します",
+  "permissions": ["storage", "activeTab", "clipboardWrite"],
+  "host_permissions": [
+    "https://manager.line.biz/*",
+    "https://chat.line.biz/*",
+    "https://api.anthropic.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://manager.line.biz/*",
+        "https://chat.line.biz/*"
+      ],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "設定"
+  }
+}

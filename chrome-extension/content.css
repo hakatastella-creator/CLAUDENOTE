@@ -1,0 +1,151 @@
+#stella-reply-panel {
+  position: fixed;
+  top: 80px;
+  right: 16px;
+  width: 360px;
+  max-height: calc(100vh - 100px);
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  z-index: 999999;
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", sans-serif;
+  font-size: 13px;
+  color: #1f2937;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#stella-reply-panel .stella-header {
+  background: linear-gradient(135deg, #06c755 0%, #00b900 100%);
+  color: white;
+  padding: 10px 14px;
+  font-weight: bold;
+  font-size: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: move;
+}
+
+#stella-reply-panel .stella-toggle {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+#stella-reply-panel .stella-toggle:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+#stella-reply-panel .stella-body {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+}
+
+#stella-reply-panel textarea {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 8px;
+  font-size: 12px;
+  font-family: inherit;
+  resize: vertical;
+  box-sizing: border-box;
+  color: #1f2937;
+  background: #ffffff;
+}
+
+#stella-reply-panel .stella-context {
+  min-height: 100px;
+  background: #f9fafb;
+}
+
+#stella-reply-panel .stella-incoming {
+  min-height: 60px;
+}
+
+#stella-reply-panel .stella-output {
+  min-height: 140px;
+  background: #f0fdf4;
+  border-color: #86efac;
+}
+
+#stella-reply-panel button {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+}
+
+#stella-reply-panel .stella-btn-capture {
+  background: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #7dd3fc;
+}
+
+#stella-reply-panel .stella-btn-capture:hover {
+  background: #bae6fd;
+}
+
+#stella-reply-panel .stella-btn-generate {
+  background: linear-gradient(135deg, #06c755 0%, #00b900 100%);
+  color: white;
+  font-size: 14px;
+  padding: 10px;
+}
+
+#stella-reply-panel .stella-btn-generate:hover {
+  opacity: 0.9;
+}
+
+#stella-reply-panel .stella-btn-generate:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+#stella-reply-panel .stella-actions {
+  display: flex;
+  gap: 6px;
+}
+
+#stella-reply-panel .stella-actions button {
+  flex: 1;
+  background: #f3f4f6;
+  color: #1f2937;
+  border: 1px solid #d1d5db;
+}
+
+#stella-reply-panel .stella-actions button:hover {
+  background: #e5e7eb;
+}
+
+#stella-reply-panel .stella-status {
+  min-height: 18px;
+  font-size: 12px;
+  padding: 2px 4px;
+}
+
+#stella-reply-panel .stella-status.ok {
+  color: #059669;
+}
+
+#stella-reply-panel .stella-status.error {
+  color: #dc2626;
+}
+
+#stella-reply-panel .stella-status.info {
+  color: #2563eb;
+}
