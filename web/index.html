@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CLAUDENOTE - チームTODO</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <h1>📋 チームTODO</h1>
+      <span id="connStatus" class="conn-status"></span>
+    </div>
+    <div class="topbar-right">
+      <input id="filterText" type="search" placeholder="検索...">
+      <select id="filterAssignee"><option value="">担当者: すべて</option></select>
+      <select id="filterTag"><option value="">タグ: すべて</option></select>
+      <input id="userName" type="text" placeholder="あなたの名前" autocomplete="off">
+      <button id="addBtn" class="primary">＋ 新規タスク</button>
+      <button id="reloadBtn" title="再読み込み">⟳</button>
+      <button id="settingsBtn" title="設定">⚙</button>
+    </div>
+  </header>
+
+  <main id="board" class="board"></main>
+
+  <!-- Task Detail Modal -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-card">
+      <button class="modal-close" data-close>×</button>
+      <h2 id="modalTitle">タスク詳細</h2>
+      <form id="taskForm">
+        <input type="hidden" name="id">
+        <label>タイトル<input name="title" type="text" required></label>
+        <div class="row">
+          <label>担当者
+            <input name="assignee" list="staffList" type="text">
+          </label>
+          <label>期日<input name="due" type="date"></label>
+        </div>
+        <div class="row">
+          <label>ステータス<select name="status"></select></label>
+          <label>優先度<select name="priority"></select></label>
+        </div>
+        <label>タグ（カンマ区切り）
+          <input name="tags" type="text" list="tagList" placeholder="例: 受付, 緊急">
+        </label>
+        <div class="modal-actions">
+          <button type="button" id="deleteBtn" class="danger hidden">削除</button>
+          <button type="submit" class="primary">保存</button>
+        </div>
+      </form>
+
+      <section id="commentsSection" class="comments hidden">
+        <h3>コメント・更新履歴</h3>
+        <ul id="commentList"></ul>
+        <form id="commentForm">
+          <textarea name="body" placeholder="コメントを追加..." required></textarea>
+          <button type="submit">投稿</button>
+        </form>
+      </section>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settingsModal" class="modal hidden">
+    <div class="modal-card">
+      <button class="modal-close" data-close>×</button>
+      <h2>設定</h2>
+      <label>Apps Script Web App URL
+        <input id="apiUrlInput" type="url" placeholder="https://script.google.com/macros/s/.../exec">
+      </label>
+      <p class="hint">Google Apps Scriptを「ウェブアプリ」としてデプロイした際に発行されるURLを貼り付けてください。</p>
+      <div class="modal-actions">
+        <button id="saveSettingsBtn" class="primary">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <datalist id="staffList"></datalist>
+  <datalist id="tagList"></datalist>
+
+  <script src="app.js"></script>
+</body>
+</html>
