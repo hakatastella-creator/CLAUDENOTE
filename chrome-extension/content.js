@@ -79,7 +79,7 @@
       const formatted = [];
       for (const item of items) {
         const textEl = item.querySelector(".chat-item-text");
-        const body = (textEl ? textEl.innerText : item.innerText).trim();
+        const body = cleanText((textEl ? textEl.innerText : item.innerText));
         if (!body) continue;
         // 送信/受信の判定: クラス名に send/sent/self/my/own があれば本人発信
         const cls = item.className.toLowerCase();
@@ -92,7 +92,7 @@
       history = formatted.join("\n");
     } else {
       // 構造が想定と違った場合のフォールバック: テキスト全部
-      const text = container.innerText.trim();
+      const text = cleanText(container.innerText);
       const lines = text
         .split("\n")
         .map((l) => l.trim())
@@ -107,6 +107,17 @@
       latestIncoming,
       count,
     };
+  }
+
+  // LINE Manager が末尾に挿入するゼロ幅スペース等のノイズを除去する。
+  // 「â€‹」はゼロ幅スペース(U+200B)のUTF-8バイト列(E2 80 8B)を
+  // Windows-1252として誤デコードした結果の典型的な文字化けパターン。
+  function cleanText(s) {
+    if (!s) return "";
+    return s
+      .replace(/â€‹|â€/g, "")
+      .replace(/[​-‍﻿]/g, "")
+      .trim();
   }
 
   // 開いている会話スレッドのスクロール領域を特定する。
