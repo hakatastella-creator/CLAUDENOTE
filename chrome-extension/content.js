@@ -61,45 +61,12 @@
   });
 
   function captureConversation() {
-    // LINE Manager のチャットエリアを推測して取得
-    // 既知のセレクタ候補（UI変更に備えて複数試す）
-    const candidates = [
-      '[data-testid="chat-list"]',
-      '[class*="ChatList"]',
-      '[class*="messageList"]',
-      '[class*="MessageList"]',
-      '[role="log"]',
-    ];
-    let container = null;
-    for (const sel of candidates) {
-      const el = document.querySelector(sel);
-      if (el && el.innerText && el.innerText.length > 50) {
-        container = el;
-        break;
-      }
-    }
-
+    const container = findThreadContainer();
     if (!container) {
-      // フォールバック: 一番大きいスクロール可能エリアを探す
-      const all = document.querySelectorAll("div");
-      let best = null;
-      let bestLen = 0;
-      for (const el of all) {
-        const style = getComputedStyle(el);
-        if (
-          (style.overflowY === "auto" || style.overflowY === "scroll") &&
-          el.innerText &&
-          el.innerText.length > bestLen
-        ) {
-          bestLen = el.innerText.length;
-          best = el;
-        }
-      }
-      container = best;
-    }
-
-    if (!container) {
-      return { error: "会話エリアが見つかりませんでした。手動で貼り付けてください。" };
+      return {
+        error:
+          "会話エリアが特定できませんでした。会話を開いた状態で再度お試しいただくか、手動で貼り付けてください。",
+      };
     }
 
     const text = container.innerText.trim();
@@ -118,6 +85,84 @@
       latestIncoming,
       count: lines.length,
     };
+  }
+
+  // 開いている会話スレッドのスクロール領域を特定する。
+  // 戦略: 「メッセージ入力欄」を起点に DOM を上にたどり、
+  // その入力欄と同じカラム（＝右側のチャット領域）にあるスクロール可能要素を返す。
+  // こうすることで、左の「友だち一覧」を誤って読み取ることを防ぐ。
+  function findThreadContainer() {
+    const input = findMessageInput();
+
+    // 入力欄が見つかった場合: 入力欄の祖先をたどり、その中で
+    // スクロール可能 & 入力欄自身を含まない最大の領域を探す。
+    if (input) {
+      let node = input.parentElement;
+      let best = null;
+      let bestArea = 0;
+      while (node && node !== document.body) {
+        // node の中のスクロール可能な子孫を全部見る
+        const scrollables = node.querySelectorAll("div, section, main, ul");
+        for (const el of scrollables) {
+          if (el.contains(input)) continue; // 入力欄を含む箱は会話本体ではない
+          const style = getComputedStyle(el);
+          const oy = style.overflowY;
+          if (oy !== "auto" && oy !== "scroll") continue;
+          const rect = el.getBoundingClientRect();
+          if (rect.width < 200 || rect.height < 150) continue;
+          const area = rect.width * rect.height;
+          if (area > bestArea && el.innerText && el.innerText.length > 20) {
+            bestArea = area;
+            best = el;
+          }
+        }
+        if (best) return best;
+        node = node.parentElement;
+      }
+    }
+
+    // フォールバック: 画面右半分にあるスクロール可能領域のうち最大のもの。
+    // 友だち一覧は通常左側にあるので、これで一定避けられる。
+    const viewportMidX = window.innerWidth / 2;
+    const all = document.querySelectorAll("div, section, main, ul");
+    let best = null;
+    let bestArea = 0;
+    for (const el of all) {
+      const style = getComputedStyle(el);
+      const oy = style.overflowY;
+      if (oy !== "auto" && oy !== "scroll") continue;
+      const rect = el.getBoundingClientRect();
+      if (rect.width < 200 || rect.height < 150) continue;
+      // 左端が画面中央より左 = 友だち一覧の可能性が高いのでスキップ
+      if (rect.left < viewportMidX - 100) continue;
+      const area = rect.width * rect.height;
+      if (area > bestArea && el.innerText && el.innerText.length > 20) {
+        bestArea = area;
+        best = el;
+      }
+    }
+    return best;
+  }
+
+  // LINE Manager の返信入力欄を探す（パネル内のtextareaは除外）。
+  function findMessageInput() {
+    const selectors = [
+      'textarea[placeholder*="メッセージ"]',
+      'textarea[placeholder*="入力"]',
+      'div[contenteditable="true"]',
+      "textarea",
+    ];
+    for (const sel of selectors) {
+      const els = document.querySelectorAll(sel);
+      for (const el of els) {
+        if (panel.contains(el)) continue; // 自分のパネルは除外
+        if (el.offsetParent === null) continue; // 非表示は除外
+        const rect = el.getBoundingClientRect();
+        if (rect.width < 100 || rect.height < 20) continue;
+        return el;
+      }
+    }
+    return null;
   }
 
   // ============================================================
