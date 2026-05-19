@@ -18,6 +18,11 @@
       <button class="stella-toggle" title="折りたたみ">＿</button>
     </div>
     <div class="stella-body">
+      <div class="stella-section-scan">
+        <button class="stella-btn-scan">🔍 未返信スキャン</button>
+        <div class="stella-scan-status"></div>
+      </div>
+      <div class="stella-divider"></div>
       <button class="stella-btn-capture">📋 画面から会話を読み取る</button>
       <textarea class="stella-context" placeholder="ここに過去のやり取り（古い順）。&#10;&#10;[相手] こんにちは&#10;[本人] お世話になっております&#10;&#10;...などを貼り付け、または上のボタンで自動取得"></textarea>
       <textarea class="stella-incoming" placeholder="返信したい受信メッセージ本文"></textarea>
@@ -289,5 +294,178 @@ ${incoming}
   function setStatus(msg, type) {
     statusEl.textContent = msg;
     statusEl.className = "stella-status " + (type || "");
+  }
+
+  // ============================================================
+  // 未返信スキャン
+  // ============================================================
+  const DASHBOARD_URL = "http://127.0.0.1:8765";
+  const scanBtn = panel.querySelector(".stella-btn-scan");
+  const scanStatusEl = panel.querySelector(".stella-scan-status");
+
+  function setScanStatus(msg, type) {
+    scanStatusEl.textContent = msg;
+    scanStatusEl.className = "stella-scan-status " + (type || "");
+  }
+
+  scanBtn.addEventListener("click", async () => {
+    scanBtn.disabled = true;
+    setScanStatus("スキャン中...", "info");
+    try {
+      const conversations = await scanConversationList();
+      setScanStatus(`${conversations.length}件取得。送信中...`, "info");
+      const res = await fetch(`${DASHBOARD_URL}/scan`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ conversations }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setScanStatus(
+        `送信完了: ${data.count}件。ダッシュボード（${DASHBOARD_URL}）で確認`,
+        "ok",
+      );
+    } catch (err) {
+      setScanStatus(
+        `エラー: ${err.message}。ダッシュボードサーバが起動しているか確認`,
+        "error",
+      );
+    } finally {
+      scanBtn.disabled = false;
+    }
+  });
+
+  /**
+   * LINE Manager の会話一覧をスキャンし、各会話の最終受信時刻・本文を抽出する。
+   *
+   * LINE Manager の正確な DOM 構造は UI 変更で変わるため、複数のセレクタ候補で
+   * 試し、抽出できなかった項目は null のまま返す。サーバ側 / ダッシュボード側で
+   * 12時間閾値判定を行う。
+   */
+  async function scanConversationList() {
+    const items = findConversationListItems();
+    const out = [];
+    const now = Date.now();
+    for (const el of items) {
+      const info = extractConversationInfo(el);
+      if (!info) continue;
+      if (info.last_incoming_at) {
+        const ms = new Date(info.last_incoming_at).getTime();
+        if (!isNaN(ms)) {
+          info.elapsed_hours = Math.max(0, (now - ms) / 3600000);
+        }
+      }
+      out.push(info);
+    }
+    return out;
+  }
+
+  function findConversationListItems() {
+    // 既知/予想される会話リストアイテムのセレクタ候補
+    const candidates = [
+      '[data-testid*="chat-list"] [data-testid*="chat-item"]',
+      '[data-testid*="ChatList"] li',
+      '[class*="ChatList"] [class*="ChatItem"]',
+      '[class*="chatList"] [class*="chatItem"]',
+      '[class*="ChatList"] li',
+      '[role="listitem"]',
+      '[role="list"] > div',
+    ];
+    for (const sel of candidates) {
+      const els = document.querySelectorAll(sel);
+      if (els.length >= 2) return Array.from(els);
+    }
+    // フォールバック：左サイドの一覧らしき要素を推測
+    const lists = document.querySelectorAll('ul, [role="list"]');
+    let best = [];
+    for (const list of lists) {
+      const children = list.querySelectorAll(":scope > *");
+      if (children.length > best.length && children.length >= 3) {
+        best = Array.from(children);
+      }
+    }
+    return best;
+  }
+
+  function extractConversationInfo(el) {
+    const text = el.innerText || "";
+    if (!text.trim()) return null;
+
+    // 名前：先頭行を候補にする
+    const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
+    const name = lines[0] || null;
+
+    // 時刻表示：例 "10:30", "昨日", "5月18日"
+    const timeText = lines.find((l) =>
+      /^(\d{1,2}:\d{2}|昨日|一昨日|\d{1,2}\/\d{1,2}|\d{1,2}月\d{1,2}日)$/.test(l),
+    );
+    const lastIncomingAt = parseRelativeTime(timeText);
+
+    // 最後のメッセージ本文：時刻以外の末尾行
+    const snippet = lines
+      .filter((l) => l !== timeText && l !== name)
+      .slice(-1)[0] || null;
+
+    // 未読バッジ
+    const unread =
+      !!el.querySelector('[class*="unread"], [class*="Unread"], [class*="badge"]') ||
+      /^\d+$/.test(lines[lines.length - 1] || "");
+
+    // タグ（個別対応中 等）
+    const tagEl = el.querySelector('[class*="tag"], [class*="Tag"], [class*="label"]');
+    const tag = tagEl ? tagEl.innerText.trim() : null;
+
+    // 最終発言が顧客かどうかは一覧画面では確定できない。
+    // ヒューリスティック：「You: ...」「自分: ...」のような prefix がなければ顧客発言と推定。
+    const isLastFromCustomer = !/^(You|自分|スタッフ)[:：]/.test(snippet || "");
+
+    return {
+      id: el.getAttribute("data-id") || el.id || (name + "|" + (snippet || "")),
+      name,
+      last_incoming_at: lastIncomingAt,
+      last_incoming_text: snippet,
+      unread,
+      tag,
+      is_last_from_customer: isLastFromCustomer,
+      raw_time_label: timeText || null,
+    };
+  }
+
+  function parseRelativeTime(label) {
+    if (!label) return null;
+    const now = new Date();
+    const pad = (n) => String(n).padStart(2, "0");
+
+    // HH:MM → 今日
+    let m = label.match(/^(\d{1,2}):(\d{2})$/);
+    if (m) {
+      const d = new Date(now);
+      d.setHours(parseInt(m[1], 10), parseInt(m[2], 10), 0, 0);
+      // 未来時刻なら昨日として扱う
+      if (d.getTime() > now.getTime()) d.setDate(d.getDate() - 1);
+      return d.toISOString();
+    }
+    if (label === "昨日") {
+      const d = new Date(now);
+      d.setDate(d.getDate() - 1);
+      d.setHours(12, 0, 0, 0);
+      return d.toISOString();
+    }
+    if (label === "一昨日") {
+      const d = new Date(now);
+      d.setDate(d.getDate() - 2);
+      d.setHours(12, 0, 0, 0);
+      return d.toISOString();
+    }
+    // 5月18日 or 5/18
+    m = label.match(/^(\d{1,2})[月\/](\d{1,2})/);
+    if (m) {
+      const d = new Date(now);
+      d.setMonth(parseInt(m[1], 10) - 1, parseInt(m[2], 10));
+      d.setHours(12, 0, 0, 0);
+      if (d.getTime() > now.getTime()) d.setFullYear(d.getFullYear() - 1);
+      return d.toISOString();
+    }
+    return null;
   }
 })();

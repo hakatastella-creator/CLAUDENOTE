@@ -149,3 +149,41 @@
 #stella-reply-panel .stella-status.info {
   color: #2563eb;
 }
+
+#stella-reply-panel .stella-section-scan {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+#stella-reply-panel .stella-btn-scan {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+}
+
+#stella-reply-panel .stella-btn-scan:hover {
+  background: #fde68a;
+}
+
+#stella-reply-panel .stella-btn-scan:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+#stella-reply-panel .stella-scan-status {
+  font-size: 11px;
+  padding: 2px 4px;
+  min-height: 14px;
+  color: var(--muted);
+}
+
+#stella-reply-panel .stella-scan-status.ok { color: #059669; }
+#stella-reply-panel .stella-scan-status.error { color: #dc2626; }
+#stella-reply-panel .stella-scan-status.info { color: #2563eb; }
+
+#stella-reply-panel .stella-divider {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 4px 0;
+}

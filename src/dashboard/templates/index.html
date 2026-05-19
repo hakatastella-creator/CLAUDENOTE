@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<title>LINE 未返信ダッシュボード</title>
+<style>
+  :root {
+    --bg: #f9fafb;
+    --card: #ffffff;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --danger: #dc2626;
+    --warn: #d97706;
+    --ok: #059669;
+    --line: #06c755;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  header {
+    background: linear-gradient(135deg, #06c755 0%, #00b900 100%);
+    color: white;
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  header h1 {
+    margin: 0;
+    font-size: 18px;
+  }
+  header .meta {
+    font-size: 13px;
+    opacity: 0.9;
+  }
+  main {
+    max-width: 1100px;
+    margin: 24px auto;
+    padding: 0 16px;
+  }
+  .controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .controls button {
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+  }
+  .controls button:hover { background: #f3f4f6; }
+  .controls label { font-size: 13px; color: var(--muted); }
+  .controls select {
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 13px;
+  }
+  .summary {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .summary strong { color: var(--text); font-size: 15px; }
+  table {
+    width: 100%;
+    background: var(--card);
+    border-collapse: collapse;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    font-size: 13px;
+  }
+  th, td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  th {
+    background: #f3f4f6;
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr.danger td.elapsed { color: var(--danger); font-weight: bold; }
+  tr.warn td.elapsed { color: var(--warn); font-weight: bold; }
+  tr.ok td.elapsed { color: var(--ok); }
+  td.name { font-weight: 600; min-width: 140px; }
+  td.snippet {
+    color: var(--muted);
+    max-width: 400px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  td.elapsed { white-space: nowrap; font-variant-numeric: tabular-nums; }
+  td.time { white-space: nowrap; color: var(--muted); font-size: 12px; }
+  .empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--muted);
+  }
+  .badge {
+    display: inline-block;
+    padding: 2px 6px;
+    font-size: 11px;
+    border-radius: 4px;
+    margin-left: 6px;
+  }
+  .badge.unread { background: #fee2e2; color: var(--danger); }
+  .badge.tag { background: #e0e7ff; color: #4338ca; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📋 LINE 未返信ダッシュボード</h1>
+  <div class="meta" id="meta">スキャン未実行</div>
+</header>
+
+<main>
+  <div class="controls">
+    <button id="refresh">🔄 再読み込み</button>
+    <label>
+      表示:
+      <select id="filter">
+        <option value="all">全件</option>
+        <option value="unreplied" selected>未返信のみ（閾値以上）</option>
+        <option value="customer-last">最終発言が顧客の会話</option>
+      </select>
+    </label>
+    <label>
+      閾値: <strong id="threshold">{{ threshold_hours }}</strong> 時間
+    </label>
+  </div>
+
+  <div class="summary" id="summary">読み込み中...</div>
+
+  <table id="table">
+    <thead>
+      <tr>
+        <th>患者名</th>
+        <th>最終受信</th>
+        <th>経過</th>
+        <th>最後のメッセージ</th>
+      </tr>
+    </thead>
+    <tbody id="tbody">
+      <tr><td colspan="4" class="empty">読み込み中...</td></tr>
+    </tbody>
+  </table>
+</main>
+
+<script>
+  const THRESHOLD_HOURS = {{ threshold_hours }};
+  const tbody = document.getElementById('tbody');
+  const summary = document.getElementById('summary');
+  const meta = document.getElementById('meta');
+  const filterSel = document.getElementById('filter');
+
+  function fmtTime(iso) {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    if (isNaN(d)) return iso;
+    return d.toLocaleString('ja-JP', { dateStyle: 'short', timeStyle: 'short' });
+  }
+
+  function fmtElapsed(hours) {
+    if (hours == null) return '—';
+    if (hours < 1) return `${Math.round(hours * 60)}分`;
+    if (hours < 24) return `${hours.toFixed(1)}時間`;
+    return `${(hours / 24).toFixed(1)}日`;
+  }
+
+  function rowClass(c) {
+    if (!c.is_last_from_customer) return 'ok';
+    const h = c.elapsed_hours ?? 0;
+    if (h >= THRESHOLD_HOURS * 2) return 'danger';
+    if (h >= THRESHOLD_HOURS) return 'warn';
+    return 'ok';
+  }
+
+  function passesFilter(c, mode) {
+    if (mode === 'all') return true;
+    if (mode === 'customer-last') return !!c.is_last_from_customer;
+    if (mode === 'unreplied') {
+      return !!c.is_last_from_customer && (c.elapsed_hours ?? 0) >= THRESHOLD_HOURS;
+    }
+    return true;
+  }
+
+  function render(data) {
+    const convos = data.conversations || [];
+    const mode = filterSel.value;
+    meta.textContent = data.scanned_at ? `最終スキャン: ${fmtTime(data.scanned_at)}` : 'スキャン未実行';
+
+    const filtered = convos.filter(c => passesFilter(c, mode));
+    filtered.sort((a, b) => (b.elapsed_hours ?? 0) - (a.elapsed_hours ?? 0));
+
+    const unrepliedCount = convos.filter(c => passesFilter(c, 'unreplied')).length;
+    summary.innerHTML = `
+      <strong>${unrepliedCount}</strong> 件が ${THRESHOLD_HOURS} 時間以上未返信
+      ／ 全 ${convos.length} 会話をスキャン済み
+      ／ 表示中: ${filtered.length} 件
+    `;
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" class="empty">該当する会話はありません</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = filtered.map(c => {
+      const badges = [];
+      if (c.unread) badges.push('<span class="badge unread">未読</span>');
+      if (c.tag) badges.push(`<span class="badge tag">${escapeHtml(c.tag)}</span>`);
+      return `
+        <tr class="${rowClass(c)}">
+          <td class="name">${escapeHtml(c.name || '(名前不明)')}${badges.join('')}</td>
+          <td class="time">${fmtTime(c.last_incoming_at)}</td>
+          <td class="elapsed">${fmtElapsed(c.elapsed_hours)}</td>
+          <td class="snippet" title="${escapeHtml(c.last_incoming_text || '')}">${escapeHtml(c.last_incoming_text || '')}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, m => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[m]));
+  }
+
+  async function load() {
+    const res = await fetch('/api/data');
+    const data = await res.json();
+    render(data);
+  }
+
+  document.getElementById('refresh').addEventListener('click', load);
+  filterSel.addEventListener('change', load);
+  load();
+  setInterval(load, 30000);
+</script>
+
+</body>
+</html>
