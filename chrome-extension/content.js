@@ -270,29 +270,95 @@
   }
 
   /**
-   * クリックされた子孫要素から親を辿って「兄弟が似た高さで並ぶリスト」を探す
+   * 要素のクラス名リスト（SVG対応）
+   */
+  function getClassList(el) {
+    if (!el || !el.className) return [];
+    const s = typeof el.className === "string" ? el.className : el.className.baseVal || "";
+    return s.split(/\s+/).filter(Boolean);
+  }
+
+  /**
+   * sibling が myEl と「同じ役割の並列項目」と思われるかを判定
+   * - 同じタグ
+   * - クラス名を共有 / または 幅が似ている / または 高さが似ている
+   */
+  function looksLikeSibling(myEl, sibling) {
+    if (sibling === myEl) return true;
+    if (sibling.tagName !== myEl.tagName) return false;
+    const myCls = getClassList(myEl);
+    const sibCls = getClassList(sibling);
+    if (myCls.length > 0 && myCls.some((c) => sibCls.includes(c))) return true;
+    const r1 = myEl.getBoundingClientRect();
+    const r2 = sibling.getBoundingClientRect();
+    if (r1.width <= 0 || r2.width <= 0) return false;
+    const wDiff = Math.abs(r1.width - r2.width) / Math.max(r1.width, r2.width);
+    if (wDiff < 0.2) return true;
+    if (r1.height > 0 && r2.height > 0) {
+      const hDiff = Math.abs(r1.height - r2.height) / Math.max(r1.height, r2.height);
+      if (hDiff < 0.3) return true;
+    }
+    return false;
+  }
+
+  /**
+   * クリックされた要素から親を遡って「並列項目が複数並ぶ親」を探す。
+   * 1次: 類似兄弟が3つ以上
+   * 2次（フォールバック）: 子要素数が最も多い親
    */
   function inferChatListFromClick(clicked) {
     let el = clicked;
-    while (el && el.parentElement && el !== document.body) {
+    let depth = 0;
+    while (el && el.parentElement && el !== document.body && depth < 20) {
       const parent = el.parentElement;
       const siblings = Array.from(parent.children);
       if (siblings.length >= 3) {
-        const heights = siblings
-          .map((s) => s.getBoundingClientRect().height)
-          .filter((h) => h > 0);
-        if (heights.length >= 3) {
-          const sorted = [...heights].sort((a, b) => a - b);
-          const median = sorted[Math.floor(sorted.length / 2)];
-          const similar = heights.filter((h) => Math.abs(h - median) < 14).length;
-          if (similar >= 3 && median >= 30 && median <= 260) {
-            return { chatList: parent, chatItem: el };
-          }
+        const matching = siblings.filter((s) => looksLikeSibling(el, s)).length;
+        if (matching >= 3) {
+          console.log("[stella] chat list detected (similarity)", {
+            parent, item: el, matching, total: siblings.length, depth,
+          });
+          return { chatList: parent, chatItem: el };
         }
       }
       el = parent;
+      depth++;
     }
-    return { chatList: null, chatItem: null };
+
+    // フォールバック: 一番子要素が多い祖先（5〜200件）を採用
+    el = clicked;
+    let best = null;
+    let bestCount = 0;
+    depth = 0;
+    while (el && el.parentElement && el !== document.body && depth < 20) {
+      const parent = el.parentElement;
+      const count = parent.children.length;
+      if (count >= 5 && count < 200 && count > bestCount) {
+        bestCount = count;
+        best = { chatList: parent, chatItem: el };
+      }
+      el = parent;
+      depth++;
+    }
+    if (best) {
+      console.log("[stella] chat list detected (fallback: most-children)", {
+        ...best, count: bestCount,
+      });
+    } else {
+      console.warn("[stella] chat list NOT detected. clicked element:", clicked);
+      // 親の構造を5段分ダンプ
+      let dbg = clicked;
+      for (let i = 0; i < 5 && dbg; i++) {
+        console.log(`[stella] ancestor[${i}]`, {
+          tag: dbg.tagName,
+          class: getClassList(dbg).join("."),
+          childrenCount: dbg.children.length,
+          rect: dbg.getBoundingClientRect(),
+        });
+        dbg = dbg.parentElement;
+      }
+    }
+    return best || { chatList: null, chatItem: null };
   }
 
   async function bulkLearn() {
@@ -310,10 +376,18 @@
 
     const { chatList, chatItem } = inferChatListFromClick(clicked);
     if (!chatList || !chatItem) {
-      setStatus("チャット一覧の構造を検出できませんでした。別の場所をクリックしてみてください。", "error");
+      setStatus(
+        "チャット一覧の構造を検出できませんでした。F12→Consoleタブの[stella]ログを開発者に共有してください。",
+        "error"
+      );
       panel.querySelector(".stella-btn-bulk").disabled = false;
       return;
     }
+
+    // 検出結果を表示してユーザーに確認させる
+    const itemCount = chatList.children.length;
+    console.log("[stella] starting bulk learn with", { chatList, chatItem, itemCount });
+    setBulkProgress(`${itemCount}件のチャットを検出。1件目から学習開始…`);
 
     bulkRunning = true;
     bulkCancel = false;
