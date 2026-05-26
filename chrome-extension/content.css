@@ -3,22 +3,22 @@
    ======================================== */
 #stella-reply-fab {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
+  bottom: 28px;
+  right: 28px;
   z-index: 2147483647;
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 10px 16px;
+  gap: 10px;
+  padding: 18px 28px;
   background: linear-gradient(135deg, #06c755 0%, #00b900 100%);
   color: #ffffff;
   border: none;
   border-radius: 999px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
   cursor: pointer;
   font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", sans-serif;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: 700;
   transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
 }
 
@@ -37,7 +37,7 @@
 }
 
 #stella-reply-fab .stella-fab-icon {
-  font-size: 16px;
+  font-size: 22px;
   line-height: 1;
 }
 
@@ -50,8 +50,8 @@
    ======================================== */
 .stella-toast {
   position: fixed;
-  bottom: 70px;
-  right: 20px;
+  bottom: 100px;
+  right: 28px;
   z-index: 2147483647;
   max-width: 320px;
   padding: 10px 14px;
