@@ -17,16 +17,16 @@
 #stella-unreplied-badge .srd-btn {
   display: inline-flex !important;
   align-items: center !important;
-  gap: 6px !important;
+  gap: 8px !important;
   background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
   color: #ffffff !important;
   border: none !important;
   border-radius: 999px !important;
-  padding: 7px 16px !important;
-  font-size: 13px !important;
+  padding: 10px 20px !important;
+  font-size: 15px !important;
   font-weight: 700 !important;
   cursor: pointer !important;
-  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.35) !important;
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.4) !important;
   line-height: 1 !important;
 }
 
@@ -35,18 +35,18 @@
 }
 
 #stella-unreplied-badge .srd-icon {
-  font-size: 14px !important;
+  font-size: 17px !important;
 }
 
 #stella-unreplied-badge .srd-count {
   background: rgba(255, 255, 255, 0.95) !important;
   color: #dc2626 !important;
   border-radius: 999px !important;
-  padding: 0 8px !important;
-  min-width: 22px !important;
+  padding: 0 10px !important;
+  min-width: 26px !important;
   text-align: center !important;
-  font-size: 12px !important;
-  line-height: 18px !important;
+  font-size: 14px !important;
+  line-height: 22px !important;
   font-weight: 800 !important;
 }
 
