@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "LINE返信漏れ検出",
+  "version": "1.0.0",
+  "description": "LINE公式アカウントマネージャー / chat.line.biz の未返信トークを画面右上に常時表示します。",
+  "host_permissions": [
+    "https://manager.line.biz/*",
+    "https://chat.line.biz/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://manager.line.biz/*",
+        "https://chat.line.biz/*"
+      ],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle",
+      "all_frames": true
+    }
+  ]
+}

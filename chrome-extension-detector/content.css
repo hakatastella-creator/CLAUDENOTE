@@ -1,0 +1,155 @@
+/* ============================================================
+   LINE返信漏れ検出 - 右上常時表示バッジ
+   LINE 側 CSS に負けないよう全プロパティに !important を付与
+   ============================================================ */
+
+#stella-unreplied-badge {
+  position: fixed !important;
+  top: 14px !important;
+  right: 16px !important;
+  z-index: 2147483647 !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans",
+    "Yu Gothic UI", sans-serif !important;
+  color: #1f2937 !important;
+  pointer-events: auto !important;
+}
+
+#stella-unreplied-badge .srd-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 999px !important;
+  padding: 7px 16px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.35) !important;
+  line-height: 1 !important;
+}
+
+#stella-unreplied-badge .srd-btn:hover {
+  filter: brightness(1.05) !important;
+}
+
+#stella-unreplied-badge .srd-icon {
+  font-size: 14px !important;
+}
+
+#stella-unreplied-badge .srd-count {
+  background: rgba(255, 255, 255, 0.95) !important;
+  color: #dc2626 !important;
+  border-radius: 999px !important;
+  padding: 0 8px !important;
+  min-width: 22px !important;
+  text-align: center !important;
+  font-size: 12px !important;
+  line-height: 18px !important;
+  font-weight: 800 !important;
+}
+
+#stella-unreplied-badge .srd-panel {
+  position: absolute !important;
+  top: 42px !important;
+  right: 0 !important;
+  width: 340px !important;
+  max-height: 70vh !important;
+  background: #ffffff !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 12px !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2) !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+#stella-unreplied-badge .srd-panel-header {
+  background: #fef2f2 !important;
+  color: #991b1b !important;
+  padding: 10px 12px !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  border-bottom: 1px solid #fecaca !important;
+}
+
+#stella-unreplied-badge .srd-panel-actions button {
+  background: transparent !important;
+  border: none !important;
+  cursor: pointer !important;
+  font-size: 14px !important;
+  padding: 2px 6px !important;
+  margin-left: 2px !important;
+  color: #991b1b !important;
+  border-radius: 4px !important;
+}
+
+#stella-unreplied-badge .srd-panel-actions button:hover {
+  background: rgba(0, 0, 0, 0.06) !important;
+}
+
+#stella-unreplied-badge .srd-panel-body {
+  overflow-y: auto !important;
+  padding: 4px !important;
+  flex: 1 1 auto !important;
+}
+
+#stella-unreplied-badge .srd-panel-footer {
+  padding: 6px 10px !important;
+  border-top: 1px solid #f3f4f6 !important;
+  font-size: 11px !important;
+  color: #9ca3af !important;
+  text-align: center !important;
+}
+
+#stella-unreplied-badge .srd-empty {
+  padding: 24px !important;
+  text-align: center !important;
+  color: #6b7280 !important;
+  font-size: 13px !important;
+}
+
+#stella-unreplied-badge .srd-item {
+  padding: 8px 10px !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  border-bottom: 1px solid #f3f4f6 !important;
+}
+
+#stella-unreplied-badge .srd-item:hover {
+  background: #fef2f2 !important;
+}
+
+#stella-unreplied-badge .srd-item-name {
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  color: #1f2937 !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+#stella-unreplied-badge .srd-item-badge {
+  background: #dc2626 !important;
+  color: #ffffff !important;
+  border-radius: 999px !important;
+  padding: 0 7px !important;
+  font-size: 11px !important;
+  line-height: 16px !important;
+  font-weight: 700 !important;
+  min-width: 18px !important;
+  text-align: center !important;
+}
+
+#stella-unreplied-badge .srd-item-preview {
+  font-size: 12px !important;
+  color: #6b7280 !important;
+  margin-top: 2px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
