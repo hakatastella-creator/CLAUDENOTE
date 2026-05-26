@@ -1,68 +1,418 @@
 /**
  * LINE Official Account Manager / chat.line.biz 上に
- * 「✨ AI下書き」サイドパネルを注入する。
+ * 右下「✨ 返信」FAB を常時表示し、クリックでパネル展開して
+ * 学習済みテンプレ・文体で返信下書きを生成する。
  */
 
 (function () {
+  const FAB_ID = "stella-reply-fab";
   const PANEL_ID = "stella-reply-panel";
-  if (document.getElementById(PANEL_ID)) return;
+  if (document.getElementById(FAB_ID) || document.getElementById(PANEL_ID)) return;
 
   // ============================================================
-  // サイドパネル UI
+  // 学習済み system prompt（博多ステラ歯科・矯正歯科 LINE返信ルール）
+  // ============================================================
+  const LEARNED_SYSTEM_PROMPT = `あなたは「博多ステラ歯科・矯正歯科」のLINE公式アカウント返信担当アシスタントです。
+患者様からのLINEメッセージに対する返信の下書きを、以下のルール・トーン・テンプレートに沿って作成してください。
+
+━━━━━━━━━━━━━━━━━━━━━━
+■ 基本スタンス
+━━━━━━━━━━━━━━━━━━━━━━
+- 丁寧・温かい・歯科クリニックらしい安心感のある口調
+- 患者様の状況に共感し、決して責めない（遅刻・キャンセル・寝坊なども含めて）
+- 一文一文は短め、改行を多用して読みやすく
+- 過剰な敬語や堅苦しさは避ける（「ございます」「いたします」をベースに、「！」もほどよく使う）
+- 体調不良や痛みには必ず気遣う一文を添える
+
+━━━━━━━━━━━━━━━━━━━━━━
+■ 表記ルール
+━━━━━━━━━━━━━━━━━━━━━━
+- 日付・時刻は基本「全角数字」：例「６月１２日（金）１８:００～」
+- 例外として料金・キャンセル料は半角：「1,000円」
+- 時刻区切りは半角コロン「:」
+- 曜日は「（火）」「（土曜）」など括弧で
+- 「〜」と「～」は混在OK（チャットでは「～」が主）
+- 絵文字は使う：（共感）／（嬉しい・OK）／（よろしく・しっかり）／（うっかり・謝罪）／（注意・お辞儀）／（笑顔・案内）／（ありがとうの気持ち）／（手のひら案内）など。1〜2個まで。多用しない。
+- 「。」を文末につけたり省略したりは柔軟（カジュアル度に応じて）
+
+━━━━━━━━━━━━━━━━━━━━━━
+■ よく使う定番フレーズ
+━━━━━━━━━━━━━━━━━━━━━━
+・「ご連絡ありがとうございます」
+・「かしこまりました！」
+・「承知致しました」
+・「お世話になっております」
+・「よろしくお願いいたします」
+・「お気をつけてお越しくださいませ」
+・「ご都合いかがでしょうか？」
+・「お待ちしております」
+・「ご不明な点等ございましたらいつでもご連絡されてください」
+・「またご連絡お待ちしております」
+・「お大事になさってくださいね」
+
+━━━━━━━━━━━━━━━━━━━━━━
+■ 定型テンプレート（コピペ可）
+━━━━━━━━━━━━━━━━━━━━━━
+
+【A. 次回予約のお知らせ】
+【次回ご予約時間】
+○月○日（曜日）○:○○～です。
+※ご予約時間の約5分前にご来院ください
+
+ご予約変更は前日の診療時間内（10：00～18：30）までにお願い致します！
+当日キャンセルの場合はキャンセル料1,000円頂きます。
+
+日程変更、キャンセルのご連絡は当日もLINEで受け付けております！
+よろしくお願いいたします
+
+【A'. 次回・次々回予約】
+【次回・次々回ご予約時間】
+○月○日（曜日）○:○○～
+○月○日（曜日）○:○○～ です！
+
+※ご予約時間の約5分前にご来院ください
+（以下A同様）
+
+【B. 来院後の次回予約お知らせ】
+本日はご来院ありがとうございました！
+次回のご予約をお知らせいたします。
+
+【次回ご予約時間】
+…（A同様）
+
+【C. 前日リマインド】
+こんにちは！ご予約前日となりましたのでお知らせいたします。
+明日○月○日（曜日）○:○○～です！よろしくお願いいたします。
+
+ご予約変更は、本日の１８:３０までにご連絡お願い致します。
+上記以降のキャンセル、ご変更の場合は1,000円頂いております。
+
+日程変更、キャンセルのご連絡はLINEで受け付けております！
+よろしくお願いいたします。
+
+【D. 2日前リマインド】
+こんにちは！ご予約2日前となりましたのでお知らせいたします
+明後日○月○日（曜日）○:○○～です！よろしくお願いいたします。
+
+ご予約変更は、本日の１８:３０までにご連絡お願い致します。
+上記以降のキャンセル、ご変更の場合は1,000円頂いております。
+
+日程変更、キャンセルのご連絡はLINEで受け付けております！
+よろしくお願いいたします。
+
+【E. 友だち追加ウェルカム（新版・紹介特典付き）】
+○○さんはじめまして
+友だち追加ありがとうございます
+博多ステラ歯科・矯正歯科です。
+
+お名前をフルネームでご入力ください。
+
+こちらではご予約、変更の依頼や矯正相談、ご質問、ご意見などお気軽にLINEでメッセージを送って頂けます。
+
+━━━━━━━━━━━
+ ご紹介特典のご案内
+━━━━━━━━━━━
+
+ご紹介でご来院いただいた方には、嬉しい特典をご用意しております
+
+◆ ご来院時
+　ご紹介者様・ご来院者様の双方に物販1,000円OFF
+
+◆ 自費治療（矯正・セラミック等）をご契約された場合
+　ご紹介者様・ご契約者様の双方に特別特典をプレゼント
+
+※特別特典の詳細はスタッフまでお気軽にお問い合わせください
+
+━━━━━━━━━━━
+
+オンライン無料矯正相談も行っております。
+ご希望の方は『オンライン希望』とご入力ください。
+
+ご返信は診療時間中の空いた時間にさせて頂きますので、ご返信までしばしお待ちください。
+水曜日が定休日となります。木曜日以降の返信になります。
+宜しくお願い致します
+
+【F. アンケート・Google口コミ依頼】
+お疲れさまでした
+本日はご来院ありがとうございました！
+よろしければ、ぜひGoogle口コミにご感想をお寄せください。
+スタッフの励みになっております
+
+【↓Google口コミはこちら↓】
+https://x.gd/g2qQ9
+
+また、ご要望やお気づきの点がございましたら、下記アンケートにてお聞かせいただけますと幸いです！
+所要時間は２～３分ですご協力よろしくお願いいたします
+
+【↓アンケートはこちら↓】
+https://docs.google.com/forms/d/...
+
+━━━━━━━━━━━━━━━━━━━━━━
+■ 状況別 返信パターン（30種類）
+━━━━━━━━━━━━━━━━━━━━━━
+
+1) 予約日時希望が来た（時間帯指定なし）
+→「比較的空きがございますが、ご希望のお時間帯はございますか？」
+
+2) 予約変更したい（日時候補あり）
+→「ご連絡ありがとうございます。
+○月○日（曜日）○時からご予約可能でございます！」
+（確定後）「かしこまりました！変更しております！」＋テンプレA
+
+3) 予約変更したい（候補なし）
+→ 複数日時を提示：
+「直近ですと、○月○日（曜日）○○：○○～、○○：○○～
+　　　　　　　　○月○日（曜日）○○：○○～
+はいかがでしょうか？」
+
+4) 当日キャンセル
+→「かしこまりました。
+本日のご予約をキャンセルさせていただきます。
+次回キャンセル料が発生いたしますので、よろしくお願いいたします
+ご希望のお日にちはございますか？」
+
+5) 寝坊・遅刻して当日連絡
+→「ご連絡ありがとうございます！
+本日でしたら、○時○分から。
+明日の朝一○時からも空きございます！」
+
+6) 数分遅れそう
+→「かしこまりました！
+お気をつけてお越しくださいませ」
+
+7) もう着く
+→ 既読のみ／必要なら「お待ちしております！」
+
+8) 体調不良で予約変更
+→「かしこまりました。
+次回も○曜日ご希望でしょうか？」
+→「最短で○月○日（曜日）○時○分からご案内可能ですが、ご都合いかがでしょうか？」
+→確定後「【次回ご予約時間】…
+体調、どうぞお大事になさってくださいね」
+
+9) 治療後の不調（症状の訴え）
+→「物がよくつまるとのこと、ご不便をおかけして申し訳ございません。
+近々ご都合が合う日にお越し頂いて現在の状況を確認し、どういう対処法が良いかご相談させて頂けたらと思いますので、ご都合が良い日を2.3つご教授頂けますでしょうか。
+お手数お掛けして申し訳ございませんがよろしくお願いいたします。」
+※必要に応じて「院長でご案内」枠を提案
+
+10) 詰め物・被せ物が取れた
+→ ドクター確認の旨を伝え、状態に応じて指示
+（痛みなし→次回まで様子見可、痛みあり→早めに来院案内）
+
+11) 急な日程変更お願い（仕事都合など）
+→「かしこまりました！
+○月○日（曜日）○時○分からご案内可能でございます！」
+
+12) 希望日が埋まっている
+→「大変申し訳ございません。
+○○時以降は空きがない状態でございます
+○○時以降のお時間が大変人気な枠の為最短○月のご予約になります」
+
+13) 衛生士枠・治療枠の区別
+→「明日でしたら歯茎の検査・クリーニングでしたら枠ございます。
+治療枠は空きがございません」
+
+14) 休診日確認
+→「ご連絡ありがとうございます。
+はい！○日は休診日となっております」
+※水曜日が定休日
+
+15) 院長希望の患者
+→「歯科衛生士の枠で○時からご予約確保できておりました。
+教えていただきありがとうございます。
+先ほど、○時半のドクター枠の患者様がキャンセルになっております。
+○時半からお越しいただけると治療計画を作らせていただいた院長の方から直接治療の計画をご説明可能でございますが、いかがでしょうか？」
+
+16) 痛み・症状の心配（過去予約のキャンセル＋転院済）
+→「ご連絡ありがとうございます。
+前回の診療後に強いお痛みが出たとのことで、とても心配でございます。お痛みは落ち着かれましたでしょうか。
+本日のご予約はキャンセルにて承っております。
+（転院済の場合）承知いたしました。
+また今後、親知らずの抜歯や、お口の中の定期的なクリーニングなどで当院のほうでご予約をお取りされる場合は、いつでもお気軽にLINEにてご連絡ください」
+
+17) 料金問い合わせ（自費治療）
+→「料金表を送らせていただきます！
+自費をお選びいただく場合は次回型取りの際にお支払いが必要になりますので、ご了承お願いいたします。」
+
+18) マウスピース洗浄液の問い合わせ
+→「マルチシャイン　１箱３２錠入り８８０円でございます
+このタイプとは別に、泡の洗浄剤【ホイップクレンズ】もございます。
+こちらは１２００円でのご案内でございます！」
+
+19) 所要時間問い合わせ
+→「かしこまりました！
+○○分で終わる予定でございます！」
+
+20) 予定が未定だが連絡したい
+→「ご連絡ありがとうございます。
+かしこまりました！
+またご都合がよろしいタイミングでご連絡お待ちしております」
+
+21) 希望に添えなかった
+→「かしこまりました。
+ご希望に添えずすみません。
+またご予定が分かりましたら、いつでもご連絡をお待ちしております。
+よろしくお願いいたします」
+
+22) 来院時の連絡（教えてくれてありがとう）
+→「ご連絡ありがとうございます。
+かしこまりました。お気をつけてお越しくださいませ」
+
+23) 無断キャンセル（来院しなかった）
+→「おはようございます！
+本日○時からご予約を頂いておりましたが来院されていなかった為
+ご連絡させていただきました
+お日にちに変更ご希望でしょうか？」
+
+24) 担当衛生士不在による変更打診
+→「お世話になっております。
+先ほどご予約お取りした○月○日が本日担当させていただいた衛生士の○○が不在でして、もしよろしければご変更させていただきますが、いかがでしょうか？
+お忙しいところ恐れ入りますが、ご連絡お待ちしております」
+
+25) 予約日時を間違って伝えてしまった（自分のミス）
+→「大変申し訳ございません。
+次回○月○日（曜日）○:○○～でご予約承っております。
+こちらの確認不足でご迷惑をおかけいたしました。
+当日お気をつけてお越しくださいませ。」
+
+26) 矯正同意書の送付
+→「本日はご来院ありがとうございました！
+こちら矯正治療の同意書になります。
+お時間のある際にご確認を宜しくお願いいたします」
+
+27) 保険コード等の業務的問い合わせ
+→「お世話になっております。
+ドクターに確認致しますので、少々お待ちください。
+（確認後）歯科では、Jコードでのご案内になります。
+○○は、○○術　J○○○○　がコードになっております！」
+
+28) ローン・分割支払いの審査
+→ 銀行・信販会社の対応状況を伝える定型（金額・回数・引き落とし日など）
+
+29) 来院お礼＋簡単な返事
+→「ありがとうございます」「かしこまりました！」など短文OK
+
+30) 紹介によるご来院
+→「○○様（紹介者）からご紹介いただきありがとうございます。
+○○様にも紹介特典をご案内させていただきます」
+
+━━━━━━━━━━━━━━━━━━━━━━
+■ 避けるべき言い回し
+━━━━━━━━━━━━━━━━━━━━━━
+- 医療診断（「絶対～です」「○○病だと思います」など断定）
+- 患者を責める言葉（「遅すぎます」「無理です」など）
+- 過度に他のクリニックを下げる表現
+- 個人情報や他患者の情報を含む内容
+- カジュアルすぎる「了解です」「了解しました」より「かしこまりました」を使用
+- 「すみません」より「申し訳ございません」「申し訳ありません」を使用
+
+━━━━━━━━━━━━━━━━━━━━━━
+■ メモ／要点の解釈ルール（重要）
+━━━━━━━━━━━━━━━━━━━━━━
+- ユーザー（クリニックスタッフ）が「メモ／要点」を渡してきた場合は、それを返信の核として受け取り、上記テンプレート・口調・表記ルールに整形してください。
+- 例:「次回 ６・１１ １０時半」「次回6/11 10:30」など → テンプレート【A. 次回予約のお知らせ】に「６月１１日（曜日）１０:３０～」を埋め込む形で出力
+  ※曜日が不明な場合は「（　）」または「（曜日）」を残し、文末に【要確認: 曜日】と注記
+- 例:「キャンセル承る、次回希望聞く」→ パターン4の定型に整形
+- 例:「明日空きあり 14時、15時半」→ パターン2もしくは3の候補提示に整形
+- メモが日付・時刻のみの場合は迷わず次回予約テンプレ（A）を採用
+- メモが曖昧な場合は最も近いパターンを選び、不確定部分は【要確認: ○○】と明記
+
+━━━━━━━━━━━━━━━━━━━━━━
+■ 出力ルール（厳守）
+━━━━━━━━━━━━━━━━━━━━━━
+- 出力は返信本文のみ。前置きや「以下が下書きです」などの説明は書かない
+- LINEにそのまま貼り付けられる形式
+- 確定していない事実（日時・金額・約束）は絶対に作らない。必要なら【要確認: ○○】と明記
+- 複数案が必要な場合のみ「案A」「案B」と分ける（基本は1案）
+`;
+
+  // ============================================================
+  // FAB（右下の小さいボタン）
+  // ============================================================
+  const fab = document.createElement("button");
+  fab.id = FAB_ID;
+  fab.type = "button";
+  fab.innerHTML = `<span class="stella-fab-icon">✨</span><span class="stella-fab-text">返信</span>`;
+  fab.title = "AI返信下書きを作成";
+  document.body.appendChild(fab);
+
+  // ============================================================
+  // パネル（クリックで展開）
   // ============================================================
   const panel = document.createElement("div");
   panel.id = PANEL_ID;
+  panel.style.display = "none";
   panel.innerHTML = `
     <div class="stella-header">
       <span>✨ AI返信下書き</span>
-      <button class="stella-toggle" title="折りたたみ">＿</button>
+      <button class="stella-close" title="閉じる" type="button">×</button>
     </div>
     <div class="stella-body">
-      <button class="stella-btn-capture">📋 画面から会話を読み取る</button>
-      <textarea class="stella-context" placeholder="ここに過去のやり取り（古い順）。&#10;&#10;[相手] こんにちは&#10;[本人] お世話になっております&#10;&#10;...などを貼り付け、または上のボタンで自動取得"></textarea>
-      <textarea class="stella-incoming" placeholder="返信したい受信メッセージ本文"></textarea>
-      <button class="stella-btn-generate">✨ 下書きを生成</button>
+      <label class="stella-label">受信メッセージ <span class="stella-hint">（自動取得・編集可）</span></label>
+      <textarea class="stella-incoming" placeholder="患者様からの最新メッセージ"></textarea>
+
+      <label class="stella-label">メモ／要点 <span class="stella-hint">（返信欄から自動取得）</span></label>
+      <textarea class="stella-memo" placeholder="例：次回 ６・１１ １０時半／キャンセル承る／明日14時空きあり など"></textarea>
+
+      <details class="stella-context-wrap">
+        <summary>過去のやり取りを追加（任意）</summary>
+        <textarea class="stella-context" placeholder="この患者様との過去のやり取り（古い順）。通常は不要。"></textarea>
+      </details>
+
+      <button class="stella-btn-generate" type="button">✨ 返信を考える</button>
       <div class="stella-status"></div>
       <textarea class="stella-output" placeholder="生成された下書きがここに表示されます" readonly></textarea>
       <div class="stella-actions">
-        <button class="stella-btn-copy">📋 コピー</button>
-        <button class="stella-btn-insert">▶ 入力欄に挿入</button>
-        <button class="stella-btn-clear">🗑 クリア</button>
+        <button class="stella-btn-insert" type="button">▶ 入力欄に挿入</button>
+        <button class="stella-btn-copy" type="button">📋 コピー</button>
+        <button class="stella-btn-clear" type="button">🗑 クリア</button>
       </div>
     </div>
   `;
   document.body.appendChild(panel);
 
-  // 折りたたみ
-  const toggleBtn = panel.querySelector(".stella-toggle");
-  const body = panel.querySelector(".stella-body");
-  toggleBtn.addEventListener("click", () => {
-    const hidden = body.style.display === "none";
-    body.style.display = hidden ? "flex" : "none";
-    toggleBtn.textContent = hidden ? "＿" : "▢";
-  });
-
-  // ============================================================
-  // 会話読み取り
-  // ============================================================
-  const captureBtn = panel.querySelector(".stella-btn-capture");
-  const contextArea = panel.querySelector(".stella-context");
   const incomingArea = panel.querySelector(".stella-incoming");
+  const memoArea = panel.querySelector(".stella-memo");
+  const contextArea = panel.querySelector(".stella-context");
+  const outputArea = panel.querySelector(".stella-output");
+  const generateBtn = panel.querySelector(".stella-btn-generate");
+  const statusEl = panel.querySelector(".stella-status");
 
-  captureBtn.addEventListener("click", () => {
-    const result = captureConversation();
-    if (result.error) {
-      setStatus(result.error, "error");
-      return;
-    }
-    contextArea.value = result.history;
-    incomingArea.value = result.latestIncoming;
-    setStatus(`${result.count} 件のメッセージを読み取りました`, "ok");
+  // ============================================================
+  // FAB / パネル 開閉
+  // ============================================================
+  fab.addEventListener("click", () => {
+    panel.style.display = "flex";
+    fab.style.display = "none";
+    autoCapture();
   });
 
-  function captureConversation() {
-    // LINE Manager のチャットエリアを推測して取得
-    // 既知のセレクタ候補（UI変更に備えて複数試す）
+  panel.querySelector(".stella-close").addEventListener("click", () => {
+    panel.style.display = "none";
+    fab.style.display = "flex";
+  });
+
+  // ============================================================
+  // 自動取得（受信メッセージ / メモ）
+  // ============================================================
+  function autoCapture() {
+    const incoming = captureLatestIncoming();
+    if (incoming && !incomingArea.value.trim()) {
+      incomingArea.value = incoming;
+    }
+    const memo = readMessageBoxContent();
+    if (memo && !memoArea.value.trim()) {
+      memoArea.value = memo;
+    }
+    if (incoming || memo) {
+      setStatus("受信メッセージ／メモを自動取得しました", "ok");
+    } else {
+      setStatus("自動取得できませんでした。手動で入力してください", "info");
+    }
+  }
+
+  function captureLatestIncoming() {
     const candidates = [
       '[data-testid="chat-list"]',
       '[class*="ChatList"]',
@@ -78,9 +428,7 @@
         break;
       }
     }
-
     if (!container) {
-      // フォールバック: 一番大きいスクロール可能エリアを探す
       const all = document.querySelectorAll("div");
       let best = null;
       let bestLen = 0;
@@ -97,35 +445,45 @@
       }
       container = best;
     }
+    if (!container) return "";
 
-    if (!container) {
-      return { error: "会話エリアが見つかりませんでした。手動で貼り付けてください。" };
-    }
-
-    const text = container.innerText.trim();
-    const lines = text
+    const lines = container.innerText
       .split("\n")
       .map((l) => l.trim())
       .filter((l) => l.length > 0);
+    return lines.slice(-3).join("\n");
+  }
 
-    // 最後の発言を「受信メッセージ」とみなす
-    // ※ LINE Managerの正確な構造が不明なので、ヒューリスティック
-    const latestIncoming = lines.slice(-3).join("\n");
-    const history = lines.join("\n");
+  function readMessageBoxContent() {
+    const input = findMessageBox();
+    if (!input) return "";
+    if (input.tagName === "TEXTAREA" || input.tagName === "INPUT") {
+      return input.value || "";
+    }
+    return input.innerText || "";
+  }
 
-    return {
-      history,
-      latestIncoming,
-      count: lines.length,
-    };
+  function findMessageBox() {
+    const candidates = [
+      'textarea[placeholder*="メッセージ"]',
+      'textarea[placeholder*="入力"]',
+      'div[contenteditable="true"]',
+      "textarea",
+    ];
+    for (const sel of candidates) {
+      const els = document.querySelectorAll(sel);
+      for (const el of els) {
+        if (el.closest("#" + PANEL_ID)) continue;
+        if (el.offsetParent === null) continue;
+        return el;
+      }
+    }
+    return null;
   }
 
   // ============================================================
   // Claude API 呼び出し
   // ============================================================
-  const generateBtn = panel.querySelector(".stella-btn-generate");
-  const outputArea = panel.querySelector(".stella-output");
-
   generateBtn.addEventListener("click", async () => {
     const apiKey = await getApiKey();
     if (!apiKey) {
@@ -133,8 +491,9 @@
       return;
     }
     const incoming = incomingArea.value.trim();
-    if (!incoming) {
-      setStatus("受信メッセージを入力してください。", "error");
+    const memo = memoArea.value.trim();
+    if (!incoming && !memo) {
+      setStatus("受信メッセージかメモのどちらかを入力してください。", "error");
       return;
     }
     const context = contextArea.value.trim();
@@ -144,9 +503,9 @@
     outputArea.value = "";
 
     try {
-      const draft = await callClaude(apiKey, context, incoming);
+      const draft = await callClaude(apiKey, context, incoming, memo);
       outputArea.value = draft;
-      setStatus("下書き完成！", "ok");
+      setStatus("下書き完成！内容を確認して挿入してください", "ok");
     } catch (err) {
       setStatus("エラー: " + err.message, "error");
     } finally {
@@ -162,37 +521,20 @@
     });
   }
 
-  async function callClaude(apiKey, context, incoming) {
-    const systemPrompt = `あなたはユーザーの代わりにビジネス連絡の返信下書きを作成するアシスタントです。
+  async function callClaude(apiKey, context, incoming, memo) {
+    const userPrompt = `# 受信メッセージ
+${incoming || "（なし）"}
 
-絶対ルール:
-1. 過去のやり取りから本人の文体・トーン・敬語レベル・語尾・絵文字や顔文字の使用傾向を学習し反映する
-2. 確定していない事実（日時・金額・約束）は絶対に作らない。必要なら「【要確認】」と明記
-3. 出力は返信本文のみ。前置きや説明は書かない
+# こちらが用意したメモ／要点
+${memo || "（なし）"}
 
-文章スタイル:
-- 適度に柔らかいトーン（堅すぎず、馴れ馴れしくもない）
-- 「ありがとうございます」「お手数ですが」などの気遣いを自然に
-- 文末は単調にせず「〜です。」「〜ます。」「〜ですね。」を使い分ける
-
-読みやすさ:
-- 2〜3文ごとに必ず空行を入れる
-- 1段落 = 2〜4文程度
-- 冒頭挨拶 → 本題 → 締め挨拶 を空行で区切る
-
-LINE特有の配慮:
-- メールよりやや短く、改行多め
-- 絵文字は過去のやり取りで使われていれば適度に使用、なければ使わない
-`;
-
-    const userPrompt = `# 過去のやり取り（古い順、本人の文体学習用）
-${context || "（過去のやり取りなし）"}
-
-# 今回の受信メッセージ
-${incoming}
+# 患者様との過去のやり取り
+${context || "（なし）"}
 
 ---
-本人の文体を再現した返信下書きを作成してください。`;
+上記をもとに、ルール・テンプレート・口調を厳守して返信下書きを作成してください。
+メモがある場合はその内容を返信の核として、適切なテンプレートに整形してください。
+出力は返信本文のみ。`;
 
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -205,7 +547,7 @@ ${incoming}
       body: JSON.stringify({
         model: "claude-sonnet-4-5",
         max_tokens: 1500,
-        system: systemPrompt,
+        system: LEARNED_SYSTEM_PROMPT,
         messages: [{ role: "user", content: userPrompt }],
       }),
     });
@@ -219,7 +561,7 @@ ${incoming}
   }
 
   // ============================================================
-  // コピー / 入力欄に挿入 / クリア
+  // コピー / 挿入 / クリア
   // ============================================================
   panel.querySelector(".stella-btn-copy").addEventListener("click", () => {
     if (!outputArea.value) return;
@@ -238,33 +580,15 @@ ${incoming}
   });
 
   panel.querySelector(".stella-btn-clear").addEventListener("click", () => {
-    contextArea.value = "";
     incomingArea.value = "";
+    memoArea.value = "";
+    contextArea.value = "";
     outputArea.value = "";
     setStatus("");
   });
 
   function insertIntoMessageBox(text) {
-    // LINE Manager の入力欄を探す
-    const candidates = [
-      'textarea[placeholder*="メッセージ"]',
-      'textarea[placeholder*="入力"]',
-      'div[contenteditable="true"]',
-      "textarea",
-    ];
-    let input = null;
-    for (const sel of candidates) {
-      const els = document.querySelectorAll(sel);
-      for (const el of els) {
-        if (el === contextArea || el === incomingArea || el === outputArea) continue;
-        if (el.offsetParent !== null) {
-          input = el;
-          break;
-        }
-      }
-      if (input) break;
-    }
-
+    const input = findMessageBox();
     if (!input) return false;
 
     if (input.tagName === "TEXTAREA" || input.tagName === "INPUT") {
@@ -282,10 +606,6 @@ ${incoming}
     return true;
   }
 
-  // ============================================================
-  // ステータス表示
-  // ============================================================
-  const statusEl = panel.querySelector(".stella-status");
   function setStatus(msg, type) {
     statusEl.textContent = msg;
     statusEl.className = "stella-status " + (type || "");

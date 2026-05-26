@@ -1,13 +1,58 @@
+/* ========================================
+   FAB（右下の常時表示ボタン）
+   ======================================== */
+#stella-reply-fab {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 999999;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #06c755 0%, #00b900 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 999px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+#stella-reply-fab:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+}
+
+#stella-reply-fab:active {
+  transform: translateY(0);
+}
+
+#stella-reply-fab .stella-fab-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+#stella-reply-fab .stella-fab-text {
+  line-height: 1;
+}
+
+/* ========================================
+   パネル（クリックで展開）
+   ======================================== */
 #stella-reply-panel {
   position: fixed;
-  top: 80px;
-  right: 16px;
+  bottom: 20px;
+  right: 20px;
   width: 360px;
-  max-height: calc(100vh - 100px);
+  max-height: calc(100vh - 60px);
   background: #ffffff;
   border: 1px solid #d1d5db;
   border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
   z-index: 999999;
   font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", sans-serif;
   font-size: 13px;
@@ -26,10 +71,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  cursor: move;
 }
 
-#stella-reply-panel .stella-toggle {
+#stella-reply-panel .stella-close {
   background: rgba(255, 255, 255, 0.2);
   border: none;
   color: white;
@@ -38,18 +82,34 @@
   border-radius: 4px;
   cursor: pointer;
   font-weight: bold;
+  font-size: 16px;
+  line-height: 1;
+  padding: 0;
 }
 
-#stella-reply-panel .stella-toggle:hover {
-  background: rgba(255, 255, 255, 0.3);
+#stella-reply-panel .stella-close:hover {
+  background: rgba(255, 255, 255, 0.35);
 }
 
 #stella-reply-panel .stella-body {
   padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   overflow-y: auto;
+}
+
+#stella-reply-panel .stella-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #374151;
+  margin-top: 4px;
+}
+
+#stella-reply-panel .stella-hint {
+  font-weight: normal;
+  color: #9ca3af;
+  font-size: 10px;
 }
 
 #stella-reply-panel textarea {
@@ -65,13 +125,31 @@
   background: #ffffff;
 }
 
-#stella-reply-panel .stella-context {
-  min-height: 100px;
-  background: #f9fafb;
-}
-
 #stella-reply-panel .stella-incoming {
   min-height: 60px;
+}
+
+#stella-reply-panel .stella-memo {
+  min-height: 50px;
+  background: #fffbeb;
+  border-color: #fcd34d;
+}
+
+#stella-reply-panel .stella-context-wrap {
+  margin: 4px 0;
+}
+
+#stella-reply-panel .stella-context-wrap summary {
+  font-size: 11px;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+#stella-reply-panel .stella-context {
+  min-height: 70px;
+  margin-top: 6px;
+  background: #f9fafb;
 }
 
 #stella-reply-panel .stella-output {
@@ -90,21 +168,12 @@
   font-family: inherit;
 }
 
-#stella-reply-panel .stella-btn-capture {
-  background: #e0f2fe;
-  color: #0369a1;
-  border: 1px solid #7dd3fc;
-}
-
-#stella-reply-panel .stella-btn-capture:hover {
-  background: #bae6fd;
-}
-
 #stella-reply-panel .stella-btn-generate {
   background: linear-gradient(135deg, #06c755 0%, #00b900 100%);
   color: white;
   font-size: 14px;
   padding: 10px;
+  margin-top: 4px;
 }
 
 #stella-reply-panel .stella-btn-generate:hover {
@@ -128,13 +197,19 @@
   border: 1px solid #d1d5db;
 }
 
+#stella-reply-panel .stella-btn-insert {
+  background: #dcfce7 !important;
+  color: #065f46 !important;
+  border-color: #86efac !important;
+}
+
 #stella-reply-panel .stella-actions button:hover {
-  background: #e5e7eb;
+  opacity: 0.85;
 }
 
 #stella-reply-panel .stella-status {
-  min-height: 18px;
-  font-size: 12px;
+  min-height: 16px;
+  font-size: 11px;
   padding: 2px 4px;
 }
 
