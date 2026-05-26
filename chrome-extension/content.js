@@ -290,4 +290,158 @@ ${incoming}
     statusEl.textContent = msg;
     statusEl.className = "stella-status " + (type || "");
   }
+
+  // ============================================================
+  // 返信漏れバッジ（画面右上に常時表示）
+  // ============================================================
+  injectUnrepliedBadge();
+
+  function injectUnrepliedBadge() {
+    const BADGE_ID = "stella-unreplied-badge";
+    if (document.getElementById(BADGE_ID)) return;
+
+    const wrap = document.createElement("div");
+    wrap.id = BADGE_ID;
+    wrap.innerHTML = `
+      <button class="stella-unreplied-btn" title="返信漏れトーク一覧">
+        <span class="stella-unreplied-icon">📩</span>
+        <span class="stella-unreplied-label">返信漏れ</span>
+        <span class="stella-unreplied-count">-</span>
+      </button>
+      <div class="stella-unreplied-panel" style="display:none">
+        <div class="stella-unreplied-header">
+          <span>📩 返信漏れトーク</span>
+          <div>
+            <button class="stella-unreplied-refresh" title="再取得">🔄</button>
+            <button class="stella-unreplied-close" title="閉じる">✕</button>
+          </div>
+        </div>
+        <div class="stella-unreplied-body"></div>
+      </div>
+    `;
+    document.body.appendChild(wrap);
+
+    const openBtn = wrap.querySelector(".stella-unreplied-btn");
+    const dropdown = wrap.querySelector(".stella-unreplied-panel");
+    const body = wrap.querySelector(".stella-unreplied-body");
+    const countEl = wrap.querySelector(".stella-unreplied-count");
+
+    openBtn.addEventListener("click", () => {
+      const willOpen = dropdown.style.display === "none";
+      dropdown.style.display = willOpen ? "flex" : "none";
+      if (willOpen) renderList();
+    });
+    wrap.querySelector(".stella-unreplied-close").addEventListener("click", () => {
+      dropdown.style.display = "none";
+    });
+    wrap.querySelector(".stella-unreplied-refresh").addEventListener("click", renderList);
+
+    function renderList() {
+      const items = findUnrepliedTalks();
+      countEl.textContent = items.length;
+      body.innerHTML = "";
+      if (items.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "stella-unreplied-empty";
+        empty.textContent = "返信漏れはありません 🎉";
+        body.appendChild(empty);
+        return;
+      }
+      for (const item of items) {
+        const row = document.createElement("div");
+        row.className = "stella-unreplied-item";
+        const name = document.createElement("div");
+        name.className = "stella-unreplied-name";
+        name.textContent = item.name;
+        const preview = document.createElement("div");
+        preview.className = "stella-unreplied-preview";
+        preview.textContent = item.preview;
+        const badge = document.createElement("span");
+        badge.className = "stella-unreplied-itembadge";
+        badge.textContent = item.unread;
+        name.appendChild(badge);
+        row.appendChild(name);
+        row.appendChild(preview);
+        row.addEventListener("click", () => {
+          try {
+            item.el.click();
+          } catch (_) {}
+          dropdown.style.display = "none";
+        });
+        body.appendChild(row);
+      }
+    }
+
+    function updateCountOnly() {
+      const items = findUnrepliedTalks();
+      countEl.textContent = items.length;
+    }
+
+    // 初回・定期更新（パネル開いてる間はrenderListが既に動く）
+    setTimeout(updateCountOnly, 1500);
+    setInterval(() => {
+      if (dropdown.style.display === "flex") {
+        renderList();
+      } else {
+        updateCountOnly();
+      }
+    }, 15000);
+  }
+
+  function findUnrepliedTalks() {
+    // LINE Manager / chat.line.biz のトーク一覧から「未読件数バッジ」を持つ行を探す。
+    // UIが変わっても壊れにくいよう、複数のセレクタ候補＋数字バッジ検出のヒューリスティック。
+    const rowCandidates = new Set();
+    const rowSelectors = [
+      '[class*="ChatList"] li',
+      '[class*="TalkList"] li',
+      '[class*="chatList"] li',
+      '[class*="talkList"] li',
+      '[class*="ChatRoom"]',
+      '[class*="chatRoom"]',
+      '[role="listitem"]',
+      'li[class*="item"]',
+      'a[href*="/chat/"]',
+    ];
+    for (const sel of rowSelectors) {
+      document.querySelectorAll(sel).forEach((el) => rowCandidates.add(el));
+    }
+
+    const results = [];
+    const seenText = new Set();
+    for (const el of rowCandidates) {
+      // 表示されている要素のみ
+      if (!el.offsetParent && el.tagName !== "A") continue;
+
+      // バッジ的要素を探す（class名にbadge/unreadを含む、または短い数字テキスト）
+      let unread = 0;
+      const badgeCandidates = el.querySelectorAll(
+        '[class*="badge"],[class*="Badge"],[class*="unread"],[class*="Unread"],[class*="count"],[class*="Count"]'
+      );
+      for (const b of badgeCandidates) {
+        const t = (b.textContent || "").trim();
+        if (/^\d{1,3}$/.test(t)) {
+          unread = parseInt(t, 10);
+          break;
+        }
+      }
+      if (unread === 0) continue;
+
+      const text = (el.innerText || "").trim();
+      if (!text) continue;
+      // 重複排除（同じ行が複数セレクタで拾われる）
+      const key = text.slice(0, 80);
+      if (seenText.has(key)) continue;
+      seenText.add(key);
+
+      const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
+      // 数字だけの行（バッジ自身）は除外
+      const filtered = lines.filter((l) => !/^\d{1,3}$/.test(l));
+      const name = filtered[0] || "(名前不明)";
+      const preview = (filtered.slice(1, 3).join(" / ") || "").slice(0, 80);
+
+      results.push({ el, name, preview, unread });
+    }
+    return results;
+  }
 })();

@@ -149,3 +149,142 @@
 #stella-reply-panel .stella-status.info {
   color: #2563eb;
 }
+
+/* ============================================================
+   返信漏れバッジ（右上常時表示）
+   ============================================================ */
+#stella-unreplied-badge {
+  position: fixed;
+  top: 12px;
+  right: 16px;
+  z-index: 1000000;
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", sans-serif;
+}
+
+#stella-unreplied-badge .stella-unreplied-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.35);
+}
+
+#stella-unreplied-badge .stella-unreplied-btn:hover {
+  filter: brightness(1.05);
+}
+
+#stella-unreplied-badge .stella-unreplied-count {
+  background: rgba(255, 255, 255, 0.95);
+  color: #dc2626;
+  border-radius: 999px;
+  padding: 0 8px;
+  min-width: 20px;
+  text-align: center;
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 800;
+}
+
+#stella-unreplied-badge .stella-unreplied-panel {
+  position: absolute;
+  top: 40px;
+  right: 0;
+  width: 320px;
+  max-height: 60vh;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: #1f2937;
+}
+
+#stella-unreplied-badge .stella-unreplied-header {
+  background: #fef2f2;
+  color: #991b1b;
+  padding: 8px 12px;
+  font-weight: 700;
+  font-size: 13px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #fecaca;
+}
+
+#stella-unreplied-badge .stella-unreplied-header button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 6px;
+  margin-left: 2px;
+  color: #991b1b;
+}
+
+#stella-unreplied-badge .stella-unreplied-header button:hover {
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 4px;
+}
+
+#stella-unreplied-badge .stella-unreplied-body {
+  overflow-y: auto;
+  padding: 4px;
+}
+
+#stella-unreplied-badge .stella-unreplied-empty {
+  padding: 20px;
+  text-align: center;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+#stella-unreplied-badge .stella-unreplied-item {
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+#stella-unreplied-badge .stella-unreplied-item:hover {
+  background: #fef2f2;
+}
+
+#stella-unreplied-badge .stella-unreplied-name {
+  font-weight: 700;
+  font-size: 13px;
+  color: #1f2937;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+#stella-unreplied-badge .stella-unreplied-itembadge {
+  background: #dc2626;
+  color: #ffffff;
+  border-radius: 999px;
+  padding: 0 7px;
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 700;
+  min-width: 18px;
+  text-align: center;
+}
+
+#stella-unreplied-badge .stella-unreplied-preview {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
