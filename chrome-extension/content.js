@@ -6,8 +6,7 @@
 
 (function () {
   const FAB_ID = "stella-reply-fab";
-  const PANEL_ID = "stella-reply-panel";
-  if (document.getElementById(FAB_ID) || document.getElementById(PANEL_ID)) return;
+  if (document.getElementById(FAB_ID)) return;
 
   // ============================================================
   // 学習済み system prompt（博多ステラ歯科・矯正歯科 LINE返信ルール）
@@ -338,79 +337,84 @@ https://docs.google.com/forms/d/...
   document.body.appendChild(fab);
 
   // ============================================================
-  // パネル（クリックで展開）
+  // トースト通知（右下にふわっと出る短いメッセージ）
   // ============================================================
-  const panel = document.createElement("div");
-  panel.id = PANEL_ID;
-  panel.style.display = "none";
-  panel.innerHTML = `
-    <div class="stella-header">
-      <span>✨ AI返信下書き</span>
-      <button class="stella-close" title="閉じる" type="button">×</button>
-    </div>
-    <div class="stella-body">
-      <label class="stella-label">受信メッセージ <span class="stella-hint">（自動取得・編集可）</span></label>
-      <textarea class="stella-incoming" placeholder="患者様からの最新メッセージ"></textarea>
-
-      <label class="stella-label">メモ／要点 <span class="stella-hint">（返信欄から自動取得）</span></label>
-      <textarea class="stella-memo" placeholder="例：次回 ６・１１ １０時半／キャンセル承る／明日14時空きあり など"></textarea>
-
-      <details class="stella-context-wrap">
-        <summary>過去のやり取りを追加（任意）</summary>
-        <textarea class="stella-context" placeholder="この患者様との過去のやり取り（古い順）。通常は不要。"></textarea>
-      </details>
-
-      <button class="stella-btn-generate" type="button">✨ 返信を考える</button>
-      <div class="stella-status"></div>
-      <textarea class="stella-output" placeholder="生成された下書きがここに表示されます" readonly></textarea>
-      <div class="stella-actions">
-        <button class="stella-btn-copy" type="button">📋 コピー</button>
-        <button class="stella-btn-clear" type="button">🗑 クリア</button>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(panel);
-
-  const incomingArea = panel.querySelector(".stella-incoming");
-  const memoArea = panel.querySelector(".stella-memo");
-  const contextArea = panel.querySelector(".stella-context");
-  const outputArea = panel.querySelector(".stella-output");
-  const generateBtn = panel.querySelector(".stella-btn-generate");
-  const statusEl = panel.querySelector(".stella-status");
-
-  // ============================================================
-  // FAB / パネル 開閉
-  // ============================================================
-  fab.addEventListener("click", () => {
-    panel.style.display = "flex";
-    fab.style.display = "none";
-    autoCapture();
-  });
-
-  panel.querySelector(".stella-close").addEventListener("click", () => {
-    panel.style.display = "none";
-    fab.style.display = "flex";
-  });
-
-  // ============================================================
-  // 自動取得（受信メッセージ / メモ）
-  // ============================================================
-  function autoCapture() {
-    const incoming = captureLatestIncoming();
-    if (incoming && !incomingArea.value.trim()) {
-      incomingArea.value = incoming;
-    }
-    const memo = readMessageBoxContent();
-    if (memo && !memoArea.value.trim()) {
-      memoArea.value = memo;
-    }
-    if (incoming || memo) {
-      setStatus("受信メッセージ／メモを自動取得しました", "ok");
-    } else {
-      setStatus("自動取得できませんでした。手動で入力してください", "info");
+  function showToast(msg, type) {
+    const existing = document.getElementById("stella-toast");
+    if (existing) existing.remove();
+    const toast = document.createElement("div");
+    toast.id = "stella-toast";
+    toast.className = "stella-toast " + (type || "");
+    toast.textContent = msg;
+    document.body.appendChild(toast);
+    if (type !== "info") {
+      setTimeout(() => {
+        toast.classList.add("stella-toast-fade");
+        setTimeout(() => toast.remove(), 400);
+      }, 3500);
     }
   }
 
+  function setFabBusy(busy) {
+    if (busy) {
+      fab.disabled = true;
+      fab.classList.add("stella-fab-busy");
+      fab.querySelector(".stella-fab-icon").textContent = "⏳";
+      fab.querySelector(".stella-fab-text").textContent = "生成中…";
+    } else {
+      fab.disabled = false;
+      fab.classList.remove("stella-fab-busy");
+      fab.querySelector(".stella-fab-icon").textContent = "✨";
+      fab.querySelector(".stella-fab-text").textContent = "返信";
+    }
+  }
+
+  // ============================================================
+  // FAB クリック = 1クリックで全自動
+  //   ① LINE会話から受信メッセージを読む
+  //   ② LINE返信欄に書かれたメモを読む
+  //   ③ 学習内容で返信生成
+  //   ④ LINE返信欄に書き戻す
+  // ============================================================
+  fab.addEventListener("click", async () => {
+    if (fab.disabled) return;
+
+    const apiKey = await getApiKey();
+    if (!apiKey) {
+      showToast("APIキー未設定。拡張機能アイコンから設定してください", "error");
+      return;
+    }
+
+    const incoming = captureLatestIncoming();
+    const memo = readMessageBoxContent();
+
+    if (!incoming && !memo) {
+      showToast("会話もメモも見つかりません。LINE画面で患者様の会話を開いてください", "error");
+      return;
+    }
+
+    setFabBusy(true);
+    showToast("生成中…", "info");
+
+    try {
+      const draft = await callClaude(apiKey, "", incoming, memo);
+      const inserted = insertIntoMessageBox(draft);
+      if (inserted) {
+        showToast("✅ 返信欄に入力しました。内容を確認して送信してください", "ok");
+      } else {
+        await navigator.clipboard.writeText(draft);
+        showToast("📋 入力欄が見つからずクリップボードにコピーしました", "ok");
+      }
+    } catch (err) {
+      showToast("エラー: " + err.message, "error");
+    } finally {
+      setFabBusy(false);
+    }
+  });
+
+  // ============================================================
+  // 受信メッセージ / メモ 取得
+  // ============================================================
   function captureLatestIncoming() {
     const candidates = [
       '[data-testid="chat-list"]',
@@ -472,7 +476,6 @@ https://docs.google.com/forms/d/...
     for (const sel of candidates) {
       const els = document.querySelectorAll(sel);
       for (const el of els) {
-        if (el.closest("#" + PANEL_ID)) continue;
         if (el.offsetParent === null) continue;
         return el;
       }
@@ -483,40 +486,6 @@ https://docs.google.com/forms/d/...
   // ============================================================
   // Claude API 呼び出し
   // ============================================================
-  generateBtn.addEventListener("click", async () => {
-    const apiKey = await getApiKey();
-    if (!apiKey) {
-      setStatus("APIキー未設定。拡張機能アイコンから設定してください。", "error");
-      return;
-    }
-    const incoming = incomingArea.value.trim();
-    const memo = memoArea.value.trim();
-    if (!incoming && !memo) {
-      setStatus("受信メッセージかメモのどちらかを入力してください。", "error");
-      return;
-    }
-    const context = contextArea.value.trim();
-
-    setStatus("生成中...", "info");
-    generateBtn.disabled = true;
-    outputArea.value = "";
-
-    try {
-      const draft = await callClaude(apiKey, context, incoming, memo);
-      outputArea.value = draft;
-      const inserted = insertIntoMessageBox(draft);
-      if (inserted) {
-        setStatus("✅ LINEの返信欄に直接入力しました！内容を確認して送信してください", "ok");
-      } else {
-        setStatus("⚠ LINEの入力欄が見つからず挿入できませんでした。下のコピーボタンをご利用ください", "error");
-      }
-    } catch (err) {
-      setStatus("エラー: " + err.message, "error");
-    } finally {
-      generateBtn.disabled = false;
-    }
-  });
-
   async function getApiKey() {
     return new Promise((resolve) => {
       chrome.storage.sync.get(["anthropicApiKey"], (data) => {
@@ -565,22 +534,8 @@ ${context || "（なし）"}
   }
 
   // ============================================================
-  // コピー / 挿入 / クリア
+  // LINE返信欄へ書き込み
   // ============================================================
-  panel.querySelector(".stella-btn-copy").addEventListener("click", () => {
-    if (!outputArea.value) return;
-    navigator.clipboard.writeText(outputArea.value);
-    setStatus("クリップボードにコピーしました", "ok");
-  });
-
-  panel.querySelector(".stella-btn-clear").addEventListener("click", () => {
-    incomingArea.value = "";
-    memoArea.value = "";
-    contextArea.value = "";
-    outputArea.value = "";
-    setStatus("");
-  });
-
   function insertIntoMessageBox(text) {
     const input = findMessageBox();
     if (!input) return false;
@@ -598,10 +553,5 @@ ${context || "（なし）"}
       input.dispatchEvent(new Event("input", { bubbles: true }));
     }
     return true;
-  }
-
-  function setStatus(msg, type) {
-    statusEl.textContent = msg;
-    statusEl.className = "stella-status " + (type || "");
   }
 })();

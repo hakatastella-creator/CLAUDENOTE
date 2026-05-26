@@ -5,7 +5,7 @@
   position: fixed;
   bottom: 20px;
   right: 20px;
-  z-index: 999999;
+  z-index: 2147483647;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -19,16 +19,21 @@
   font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", sans-serif;
   font-size: 13px;
   font-weight: 600;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
 }
 
-#stella-reply-fab:hover {
+#stella-reply-fab:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
 }
 
-#stella-reply-fab:active {
+#stella-reply-fab:active:not(:disabled) {
   transform: translateY(0);
+}
+
+#stella-reply-fab.stella-fab-busy {
+  opacity: 0.8;
+  cursor: wait;
 }
 
 #stella-reply-fab .stella-fab-icon {
@@ -41,186 +46,58 @@
 }
 
 /* ========================================
-   パネル（クリックで展開）
+   トースト通知（右下、FABの上に表示）
    ======================================== */
-#stella-reply-panel {
+.stella-toast {
   position: fixed;
-  bottom: 20px;
+  bottom: 70px;
   right: 20px;
-  width: 360px;
-  max-height: calc(100vh - 60px);
-  background: #ffffff;
-  border: 1px solid #d1d5db;
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
-  z-index: 999999;
+  z-index: 2147483647;
+  max-width: 320px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
   font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", sans-serif;
   font-size: 13px;
-  color: #1f2937;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-#stella-reply-panel .stella-header {
-  background: linear-gradient(135deg, #06c755 0%, #00b900 100%);
-  color: white;
-  padding: 10px 14px;
-  font-weight: bold;
-  font-size: 14px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-#stella-reply-panel .stella-close {
-  background: rgba(255, 255, 255, 0.2);
-  border: none;
-  color: white;
-  width: 24px;
-  height: 24px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: bold;
-  font-size: 16px;
-  line-height: 1;
-  padding: 0;
-}
-
-#stella-reply-panel .stella-close:hover {
-  background: rgba(255, 255, 255, 0.35);
-}
-
-#stella-reply-panel .stella-body {
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  overflow-y: auto;
-}
-
-#stella-reply-panel .stella-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: #374151;
-  margin-top: 4px;
-}
-
-#stella-reply-panel .stella-hint {
-  font-weight: normal;
-  color: #9ca3af;
-  font-size: 10px;
-}
-
-#stella-reply-panel textarea {
-  width: 100%;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  padding: 8px;
-  font-size: 12px;
-  font-family: inherit;
-  resize: vertical;
-  box-sizing: border-box;
+  font-weight: 500;
+  line-height: 1.4;
   color: #1f2937;
   background: #ffffff;
+  border-left: 4px solid #9ca3af;
+  animation: stella-toast-in 0.25s ease-out;
 }
 
-#stella-reply-panel .stella-incoming {
-  min-height: 60px;
+.stella-toast.ok {
+  border-left-color: #10b981;
+  background: #ecfdf5;
+  color: #065f46;
 }
 
-#stella-reply-panel .stella-memo {
-  min-height: 50px;
-  background: #fffbeb;
-  border-color: #fcd34d;
+.stella-toast.error {
+  border-left-color: #ef4444;
+  background: #fef2f2;
+  color: #991b1b;
 }
 
-#stella-reply-panel .stella-context-wrap {
-  margin: 4px 0;
+.stella-toast.info {
+  border-left-color: #3b82f6;
+  background: #eff6ff;
+  color: #1e3a8a;
 }
 
-#stella-reply-panel .stella-context-wrap summary {
-  font-size: 11px;
-  color: #6b7280;
-  cursor: pointer;
-  padding: 4px 0;
+.stella-toast.stella-toast-fade {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
 }
 
-#stella-reply-panel .stella-context {
-  min-height: 70px;
-  margin-top: 6px;
-  background: #f9fafb;
-}
-
-#stella-reply-panel .stella-output {
-  min-height: 140px;
-  background: #f0fdf4;
-  border-color: #86efac;
-}
-
-#stella-reply-panel button {
-  padding: 8px 12px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 600;
-  font-family: inherit;
-}
-
-#stella-reply-panel .stella-btn-generate {
-  background: linear-gradient(135deg, #06c755 0%, #00b900 100%);
-  color: white;
-  font-size: 14px;
-  padding: 10px;
-  margin-top: 4px;
-}
-
-#stella-reply-panel .stella-btn-generate:hover {
-  opacity: 0.9;
-}
-
-#stella-reply-panel .stella-btn-generate:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-#stella-reply-panel .stella-actions {
-  display: flex;
-  gap: 6px;
-}
-
-#stella-reply-panel .stella-actions button {
-  flex: 1;
-  background: #f3f4f6;
-  color: #1f2937;
-  border: 1px solid #d1d5db;
-}
-
-#stella-reply-panel .stella-btn-insert {
-  background: #dcfce7 !important;
-  color: #065f46 !important;
-  border-color: #86efac !important;
-}
-
-#stella-reply-panel .stella-actions button:hover {
-  opacity: 0.85;
-}
-
-#stella-reply-panel .stella-status {
-  min-height: 16px;
-  font-size: 11px;
-  padding: 2px 4px;
-}
-
-#stella-reply-panel .stella-status.ok {
-  color: #059669;
-}
-
-#stella-reply-panel .stella-status.error {
-  color: #dc2626;
-}
-
-#stella-reply-panel .stella-status.info {
-  color: #2563eb;
+@keyframes stella-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
