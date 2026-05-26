@@ -231,49 +231,107 @@
     });
   }
 
+  /**
+   * ユーザーに1件目のチャットをクリックしてもらい、
+   * クリックされた要素から「チャット一覧」コンテナを推定する。
+   */
+  async function pickChatItem() {
+    return new Promise((resolve) => {
+      document.body.style.cursor = "crosshair";
+      const overlay = document.createElement("div");
+      overlay.id = "stella-pick-overlay";
+      overlay.textContent = "📍 チャット一覧から1件目のチャットをクリックしてください（Escでキャンセル）";
+      document.body.appendChild(overlay);
+
+      const cleanup = () => {
+        document.body.style.cursor = "";
+        overlay.remove();
+        document.removeEventListener("click", onClick, true);
+        document.removeEventListener("keydown", onKey, true);
+      };
+      const onClick = (e) => {
+        if (e.target.closest(`#${PANEL_ID}`)) return;
+        if (e.target.id === "stella-pick-overlay") return;
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        cleanup();
+        resolve(e.target);
+      };
+      const onKey = (e) => {
+        if (e.key === "Escape") {
+          cleanup();
+          resolve(null);
+        }
+      };
+      document.addEventListener("click", onClick, true);
+      document.addEventListener("keydown", onKey, true);
+    });
+  }
+
+  /**
+   * クリックされた子孫要素から親を辿って「兄弟が似た高さで並ぶリスト」を探す
+   */
+  function inferChatListFromClick(clicked) {
+    let el = clicked;
+    while (el && el.parentElement && el !== document.body) {
+      const parent = el.parentElement;
+      const siblings = Array.from(parent.children);
+      if (siblings.length >= 3) {
+        const heights = siblings
+          .map((s) => s.getBoundingClientRect().height)
+          .filter((h) => h > 0);
+        if (heights.length >= 3) {
+          const sorted = [...heights].sort((a, b) => a - b);
+          const median = sorted[Math.floor(sorted.length / 2)];
+          const similar = heights.filter((h) => Math.abs(h - median) < 14).length;
+          if (similar >= 3 && median >= 30 && median <= 260) {
+            return { chatList: parent, chatItem: el };
+          }
+        }
+      }
+      el = parent;
+    }
+    return { chatList: null, chatItem: null };
+  }
+
   async function bulkLearn() {
     if (bulkRunning) return setStatus("すでに一括学習中です。", "error");
-    const chatList = findChatList();
-    if (!chatList) {
-      return setStatus("チャット一覧が見つかりませんでした。手動学習をご利用ください。", "error");
+
+    setStatus("📍 チャット一覧から1件目のチャットをクリックしてください…", "info");
+    panel.querySelector(".stella-btn-bulk").disabled = true;
+
+    const clicked = await pickChatItem();
+    if (!clicked) {
+      setStatus("キャンセルしました", "info");
+      panel.querySelector(".stella-btn-bulk").disabled = false;
+      return;
     }
+
+    const { chatList, chatItem } = inferChatListFromClick(clicked);
+    if (!chatList || !chatItem) {
+      setStatus("チャット一覧の構造を検出できませんでした。別の場所をクリックしてみてください。", "error");
+      panel.querySelector(".stella-btn-bulk").disabled = false;
+      return;
+    }
+
     bulkRunning = true;
     bulkCancel = false;
     panel.querySelector(".stella-bulk-progress").style.display = "flex";
-    panel.querySelector(".stella-btn-bulk").disabled = true;
 
     try {
-      let items = getChatItems(chatList);
-      if (items.length === 0) {
-        setStatus("チャット項目が見つかりませんでした。", "error");
-        return;
-      }
-      setBulkProgress(`${items.length}件のチャットを発見。学習開始…`);
+      // 1件目: クリックされたチャットを開く
+      chatItem.scrollIntoView({ block: "center" });
+      chatItem.click();
+      await sleep(BULK_WAIT_MS);
 
       let totalMessages = 0;
       let chatProcessed = 0;
       let scrollAttempts = 0;
       const visited = new WeakSet();
+      visited.add(chatItem);
 
-      while (totalMessages < BULK_TARGET && !bulkCancel) {
-        // 未訪問アイテムを取得
-        items = getChatItems(chatList);
-        const next = items.find((el) => !visited.has(el));
-        if (!next) {
-          // スクロールして追加を読み込む
-          if (scrollAttempts >= 5) break;
-          chatList.scrollTop = chatList.scrollHeight;
-          await sleep(1200);
-          scrollAttempts++;
-          continue;
-        }
-        scrollAttempts = 0;
-        visited.add(next);
-
-        next.scrollIntoView({ block: "center" });
-        next.click();
-        await sleep(BULK_WAIT_MS);
-
+      const tryCapture = async () => {
         const result = captureConversation();
         if (!result.error && result.history && result.history.length > 30) {
           await addSample(result.history);
@@ -284,6 +342,29 @@
         setBulkProgress(
           `学習中: ${chatProcessed}チャット / ${totalMessages}メッセージ (目標 ${BULK_TARGET})`
         );
+      };
+
+      await tryCapture();
+
+      while (totalMessages < BULK_TARGET && !bulkCancel) {
+        const items = Array.from(chatList.children).filter((el) => {
+          const r = el.getBoundingClientRect();
+          return r.height >= 30 && r.height <= 260 && r.width > 80;
+        });
+        const next = items.find((el) => !visited.has(el));
+        if (!next) {
+          if (scrollAttempts >= 5) break;
+          chatList.scrollTop = chatList.scrollHeight;
+          await sleep(1200);
+          scrollAttempts++;
+          continue;
+        }
+        scrollAttempts = 0;
+        visited.add(next);
+        next.scrollIntoView({ block: "center" });
+        next.click();
+        await sleep(BULK_WAIT_MS);
+        await tryCapture();
       }
 
       if (bulkCancel) {

@@ -275,6 +275,32 @@
   pointer-events: none;
 }
 
+/* =====================================================
+   ピックモードのオーバーレイ案内
+   ===================================================== */
+#stella-pick-overlay {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #4f46e5;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 999px;
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", sans-serif;
+  font-size: 14px;
+  font-weight: bold;
+  box-shadow: 0 8px 24px rgba(79, 70, 229, 0.4);
+  z-index: 9999999;
+  pointer-events: none;
+  animation: stella-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes stella-pulse {
+  0%, 100% { transform: translateX(-50%) scale(1); }
+  50% { transform: translateX(-50%) scale(1.04); }
+}
+
 @keyframes stella-spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
