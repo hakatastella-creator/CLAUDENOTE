@@ -364,7 +364,6 @@ https://docs.google.com/forms/d/...
       <div class="stella-status"></div>
       <textarea class="stella-output" placeholder="生成された下書きがここに表示されます" readonly></textarea>
       <div class="stella-actions">
-        <button class="stella-btn-insert" type="button">▶ 入力欄に挿入</button>
         <button class="stella-btn-copy" type="button">📋 コピー</button>
         <button class="stella-btn-clear" type="button">🗑 クリア</button>
       </div>
@@ -505,7 +504,12 @@ https://docs.google.com/forms/d/...
     try {
       const draft = await callClaude(apiKey, context, incoming, memo);
       outputArea.value = draft;
-      setStatus("下書き完成！内容を確認して挿入してください", "ok");
+      const inserted = insertIntoMessageBox(draft);
+      if (inserted) {
+        setStatus("✅ LINEの返信欄に直接入力しました！内容を確認して送信してください", "ok");
+      } else {
+        setStatus("⚠ LINEの入力欄が見つからず挿入できませんでした。下のコピーボタンをご利用ください", "error");
+      }
     } catch (err) {
       setStatus("エラー: " + err.message, "error");
     } finally {
@@ -567,16 +571,6 @@ ${context || "（なし）"}
     if (!outputArea.value) return;
     navigator.clipboard.writeText(outputArea.value);
     setStatus("クリップボードにコピーしました", "ok");
-  });
-
-  panel.querySelector(".stella-btn-insert").addEventListener("click", () => {
-    if (!outputArea.value) return;
-    const ok = insertIntoMessageBox(outputArea.value);
-    if (ok) {
-      setStatus("入力欄に挿入しました", "ok");
-    } else {
-      setStatus("入力欄が見つかりません。コピーしてください。", "error");
-    }
   });
 
   panel.querySelector(".stella-btn-clear").addEventListener("click", () => {
