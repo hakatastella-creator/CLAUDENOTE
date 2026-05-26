@@ -13,9 +13,10 @@
   const INLINE_BTN_ID = "stella-inline-btn";
   const STORAGE_SAMPLES_KEY = "stellaStyleSamples";
   const MAX_SAMPLES_IN_PROMPT = 5;
-  const MAX_STORED_SAMPLES = 80;
-  const BULK_TARGET = 1000;
-  const BULK_WAIT_MS = 1800;
+  const MAX_STORED_SAMPLES = 1000;
+  const SAMPLE_MAX_CHARS = 2000;
+  const BULK_TARGET_CHATS = 1000;
+  const BULK_WAIT_MS = 1500;
 
   if (document.getElementById(PANEL_ID)) return;
 
@@ -36,7 +37,7 @@
     </div>
     <div class="stella-body">
       <div class="stella-actions-top">
-        <button class="stella-btn-bulk">🚀 一括学習 (最大1000件)</button>
+        <button class="stella-btn-bulk">🚀 一括学習 (最大1000人)</button>
         <button class="stella-btn-learn" title="今開いているチャットだけを学習">📚 この会話を学習</button>
       </div>
       <div class="stella-bulk-progress" style="display:none;">
@@ -175,7 +176,7 @@
   }
   async function addSample(historyText) {
     const samples = await loadSamples();
-    samples.push({ at: Date.now(), text: historyText.slice(0, 4000) });
+    samples.push({ at: Date.now(), text: historyText.slice(0, SAMPLE_MAX_CHARS) });
     while (samples.length > MAX_STORED_SAMPLES) samples.shift();
     await saveSamples(samples);
   }
@@ -364,6 +365,9 @@
   async function bulkLearn() {
     if (bulkRunning) return setStatus("すでに一括学習中です。", "error");
 
+    // 進捗バーを確実に隠す（前回の残り表示対策）
+    panel.querySelector(".stella-bulk-progress").style.display = "none";
+
     setStatus("📍 チャット一覧から1件目のチャットをクリックしてください…", "info");
     panel.querySelector(".stella-btn-bulk").disabled = true;
 
@@ -384,14 +388,13 @@
       return;
     }
 
-    // 検出結果を表示してユーザーに確認させる
     const itemCount = chatList.children.length;
     console.log("[stella] starting bulk learn with", { chatList, chatItem, itemCount });
-    setBulkProgress(`${itemCount}件のチャットを検出。1件目から学習開始…`);
 
     bulkRunning = true;
     bulkCancel = false;
     panel.querySelector(".stella-bulk-progress").style.display = "flex";
+    setBulkProgress(`${itemCount}件のチャットを検出。1人目から学習開始…`);
 
     try {
       // 1件目: クリックされたチャットを開く
@@ -414,20 +417,20 @@
           await refreshSampleCount();
         }
         setBulkProgress(
-          `学習中: ${chatProcessed}チャット / ${totalMessages}メッセージ (目標 ${BULK_TARGET})`
+          `学習中: ${chatProcessed}人 / ${totalMessages}メッセージ (目標 ${BULK_TARGET_CHATS}人)`
         );
       };
 
       await tryCapture();
 
-      while (totalMessages < BULK_TARGET && !bulkCancel) {
+      while (chatProcessed < BULK_TARGET_CHATS && !bulkCancel) {
         const items = Array.from(chatList.children).filter((el) => {
           const r = el.getBoundingClientRect();
           return r.height >= 30 && r.height <= 260 && r.width > 80;
         });
         const next = items.find((el) => !visited.has(el));
         if (!next) {
-          if (scrollAttempts >= 5) break;
+          if (scrollAttempts >= 8) break;
           chatList.scrollTop = chatList.scrollHeight;
           await sleep(1200);
           scrollAttempts++;
@@ -442,9 +445,11 @@
       }
 
       if (bulkCancel) {
-        setStatus(`中止しました（${chatProcessed}チャット、${totalMessages}メッセージ学習済み）`, "info");
+        setStatus(`中止しました（${chatProcessed}人、${totalMessages}メッセージ学習済み）`, "info");
+      } else if (chatProcessed >= BULK_TARGET_CHATS) {
+        setStatus(`✅ 完了: ${chatProcessed}人分のチャット（合計${totalMessages}メッセージ）を学習しました`, "ok");
       } else {
-        setStatus(`✅ 完了: ${chatProcessed}チャットから${totalMessages}件のメッセージを学習しました`, "ok");
+        setStatus(`✅ 一覧の最後まで到達: ${chatProcessed}人分（合計${totalMessages}メッセージ）を学習しました`, "ok");
       }
     } finally {
       bulkRunning = false;
