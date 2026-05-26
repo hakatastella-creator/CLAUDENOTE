@@ -5,6 +5,15 @@
 
 (function () {
   const PANEL_ID = "stella-reply-panel";
+
+  // バッジは AI パネルとは独立に最優先で注入する（パネルが既にあっても出す）
+  ensureUnrepliedBadge();
+  // SPA 遷移などで消えた場合も復活させる
+  const reinjectObserver = new MutationObserver(() => {
+    ensureUnrepliedBadge();
+  });
+  reinjectObserver.observe(document.documentElement, { childList: true, subtree: true });
+
   if (document.getElementById(PANEL_ID)) return;
 
   // ============================================================
@@ -293,11 +302,12 @@ ${incoming}
 
   // ============================================================
   // 返信漏れバッジ（画面右上に常時表示）
+  // ※ ファイル冒頭で先に注入済み。ここでは関数定義のみ。
   // ============================================================
-  injectUnrepliedBadge();
 
-  function injectUnrepliedBadge() {
+  function ensureUnrepliedBadge() {
     const BADGE_ID = "stella-unreplied-badge";
+    if (!document.body) return;
     if (document.getElementById(BADGE_ID)) return;
 
     const wrap = document.createElement("div");

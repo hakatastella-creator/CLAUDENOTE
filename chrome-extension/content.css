@@ -154,11 +154,12 @@
    返信漏れバッジ（右上常時表示）
    ============================================================ */
 #stella-unreplied-badge {
-  position: fixed;
-  top: 12px;
-  right: 16px;
-  z-index: 1000000;
+  position: fixed !important;
+  top: 14px !important;
+  right: 16px !important;
+  z-index: 2147483647 !important;
   font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", sans-serif;
+  pointer-events: auto;
 }
 
 #stella-unreplied-badge .stella-unreplied-btn {
