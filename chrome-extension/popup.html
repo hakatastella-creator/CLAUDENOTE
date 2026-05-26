@@ -6,7 +6,7 @@
     <style>
       body {
         font-family: -apple-system, "Hiragino Sans", sans-serif;
-        width: 320px;
+        width: 340px;
         margin: 0;
         padding: 16px;
         font-size: 13px;
@@ -16,6 +16,11 @@
         font-size: 14px;
         margin: 0 0 12px 0;
         color: #06c755;
+      }
+      h2 {
+        font-size: 13px;
+        margin: 16px 0 8px 0;
+        color: #1f2937;
       }
       label {
         display: block;
@@ -36,6 +41,7 @@
         color: #6b7280;
         font-size: 11px;
         margin-top: 4px;
+        line-height: 1.5;
       }
       button {
         margin-top: 12px;
@@ -48,6 +54,16 @@
         font-weight: bold;
         cursor: pointer;
         font-size: 13px;
+      }
+      button.secondary {
+        background: #f3f4f6;
+        color: #1f2937;
+        border: 1px solid #d1d5db;
+      }
+      button.danger {
+        background: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
       }
       button:hover {
         opacity: 0.9;
@@ -71,7 +87,18 @@
       .usage {
         color: #6b7280;
         font-size: 11px;
-        line-height: 1.5;
+        line-height: 1.6;
+      }
+      .sample-box {
+        background: #fef3c7;
+        border: 1px solid #fcd34d;
+        border-radius: 6px;
+        padding: 10px;
+        font-size: 12px;
+        color: #92400e;
+      }
+      .sample-box b {
+        font-size: 14px;
       }
     </style>
   </head>
@@ -94,12 +121,25 @@
     <div class="status" id="status"></div>
 
     <hr />
+
+    <h2>📚 文体学習サンプル</h2>
+    <div class="sample-box">
+      現在 <b><span id="sampleCount">0</span></b> 件 蓄積中
+    </div>
+    <div class="hint">
+      LINE画面右上のパネルで「📚 この会話を学習」を押すと、その会話を本人の文体サンプルとして蓄積します。<br />
+      <b>5〜10件</b> 蓄積すると、生成される下書きが本人の文体に近づきます。
+    </div>
+    <button id="clearSamplesBtn" class="danger">学習サンプルを全て削除</button>
+
+    <hr />
     <div class="usage">
       <b>使い方</b><br />
-      1. LINE Official Account Manager または chat.line.biz を開く<br />
-      2. 画面右上のパネルで「📋 画面から会話を読み取る」<br />
-      3. 「✨ 下書きを生成」<br />
-      4. 「▶ 入力欄に挿入」または「📋 コピー」
+      1. LINE Official Account Manager / chat.line.biz を開く<br />
+      2. 入力欄の右上に出る <b>✨</b> ボタンで即生成<br />
+      　 または、画面右上のパネルから手動で操作<br />
+      3. 文体を学ばせたい会話を開いて「📚 この会話を学習」をクリック<br />
+      4. 「▶ 入力欄に挿入」または「📋 コピー」で送信
     </div>
 
     <script src="popup.js"></script>

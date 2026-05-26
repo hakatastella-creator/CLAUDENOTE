@@ -1,3 +1,6 @@
+/* =====================================================
+   サイドパネル
+   ===================================================== */
 #stella-reply-panel {
   position: fixed;
   top: 80px;
@@ -26,7 +29,16 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 8px;
   cursor: move;
+}
+
+#stella-reply-panel .stella-sample-count {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
 }
 
 #stella-reply-panel .stella-toggle {
@@ -90,6 +102,15 @@
   font-family: inherit;
 }
 
+#stella-reply-panel .stella-actions-top {
+  display: flex;
+  gap: 6px;
+}
+
+#stella-reply-panel .stella-actions-top button {
+  flex: 1;
+}
+
 #stella-reply-panel .stella-btn-capture {
   background: #e0f2fe;
   color: #0369a1;
@@ -98,6 +119,16 @@
 
 #stella-reply-panel .stella-btn-capture:hover {
   background: #bae6fd;
+}
+
+#stella-reply-panel .stella-btn-learn {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+}
+
+#stella-reply-panel .stella-btn-learn:hover {
+  background: #fde68a;
 }
 
 #stella-reply-panel .stella-btn-generate {
@@ -148,4 +179,35 @@
 
 #stella-reply-panel .stella-status.info {
   color: #2563eb;
+}
+
+/* =====================================================
+   インラインボタン（入力欄の右上に常時表示）
+   ===================================================== */
+#stella-inline-btn {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #06c755 0%, #00b900 100%);
+  color: white;
+  border: 2px solid white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999998;
+  padding: 0;
+  font-family: inherit;
+  transition: transform 0.15s ease;
+}
+
+#stella-inline-btn:hover {
+  transform: scale(1.1);
+}
+
+#stella-inline-btn:active {
+  transform: scale(0.95);
 }
