@@ -1,18 +1,27 @@
 /**
- * LINE Official Account Manager / chat.line.biz 上に
- *  ・常時表示のサイドパネル（学習・下書き生成）
- *  ・入力欄の横に出る「✨」インラインボタン
- * を注入する。
+ * LINE Official Account Manager / chat.line.biz 拡張:
+ *  ・入力欄の隣に常時表示される「✨」ボタン
+ *    → 返信欄に書いたメモを本人の文体で清書し、返信欄を置き換える
+ *  ・サイドパネル:
+ *    🚀 一括学習 (チャット一覧を自動巡回して最大1000件学習)
+ *    📚 この会話を学習 (1件ずつ手動)
+ *    ✏️ 手動下書き生成（メモを直接書いて生成）
  */
 
 (function () {
   const PANEL_ID = "stella-reply-panel";
   const INLINE_BTN_ID = "stella-inline-btn";
-  const STORAGE_SAMPLES_KEY = "stellaStyleSamples"; // 学習済みサンプル
+  const STORAGE_SAMPLES_KEY = "stellaStyleSamples";
   const MAX_SAMPLES_IN_PROMPT = 5;
-  const MAX_STORED_SAMPLES = 30;
+  const MAX_STORED_SAMPLES = 80;
+  const BULK_TARGET = 1000;
+  const BULK_WAIT_MS = 1800;
 
   if (document.getElementById(PANEL_ID)) return;
+
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  let bulkRunning = false;
+  let bulkCancel = false;
 
   // ============================================================
   // サイドパネル UI
@@ -27,24 +36,38 @@
     </div>
     <div class="stella-body">
       <div class="stella-actions-top">
-        <button class="stella-btn-capture">📋 会話を読み取る</button>
-        <button class="stella-btn-learn" title="この会話を文体学習サンプルとして保存">📚 この会話を学習</button>
+        <button class="stella-btn-bulk">🚀 一括学習 (最大1000件)</button>
+        <button class="stella-btn-learn" title="今開いているチャットだけを学習">📚 この会話を学習</button>
       </div>
-      <textarea class="stella-context" placeholder="過去のやり取り（古い順）。&#10;[相手] / [本人] で区切られた形式で貼り付け、または上のボタンで自動取得"></textarea>
-      <textarea class="stella-incoming" placeholder="返信したい受信メッセージ"></textarea>
-      <button class="stella-btn-generate">✨ 下書きを生成</button>
+      <div class="stella-bulk-progress" style="display:none;">
+        <div class="stella-bulk-text">準備中…</div>
+        <button class="stella-btn-bulk-cancel">🛑 中止</button>
+      </div>
+      <hr/>
+      <div class="stella-hint">
+        💡 通常の使い方:<br/>
+        LINEの返信欄にメモ（例:「6・11 10時半」）を書いて、入力欄右上の <b>✨</b> を押すと、本人の文体で清書して返信欄を置き換えます。
+      </div>
+      <details class="stella-manual">
+        <summary>✏️ 手動でメモから生成する</summary>
+        <div class="stella-manual-body">
+          <button class="stella-btn-capture">📋 現在の会話を読み取る</button>
+          <textarea class="stella-context" placeholder="会話履歴（自動取得・必要なら編集）"></textarea>
+          <textarea class="stella-memo" placeholder="返信メモ（例: 6・11 10時半 / キャンセル可 / 変更可いつでも）"></textarea>
+          <button class="stella-btn-generate">✨ 下書きを生成</button>
+          <textarea class="stella-output" placeholder="生成結果がここに" readonly></textarea>
+          <div class="stella-actions">
+            <button class="stella-btn-copy">📋 コピー</button>
+            <button class="stella-btn-insert">▶ 返信欄に挿入</button>
+            <button class="stella-btn-clear">🗑 クリア</button>
+          </div>
+        </div>
+      </details>
       <div class="stella-status"></div>
-      <textarea class="stella-output" placeholder="生成された下書きがここに表示されます" readonly></textarea>
-      <div class="stella-actions">
-        <button class="stella-btn-copy">📋 コピー</button>
-        <button class="stella-btn-insert">▶ 入力欄に挿入</button>
-        <button class="stella-btn-clear">🗑 クリア</button>
-      </div>
     </div>
   `;
   document.body.appendChild(panel);
 
-  // 折りたたみ
   const toggleBtn = panel.querySelector(".stella-toggle");
   const body = panel.querySelector(".stella-body");
   toggleBtn.addEventListener("click", () => {
@@ -53,10 +76,17 @@
     toggleBtn.textContent = hidden ? "＿" : "▢";
   });
 
-  // ============================================================
-  // 学習サンプル数の表示
-  // ============================================================
   const sampleCountEl = panel.querySelector(".stella-sample-count");
+  const statusEl = panel.querySelector(".stella-status");
+
+  function setStatus(msg, type) {
+    statusEl.textContent = msg;
+    statusEl.className = "stella-status " + (type || "");
+  }
+  function setBulkProgress(msg) {
+    panel.querySelector(".stella-bulk-text").textContent = msg;
+  }
+
   async function refreshSampleCount() {
     const samples = await loadSamples();
     sampleCountEl.textContent = `📚 ${samples.length}`;
@@ -64,62 +94,8 @@
   refreshSampleCount();
 
   // ============================================================
-  // 会話読み取り（DOM ヒューリスティック）
+  // 会話読み取り
   // ============================================================
-  const captureBtn = panel.querySelector(".stella-btn-capture");
-  const learnBtn = panel.querySelector(".stella-btn-learn");
-  const contextArea = panel.querySelector(".stella-context");
-  const incomingArea = panel.querySelector(".stella-incoming");
-
-  captureBtn.addEventListener("click", () => {
-    const result = captureConversation();
-    if (result.error) return setStatus(result.error, "error");
-    contextArea.value = result.history;
-    incomingArea.value = result.latestIncoming;
-    setStatus(`${result.count} 件のメッセージを読み取りました`, "ok");
-  });
-
-  learnBtn.addEventListener("click", async () => {
-    const result = captureConversation();
-    if (result.error) return setStatus(result.error, "error");
-    if (!result.history || result.history.length < 30) {
-      return setStatus("会話が短すぎます。もう少しスクロールしてから再度お試しください。", "error");
-    }
-    await addSample(result.history);
-    await refreshSampleCount();
-    setStatus(`学習サンプルに追加しました（合計 ${(await loadSamples()).length} 件）`, "ok");
-  });
-
-  /**
-   * 現在のチャットから会話を取得。
-   * 各メッセージが「本人」「相手」どちらかを推測してタグ付けする。
-   */
-  function captureConversation() {
-    const container = findChatContainer();
-    if (!container) {
-      return { error: "会話エリアが見つかりませんでした。手動で貼り付けてください。" };
-    }
-
-    const messages = extractMessages(container);
-    if (messages.length === 0) {
-      // フォールバック: 改行で分割
-      const text = container.innerText.trim();
-      const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
-      const history = lines.join("\n");
-      return { history, latestIncoming: lines.slice(-3).join("\n"), count: lines.length };
-    }
-
-    const history = messages
-      .map((m) => `[${m.from === "self" ? "本人" : "相手"}] ${m.text}`)
-      .join("\n");
-
-    // 最後の「相手」メッセージを受信メッセージ候補に
-    const lastIncoming = [...messages].reverse().find((m) => m.from === "other");
-    const latestIncoming = lastIncoming ? lastIncoming.text : "";
-
-    return { history, latestIncoming, count: messages.length };
-  }
-
   function findChatContainer() {
     const candidates = [
       '[data-testid="chat-list"]',
@@ -132,7 +108,6 @@
       const el = document.querySelector(sel);
       if (el && el.innerText && el.innerText.length > 50) return el;
     }
-    // フォールバック: 一番大きいスクロール可能エリア
     let best = null, bestLen = 0;
     for (const el of document.querySelectorAll("div")) {
       const style = getComputedStyle(el);
@@ -145,45 +120,46 @@
     return best;
   }
 
-  /**
-   * チャットコンテナ内のメッセージ要素を列挙し、自分(self)/相手(other) を推定。
-   * LINE Manager は通常、自分の発言が右寄せ、相手が左寄せ。
-   */
   function extractMessages(container) {
     const rect = container.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
-
-    // メッセージらしき要素を候補化:
-    // 「テキストを持つ」「子のテキストノードが短すぎない」要素のうち、
-    // 同一階層に複数並んでいるものをメッセージ行とみなす。
-    const all = container.querySelectorAll("li, [class*='message'], [class*='Message'], [class*='bubble'], [class*='Bubble']");
+    const all = container.querySelectorAll(
+      "li, [class*='message'], [class*='Message'], [class*='bubble'], [class*='Bubble']"
+    );
     const messages = [];
     const seen = new Set();
-
     for (const el of all) {
       const text = (el.innerText || "").trim();
       if (!text || text.length < 1 || text.length > 2000) continue;
-      // 親要素ですでに拾っていればスキップ
       if (seen.has(text)) continue;
-
       const r = el.getBoundingClientRect();
       if (r.width === 0 || r.height === 0) continue;
-
-      // 右寄せか左寄せか: 要素の中心が container の中央より右なら自分
       const elCenter = r.left + r.width / 2;
       const from = elCenter > centerX ? "self" : "other";
-
       messages.push({ text, from, top: r.top });
       seen.add(text);
     }
-
-    // 上→下順
     messages.sort((a, b) => a.top - b.top);
     return messages.map(({ text, from }) => ({ text, from }));
   }
 
+  function captureConversation() {
+    const container = findChatContainer();
+    if (!container) return { error: "会話エリアが見つかりませんでした。" };
+    const messages = extractMessages(container);
+    if (messages.length === 0) {
+      const text = container.innerText.trim();
+      const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
+      return { history: lines.join("\n"), count: lines.length };
+    }
+    const history = messages
+      .map((m) => `[${m.from === "self" ? "本人" : "相手"}] ${m.text}`)
+      .join("\n");
+    return { history, count: messages.length };
+  }
+
   // ============================================================
-  // 学習サンプルの永続化
+  // 学習サンプル永続化
   // ============================================================
   async function loadSamples() {
     return new Promise((resolve) => {
@@ -192,13 +168,11 @@
       });
     });
   }
-
   async function saveSamples(samples) {
     return new Promise((resolve) => {
       chrome.storage.local.set({ [STORAGE_SAMPLES_KEY]: samples }, resolve);
     });
   }
-
   async function addSample(historyText) {
     const samples = await loadSamples();
     samples.push({ at: Date.now(), text: historyText.slice(0, 4000) });
@@ -207,53 +181,195 @@
   }
 
   // ============================================================
-  // Claude API 呼び出し
+  // 一括学習 (チャット一覧を自動巡回)
   // ============================================================
-  const generateBtn = panel.querySelector(".stella-btn-generate");
-  const outputArea = panel.querySelector(".stella-output");
-
-  generateBtn.addEventListener("click", () => runGenerate({ fromInline: false }));
-
-  async function runGenerate({ fromInline }) {
-    const apiKey = await getApiKey();
-    if (!apiKey) {
-      setStatus("APIキー未設定。拡張機能アイコンから設定してください。", "error");
-      return;
+  function findChatList() {
+    const direct = [
+      '[data-testid="chat-list"]',
+      '[class*="ChatList"]',
+      '[class*="chatList"]',
+      '[role="list"]',
+    ];
+    for (const sel of direct) {
+      const el = document.querySelector(sel);
+      if (el && el.children && el.children.length >= 3) return el;
     }
-
-    // インラインボタンから呼ばれた場合は、その場で会話を再取得
-    if (fromInline) {
-      const result = captureConversation();
-      if (result.error) return setStatus(result.error, "error");
-      contextArea.value = result.history;
-      incomingArea.value = result.latestIncoming;
+    // ヒューリスティック: 左半分にあって、スクロール可能で、似た高さの行が多いコンテナ
+    const viewportCenter = window.innerWidth / 2;
+    let best = null, bestScore = 0;
+    for (const el of document.querySelectorAll("div, ul, ol")) {
+      const r = el.getBoundingClientRect();
+      if (r.left > viewportCenter) continue;
+      if (r.width < 150 || r.width > viewportCenter + 120) continue;
+      if (r.height < 200) continue;
+      const style = getComputedStyle(el);
+      if (style.overflowY !== "auto" && style.overflowY !== "scroll") continue;
+      const children = Array.from(el.children);
+      if (children.length < 5) continue;
+      const heights = children.map((c) => c.getBoundingClientRect().height);
+      heights.sort((a, b) => a - b);
+      const median = heights[Math.floor(heights.length / 2)];
+      if (median < 40 || median > 140) continue;
+      const similar = heights.filter((h) => Math.abs(h - median) < 12).length;
+      if (similar > bestScore) {
+        bestScore = similar;
+        best = el;
+      }
     }
+    return best;
+  }
 
-    const incoming = incomingArea.value.trim();
-    if (!incoming) return setStatus("受信メッセージを入力してください。", "error");
-    const context = contextArea.value.trim();
+  function getChatItems(chatList) {
+    let items = Array.from(chatList.children);
+    // ラッパーが1段挟まっているケースに対応
+    if (items.length < 5 && items[0] && items[0].children && items[0].children.length >= 5) {
+      items = Array.from(items[0].children);
+    }
+    return items.filter((el) => {
+      const r = el.getBoundingClientRect();
+      return r.height >= 30 && r.height <= 160 && r.width > 100;
+    });
+  }
 
-    setStatus("生成中...", "info");
-    generateBtn.disabled = true;
-    outputArea.value = "";
+  async function bulkLearn() {
+    if (bulkRunning) return setStatus("すでに一括学習中です。", "error");
+    const chatList = findChatList();
+    if (!chatList) {
+      return setStatus("チャット一覧が見つかりませんでした。手動学習をご利用ください。", "error");
+    }
+    bulkRunning = true;
+    bulkCancel = false;
+    panel.querySelector(".stella-bulk-progress").style.display = "flex";
+    panel.querySelector(".stella-btn-bulk").disabled = true;
 
     try {
-      const samples = await loadSamples();
-      const draft = await callClaude(apiKey, context, incoming, samples);
-      outputArea.value = draft;
-      setStatus("下書き完成！", "ok");
-      // 自動でパネルを展開
-      if (body.style.display === "none") {
-        body.style.display = "flex";
-        toggleBtn.textContent = "＿";
+      let items = getChatItems(chatList);
+      if (items.length === 0) {
+        setStatus("チャット項目が見つかりませんでした。", "error");
+        return;
       }
-    } catch (err) {
-      setStatus("エラー: " + err.message, "error");
+      setBulkProgress(`${items.length}件のチャットを発見。学習開始…`);
+
+      let totalMessages = 0;
+      let chatProcessed = 0;
+      let scrollAttempts = 0;
+      const visited = new WeakSet();
+
+      while (totalMessages < BULK_TARGET && !bulkCancel) {
+        // 未訪問アイテムを取得
+        items = getChatItems(chatList);
+        const next = items.find((el) => !visited.has(el));
+        if (!next) {
+          // スクロールして追加を読み込む
+          if (scrollAttempts >= 5) break;
+          chatList.scrollTop = chatList.scrollHeight;
+          await sleep(1200);
+          scrollAttempts++;
+          continue;
+        }
+        scrollAttempts = 0;
+        visited.add(next);
+
+        next.scrollIntoView({ block: "center" });
+        next.click();
+        await sleep(BULK_WAIT_MS);
+
+        const result = captureConversation();
+        if (!result.error && result.history && result.history.length > 30) {
+          await addSample(result.history);
+          totalMessages += result.count || 0;
+          chatProcessed++;
+          await refreshSampleCount();
+        }
+        setBulkProgress(
+          `学習中: ${chatProcessed}チャット / ${totalMessages}メッセージ (目標 ${BULK_TARGET})`
+        );
+      }
+
+      if (bulkCancel) {
+        setStatus(`中止しました（${chatProcessed}チャット、${totalMessages}メッセージ学習済み）`, "info");
+      } else {
+        setStatus(`✅ 完了: ${chatProcessed}チャットから${totalMessages}件のメッセージを学習しました`, "ok");
+      }
     } finally {
-      generateBtn.disabled = false;
+      bulkRunning = false;
+      panel.querySelector(".stella-bulk-progress").style.display = "none";
+      panel.querySelector(".stella-btn-bulk").disabled = false;
+      await refreshSampleCount();
     }
   }
 
+  panel.querySelector(".stella-btn-bulk").addEventListener("click", bulkLearn);
+  panel.querySelector(".stella-btn-bulk-cancel").addEventListener("click", () => {
+    bulkCancel = true;
+    setBulkProgress("中止しています…");
+  });
+
+  // ============================================================
+  // 単発学習
+  // ============================================================
+  panel.querySelector(".stella-btn-learn").addEventListener("click", async () => {
+    const result = captureConversation();
+    if (result.error) return setStatus(result.error, "error");
+    if (!result.history || result.history.length < 30) {
+      return setStatus("会話が短すぎます。", "error");
+    }
+    await addSample(result.history);
+    await refreshSampleCount();
+    setStatus(`学習サンプルに追加しました（合計 ${(await loadSamples()).length} 件）`, "ok");
+  });
+
+  // ============================================================
+  // 手動セクション (展開可能)
+  // ============================================================
+  const contextArea = panel.querySelector(".stella-context");
+  const memoArea = panel.querySelector(".stella-memo");
+  const outputArea = panel.querySelector(".stella-output");
+
+  panel.querySelector(".stella-btn-capture").addEventListener("click", () => {
+    const result = captureConversation();
+    if (result.error) return setStatus(result.error, "error");
+    contextArea.value = result.history;
+    setStatus(`${result.count} 件のメッセージを読み取りました`, "ok");
+  });
+
+  panel.querySelector(".stella-btn-generate").addEventListener("click", async () => {
+    const memo = memoArea.value.trim();
+    if (!memo) return setStatus("メモを入力してください", "error");
+    const context = contextArea.value.trim();
+    const apiKey = await getApiKey();
+    if (!apiKey) return setStatus("APIキー未設定", "error");
+    setStatus("生成中…", "info");
+    try {
+      const samples = await loadSamples();
+      const draft = await callClaude(apiKey, context, memo, samples);
+      outputArea.value = draft;
+      setStatus("下書き完成", "ok");
+    } catch (err) {
+      setStatus("エラー: " + err.message, "error");
+    }
+  });
+
+  panel.querySelector(".stella-btn-copy").addEventListener("click", () => {
+    if (!outputArea.value) return;
+    navigator.clipboard.writeText(outputArea.value);
+    setStatus("クリップボードにコピーしました", "ok");
+  });
+  panel.querySelector(".stella-btn-insert").addEventListener("click", () => {
+    if (!outputArea.value) return;
+    const ok = replaceInputContent(findMessageInput(), outputArea.value);
+    setStatus(ok ? "返信欄に挿入しました" : "入力欄が見つかりません", ok ? "ok" : "error");
+  });
+  panel.querySelector(".stella-btn-clear").addEventListener("click", () => {
+    contextArea.value = "";
+    memoArea.value = "";
+    outputArea.value = "";
+    setStatus("");
+  });
+
+  // ============================================================
+  // インラインボタン: 返信欄のメモを清書して置き換える
+  // ============================================================
   async function getApiKey() {
     return new Promise((resolve) => {
       chrome.storage.sync.get(["anthropicApiKey"], (data) => {
@@ -262,43 +378,145 @@
     });
   }
 
-  async function callClaude(apiKey, context, incoming, samples) {
-    const styleExamples = samples
-      .slice(-MAX_SAMPLES_IN_PROMPT)
+  function findMessageInput() {
+    const candidates = [
+      'textarea[placeholder*="メッセージ"]',
+      'textarea[placeholder*="入力"]',
+      'div[contenteditable="true"][role="textbox"]',
+      'div[contenteditable="true"]',
+      "textarea",
+    ];
+    for (const sel of candidates) {
+      const els = document.querySelectorAll(sel);
+      for (const el of els) {
+        if (el.closest(`#${PANEL_ID}`)) continue;
+        if (el.offsetParent === null) continue;
+        const r = el.getBoundingClientRect();
+        if (r.width < 80 || r.height < 20) continue;
+        return el;
+      }
+    }
+    return null;
+  }
+
+  function readInputContent(input) {
+    if (!input) return "";
+    if (input.tagName === "TEXTAREA" || input.tagName === "INPUT") return input.value || "";
+    return input.innerText || "";
+  }
+
+  function replaceInputContent(input, text) {
+    if (!input) return false;
+    if (input.tagName === "TEXTAREA" || input.tagName === "INPUT") {
+      const setter = Object.getOwnPropertyDescriptor(
+        window.HTMLTextAreaElement.prototype, "value"
+      ).set;
+      setter.call(input, text);
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    } else {
+      input.focus();
+      // contenteditable: 全選択 → 削除 → 挿入
+      const sel = window.getSelection();
+      const range = document.createRange();
+      range.selectNodeContents(input);
+      sel.removeAllRanges();
+      sel.addRange(range);
+      document.execCommand("insertText", false, text);
+      // フォールバック
+      if (input.innerText.trim() !== text.trim()) {
+        input.innerText = text;
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+    }
+    return true;
+  }
+
+  async function runInlineGenerate() {
+    const input = findMessageInput();
+    if (!input) return setStatus("入力欄が見つかりません", "error");
+
+    const memo = readInputContent(input).trim();
+    if (!memo) {
+      return setStatus(
+        "返信欄にメモ（例: 6・11 10時半 / キャンセル可）を書いてから ✨ を押してください",
+        "error"
+      );
+    }
+
+    const apiKey = await getApiKey();
+    if (!apiKey) return setStatus("APIキー未設定。拡張機能アイコンから設定してください。", "error");
+
+    const conv = captureConversation();
+    const context = conv.error ? "" : conv.history;
+
+    setStatus("✨ 生成中…", "info");
+    const btn = document.getElementById(INLINE_BTN_ID);
+    if (btn) btn.classList.add("loading");
+
+    try {
+      const samples = await loadSamples();
+      const draft = await callClaude(apiKey, context, memo, samples);
+      const ok = replaceInputContent(input, draft);
+      setStatus(ok ? "✅ 返信欄を清書しました" : "挿入に失敗。コピーをご利用ください", ok ? "ok" : "error");
+    } catch (err) {
+      setStatus("エラー: " + err.message, "error");
+    } finally {
+      if (btn) btn.classList.remove("loading");
+    }
+  }
+
+  // ============================================================
+  // Claude API
+  // ============================================================
+  async function callClaude(apiKey, conversationHistory, memo, samples) {
+    // 学習サンプルからランダムに最大N件
+    const picked = [];
+    const pool = samples.slice();
+    while (picked.length < MAX_SAMPLES_IN_PROMPT && pool.length) {
+      const i = Math.floor(Math.random() * pool.length);
+      picked.push(pool.splice(i, 1)[0]);
+    }
+    const styleExamples = picked
       .map((s, i) => `### サンプル${i + 1}\n${s.text}`)
       .join("\n\n");
 
-    const systemPrompt = `あなたはユーザー（博多ステラ歯科）の代わりにLINE返信下書きを作成するアシスタントです。
+    const systemPrompt = `あなたは博多ステラ歯科のスタッフの代わりに、LINEの返信文を清書するアシスタントです。
 
-絶対ルール:
-1. 過去のやり取り・学習サンプルから本人の文体・トーン・敬語レベル・語尾・絵文字や顔文字の使用傾向を学習し忠実に反映する
-2. 確定していない事実（日時・金額・約束）は絶対に作らない。必要なら「【要確認】」と明記
-3. 出力は返信本文のみ。前置きや説明・コードブロックは書かない
+# タスク
+スタッフが返信欄に書いた「メモ」を、本人の文体に沿った自然で丁寧なLINE返信文に展開する。
+メモは略記やキーワードだけのことが多い。前後の会話文脈と矛盾しないように展開する。
 
-文章スタイル:
+## 展開の例
+- 「6・11 10時半」→ 次回のご予約を6月11日10時半でお取りした旨を伝える文
+- 「キャンセル可」→ ご予約のキャンセルが可能である旨を丁寧に伝える文
+- 「変更可 いつでも」→ 予約変更が可能、希望日時を伺う文
+- 「予約取れない」→ お詫び＋代替案を伺う文
+- 「ありがとう」→ お礼の返信
+- 「了解」「OK」→ 了承した旨を丁寧に伝える文
+
+# 絶対ルール
+1. メモにある事実（日時・回答内容）は必ず正確に含める
+2. メモに無い事実（別日時・追加情報・約束）は絶対に作らない
+3. 学習サンプルから本人の文体・トーン・敬語レベル・語尾・絵文字や顔文字の使用傾向を学習し忠実に反映する
+4. 出力は返信本文のみ。前置きや説明・コードブロックは書かない
+
+# 文章スタイル
 - 適度に柔らかいトーン（堅すぎず、馴れ馴れしくもない）
-- 「ありがとうございます」「お手数ですが」などの気遣いを自然に
-- 文末は単調にせず「〜です。」「〜ます。」「〜ですね。」を使い分ける
+- 文末は「〜です。」「〜ます。」「〜ですね。」を使い分け
+- 2〜3文ごとに空行を入れる
+- LINEなのでメールより短く、改行多め
+- 絵文字は学習サンプルで使われていれば自然に、なければ使わない
 
-読みやすさ:
-- 2〜3文ごとに必ず空行を入れる
-- 1段落 = 2〜4文程度
-- 冒頭挨拶 → 本題 → 締め挨拶 を空行で区切る
+${styleExamples ? `# 本人の文体学習サンプル（[本人] の発言を中心に文体を真似る）\n\n${styleExamples}` : "（学習サンプルなし。一般的な丁寧な文体で書く。）"}`;
 
-LINE特有の配慮:
-- メールよりやや短く、改行多め
-- 絵文字は過去のやり取り/学習サンプルで使われていれば適度に使用、なければ使わない
+    const userPrompt = `# 直近の会話履歴（古い順）
+${conversationHistory || "（会話履歴を取得できませんでした）"}
 
-${styleExamples ? `# 本人の文体学習サンプル（過去の実際のやり取り。\`[本人]\` の発言を中心に文体を真似る）\n\n${styleExamples}` : ""}`;
-
-    const userPrompt = `# 直近のやり取り（古い順）
-${context || "（直近のやり取りなし）"}
-
-# 今回返信する受信メッセージ
-${incoming}
+# スタッフが返信欄に書いたメモ
+${memo}
 
 ---
-本人の文体を忠実に再現した返信下書きを作成してください。`;
+このメモを、上記の会話文脈に合うように本人の文体で自然な返信文に展開してください。`;
 
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -325,118 +543,42 @@ ${incoming}
   }
 
   // ============================================================
-  // コピー / 挿入 / クリア
-  // ============================================================
-  panel.querySelector(".stella-btn-copy").addEventListener("click", () => {
-    if (!outputArea.value) return;
-    navigator.clipboard.writeText(outputArea.value);
-    setStatus("クリップボードにコピーしました", "ok");
-  });
-
-  panel.querySelector(".stella-btn-insert").addEventListener("click", () => {
-    if (!outputArea.value) return;
-    const ok = insertIntoMessageBox(outputArea.value);
-    setStatus(ok ? "入力欄に挿入しました" : "入力欄が見つかりません。コピーしてください。", ok ? "ok" : "error");
-  });
-
-  panel.querySelector(".stella-btn-clear").addEventListener("click", () => {
-    contextArea.value = "";
-    incomingArea.value = "";
-    outputArea.value = "";
-    setStatus("");
-  });
-
-  function findMessageInput() {
-    const candidates = [
-      'textarea[placeholder*="メッセージ"]',
-      'textarea[placeholder*="入力"]',
-      'div[contenteditable="true"][role="textbox"]',
-      'div[contenteditable="true"]',
-      "textarea",
-    ];
-    for (const sel of candidates) {
-      const els = document.querySelectorAll(sel);
-      for (const el of els) {
-        if (el === contextArea || el === incomingArea || el === outputArea) continue;
-        if (el.closest(`#${PANEL_ID}`)) continue;
-        if (el.offsetParent === null) continue;
-        const r = el.getBoundingClientRect();
-        if (r.width < 80 || r.height < 20) continue;
-        return el;
-      }
-    }
-    return null;
-  }
-
-  function insertIntoMessageBox(text) {
-    const input = findMessageInput();
-    if (!input) return false;
-    if (input.tagName === "TEXTAREA" || input.tagName === "INPUT") {
-      const setter = Object.getOwnPropertyDescriptor(
-        window.HTMLTextAreaElement.prototype, "value"
-      ).set;
-      setter.call(input, text);
-      input.dispatchEvent(new Event("input", { bubbles: true }));
-    } else {
-      input.focus();
-      input.innerText = text;
-      input.dispatchEvent(new Event("input", { bubbles: true }));
-    }
-    return true;
-  }
-
-  // ============================================================
-  // ステータス表示
-  // ============================================================
-  const statusEl = panel.querySelector(".stella-status");
-  function setStatus(msg, type) {
-    statusEl.textContent = msg;
-    statusEl.className = "stella-status " + (type || "");
-  }
-
-  // ============================================================
-  // インラインボタン（入力欄の横に常時表示）
+  // インラインボタン配置
   // ============================================================
   function ensureInlineButton() {
     const input = findMessageInput();
     const existing = document.getElementById(INLINE_BTN_ID);
-
     if (!input) {
       if (existing) existing.style.display = "none";
       return;
     }
-
     let btn = existing;
     if (!btn) {
       btn = document.createElement("button");
       btn.id = INLINE_BTN_ID;
       btn.type = "button";
-      btn.title = "AIで返信下書きを生成（クリックでこの会話から自動取得）";
+      btn.title = "返信欄のメモを本人の文体で清書する";
       btn.innerHTML = "✨";
       btn.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        runGenerate({ fromInline: true });
+        runInlineGenerate();
       });
       document.body.appendChild(btn);
     }
-
-    // 入力欄の右上に絶対配置
     const r = input.getBoundingClientRect();
     btn.style.display = "flex";
     btn.style.top = `${window.scrollY + r.top - 8}px`;
     btn.style.left = `${window.scrollX + r.right - 40}px`;
   }
 
-  // 入力欄の出現や移動を監視
   const positionObserver = new MutationObserver(() => ensureInlineButton());
   positionObserver.observe(document.body, { childList: true, subtree: true });
   window.addEventListener("resize", ensureInlineButton);
   window.addEventListener("scroll", ensureInlineButton, true);
-  setInterval(ensureInlineButton, 1500); // SPA遷移用の保険
+  setInterval(ensureInlineButton, 1500);
   ensureInlineButton();
 
-  // 他タブからの学習サンプル変更を反映
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area === "local" && changes[STORAGE_SAMPLES_KEY]) refreshSampleCount();
   });
