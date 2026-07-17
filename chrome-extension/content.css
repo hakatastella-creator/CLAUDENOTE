@@ -90,6 +90,64 @@
   font-family: inherit;
 }
 
+#stella-reply-panel .stella-price-section {
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  border-radius: 8px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+#stella-reply-panel .stella-price-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #047857;
+}
+
+#stella-reply-panel .stella-price-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+#stella-reply-panel .stella-btn-price {
+  background: #ffffff;
+  color: #065f46;
+  border: 1px solid #34d399;
+  text-align: left;
+  padding: 8px 10px;
+}
+
+#stella-reply-panel .stella-btn-price:hover {
+  background: #d1fae5;
+}
+
+#stella-reply-panel .stella-price-status {
+  min-height: 16px;
+  font-size: 11px;
+  line-height: 1.4;
+  padding: 0 2px;
+}
+
+#stella-reply-panel .stella-price-status.ok {
+  color: #059669;
+}
+
+#stella-reply-panel .stella-price-status.error {
+  color: #dc2626;
+}
+
+#stella-reply-panel .stella-price-status.info {
+  color: #2563eb;
+}
+
+#stella-reply-panel .stella-divider {
+  border-top: 1px solid #e5e7eb;
+  margin: 2px 0;
+}
+
 #stella-reply-panel .stella-btn-capture {
   background: #e0f2fe;
   color: #0369a1;
