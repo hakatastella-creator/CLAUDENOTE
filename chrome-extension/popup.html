@@ -73,54 +73,6 @@
         font-size: 11px;
         line-height: 1.5;
       }
-      .price-row {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-bottom: 10px;
-      }
-      .price-row .plan-name {
-        flex: 1;
-        font-weight: 600;
-        font-size: 12px;
-      }
-      .price-row .plan-state {
-        font-size: 11px;
-        color: #6b7280;
-        white-space: nowrap;
-      }
-      .price-row .plan-state.set {
-        color: #059669;
-      }
-      .price-row .pick {
-        background: #f3f4f6;
-        color: #1f2937;
-        border: 1px solid #d1d5db;
-        width: auto;
-        margin: 0;
-        padding: 5px 8px;
-        font-size: 11px;
-      }
-      .price-row .clear {
-        background: #fef2f2;
-        color: #dc2626;
-        border: 1px solid #fecaca;
-        width: auto;
-        margin: 0;
-        padding: 5px 8px;
-        font-size: 11px;
-      }
-      .price-thumb {
-        max-width: 100%;
-        max-height: 70px;
-        border: 1px solid #e5e7eb;
-        border-radius: 4px;
-        margin-bottom: 10px;
-        display: none;
-      }
-      .price-thumb.show {
-        display: block;
-      }
     </style>
   </head>
   <body>
@@ -142,26 +94,12 @@
     <div class="status" id="status"></div>
 
     <hr />
-
-    <h1>📄 料金表画像の登録</h1>
-    <div class="hint" style="margin-bottom: 12px">
-      各プランの料金表画像（PNG / JPG）を登録すると、LINE画面のパネルの<br />
-      ボタン1つでコピーできます。画像はこのPC内にのみ保存されます。
-    </div>
-    <div id="priceList"></div>
-
-    <hr />
     <div class="usage">
-      <b>返信下書きの使い方</b><br />
+      <b>使い方</b><br />
       1. LINE Official Account Manager または chat.line.biz を開く<br />
       2. 画面右上のパネルで「📋 画面から会話を読み取る」<br />
       3. 「✨ 下書きを生成」<br />
-      4. 「▶ 入力欄に挿入」または「📋 コピー」<br /><br />
-      <b>料金表の送り方</b><br />
-      1. 上で各プランの料金表画像を登録<br />
-      2. LINE画面のパネルで「① インビザラインフル…」等を押す<br />
-      3. LINEの入力欄をクリックして <b>Ctrl+V</b>（貼り付け）<br />
-      4. 送信ボタンで送る
+      4. 「▶ 入力欄に挿入」または「📋 コピー」
     </div>
 
     <script src="popup.js"></script>

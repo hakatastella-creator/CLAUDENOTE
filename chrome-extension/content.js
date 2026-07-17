@@ -10,15 +10,6 @@
   // ============================================================
   // サイドパネル UI
   // ============================================================
-  // 料金表プラン定義（popup.js と同じ順序・キーで対応させること）
-  const PRICE_PLANS = [
-    { key: "priceImage_1", label: "① インビザラインフル（抜歯あり）" },
-    { key: "priceImage_2", label: "② インビザラインフル" },
-    { key: "priceImage_3", label: "③ インビザライン　モデレート" },
-    { key: "priceImage_4", label: "④ インビザライン　エクスプレス" },
-    { key: "priceImage_5", label: "⑤ インビザライン　ライト" },
-  ];
-
   const panel = document.createElement("div");
   panel.id = PANEL_ID;
   panel.innerHTML = `
@@ -27,17 +18,6 @@
       <button class="stella-toggle" title="折りたたみ">＿</button>
     </div>
     <div class="stella-body">
-      <div class="stella-price-section">
-        <div class="stella-price-title">📄 料金表を送る（押す→入力欄で Ctrl+V→送信）</div>
-        <div class="stella-price-buttons">
-          ${PRICE_PLANS.map(
-            (p) =>
-              `<button class="stella-btn-price" data-key="${p.key}">${p.label}</button>`
-          ).join("")}
-        </div>
-        <div class="stella-price-status"></div>
-      </div>
-      <div class="stella-divider"></div>
       <button class="stella-btn-capture">📋 画面から会話を読み取る</button>
       <textarea class="stella-context" placeholder="ここに過去のやり取り（古い順）。&#10;&#10;[相手] こんにちは&#10;[本人] お世話になっております&#10;&#10;...などを貼り付け、または上のボタンで自動取得"></textarea>
       <textarea class="stella-incoming" placeholder="返信したい受信メッセージ本文"></textarea>
@@ -138,88 +118,6 @@
       latestIncoming,
       count: lines.length,
     };
-  }
-
-  // ============================================================
-  // 料金表画像の送信（クリップボードにコピー → 入力欄で貼り付け）
-  // ============================================================
-  const priceStatusEl = panel.querySelector(".stella-price-status");
-
-  function setPriceStatus(msg, type) {
-    priceStatusEl.textContent = msg;
-    priceStatusEl.className = "stella-price-status " + (type || "");
-  }
-
-  panel.querySelectorAll(".stella-btn-price").forEach((btn) => {
-    btn.addEventListener("click", async () => {
-      const key = btn.dataset.key;
-      const label = btn.textContent.trim();
-
-      const dataUrl = await getStored(key);
-      if (!dataUrl) {
-        setPriceStatus(
-          `「${label}」の画像が未設定です。拡張機能アイコン → 設定 から登録してください。`,
-          "error"
-        );
-        return;
-      }
-
-      setPriceStatus(`「${label}」をコピー中...`, "info");
-      try {
-        const pngBlob = await toPngBlob(dataUrl);
-        await navigator.clipboard.write([
-          new ClipboardItem({ "image/png": pngBlob }),
-        ]);
-        setPriceStatus(
-          `「${label}」をコピーしました。入力欄をクリックして Ctrl+V → 送信してください。`,
-          "ok"
-        );
-      } catch (err) {
-        // クリップボード画像コピーが使えない場合は新規タブで開いて手動保存/添付
-        try {
-          window.open(dataUrl, "_blank");
-          setPriceStatus(
-            `自動コピーに対応していない環境のため、画像を別タブで開きました。保存して添付してください。（${err.message}）`,
-            "error"
-          );
-        } catch (e2) {
-          setPriceStatus("コピーに失敗しました: " + err.message, "error");
-        }
-      }
-    });
-  });
-
-  function getStored(key) {
-    return new Promise((resolve) => {
-      chrome.storage.local.get([key], (data) => resolve(data[key] || ""));
-    });
-  }
-
-  // data URL（JPEG/PNG）を、貼り付け互換性の高い PNG Blob に変換
-  function toPngBlob(dataUrl) {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.onload = () => {
-        try {
-          const canvas = document.createElement("canvas");
-          canvas.width = img.naturalWidth || img.width;
-          canvas.height = img.naturalHeight || img.height;
-          const ctx = canvas.getContext("2d");
-          // 透過画像でも白背景で潰す（料金表は白地想定）
-          ctx.fillStyle = "#ffffff";
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(img, 0, 0);
-          canvas.toBlob((blob) => {
-            if (blob) resolve(blob);
-            else reject(new Error("画像変換に失敗"));
-          }, "image/png");
-        } catch (e) {
-          reject(e);
-        }
-      };
-      img.onerror = () => reject(new Error("画像の読み込みに失敗"));
-      img.src = dataUrl;
-    });
   }
 
   // ============================================================
