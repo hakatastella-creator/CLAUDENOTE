@@ -278,15 +278,59 @@
   // ============================================================
   // Excel 出力
   // ============================================================
+  // 取り込んだ項目から先頭の数値を取り出す（"12件"→12, "11人"→11）
+  function firstInt(items, includes, excludes) {
+    for (const it of items || []) {
+      const n = it.name || "";
+      if (excludes && excludes.some((e) => n.includes(e))) continue;
+      if (includes.some((k) => n.includes(k))) {
+        const m = String(it.value).replace(/,/g, "").match(/-?\d+(?:\.\d+)?/);
+        if (m) return parseFloat(m[0]);
+      }
+    }
+    return null;
+  }
+
+  function pct(a, b) {
+    if (a == null || b == null || b === 0) return null;
+    return Math.round((a / b) * 1000) / 10 + "%";
+  }
+
+  // 件数から率・合計を自動計算（画面の率表示に頼らず算出する）
+  function computeMetrics(rec) {
+    const ev = (rec.event && rec.event.items) || [];
+    const cl = (rec.clinic && rec.clinic.items) || [];
+    const out = [];
+
+    const soudan = firstInt(ev, ["相談"]);
+    const kensa = firstInt(ev, ["検査"], ["再検査"]);
+    const keiyaku = firstInt(ev, ["契約"]);
+    if (soudan != null && kensa != null) {
+      const p = pct(kensa, soudan);
+      if (p) out.push({ name: "相談→検査率（検査÷相談）", value: p });
+    }
+    if (soudan != null && keiyaku != null) {
+      const p = pct(keiyaku, soudan);
+      if (p) out.push({ name: "矯正成約率（契約÷相談）", value: p });
+    }
+
+    const chiryo = firstInt(cl, ["治療中断"]);
+    const recall = firstInt(cl, ["リコール中断"]);
+    if (chiryo != null && recall != null) {
+      out.push({ name: "当月中断合計（治療＋リコール, 人）", value: chiryo + recall });
+    }
+    return out;
+  }
+
   function buildRows(month, rec) {
     const rows = [];
-    rows.push([{ v: `${CLINIC_NAME}　月次レポート　${monthLabel(month)}`, bold: true }]);
+    rows.push([{ v: `${CLINIC_NAME}　月次レポート（自動集計）　${monthLabel(month)}`, bold: true }]);
     rows.push([]);
 
     const order = [
-      ["clinic", "■ クリニックデータ（キャンセル・来院・自費/保険・定期検診 ほか）"],
-      ["reservation", "■ 全ての予約（予約総数・区分別・Web予約）"],
-      ["event", "■ イベント（メニュー別 月間件数）"],
+      ["event", "■ 診療ステップ件数（イベント：矯正の相談〜保定）"],
+      ["clinic", "■ リコール・予約・キャンセル（クリニックデータ）"],
+      ["reservation", "■ 予約区分（全ての予約）"],
     ];
 
     let any = false;
@@ -302,8 +346,18 @@
       rows.push([]);
     }
 
+    const computed = computeMetrics(rec);
+    if (computed.length) {
+      rows.push([{ v: "▶ 算出指標（件数から自動計算）", bold: true }]);
+      rows.push([{ v: "項目", bold: true }, { v: "値", bold: true }]);
+      for (const it of computed) {
+        rows.push([it.name, toNumberOrString(it.value)]);
+      }
+      rows.push([]);
+    }
+
     rows.push([]);
-    rows.push([{ v: "出典：アポツール（画面表示の集計値）。患者の個人情報は含みません。" }]);
+    rows.push([{ v: "出典：アポツール（画面表示の集計値）。売上金額・患者個人情報は含みません。" }]);
     rows.push([{ v: "作成日時：" + new Date().toLocaleString("ja-JP") }]);
     return { rows, any };
   }
