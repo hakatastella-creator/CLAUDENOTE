@@ -1,0 +1,220 @@
+/* アポツール 月次レポート出力パネル */
+#stella-monthly-panel {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  width: 340px;
+  max-height: 90vh;
+  overflow-y: auto;
+  z-index: 2147483647;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Kaku Gothic ProN",
+    "Yu Gothic", Meiryo, sans-serif;
+  font-size: 13px;
+  color: #1f2933;
+  background: #ffffff;
+  border: 1px solid #c7d0d9;
+  border-radius: 10px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+}
+
+#stella-monthly-panel .smp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: #1f8a5b;
+  color: #fff;
+  font-weight: 700;
+  border-radius: 10px 10px 0 0;
+  cursor: default;
+}
+#stella-monthly-panel .smp-toggle {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 15px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+#stella-monthly-panel .smp-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+}
+
+#stella-monthly-panel .smp-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+#stella-monthly-panel .smp-row label {
+  font-weight: 600;
+}
+#stella-monthly-panel input[type="month"] {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid #c7d0d9;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+#stella-monthly-panel .smp-screen-name {
+  font-size: 12px;
+  padding: 6px 8px;
+  background: #f2f7f4;
+  border-radius: 6px;
+}
+#stella-monthly-panel .smp-dim {
+  color: #7b8794;
+  font-size: 11px;
+}
+#stella-monthly-panel .smp-warn {
+  color: #b44a1e;
+}
+
+#stella-monthly-panel .smp-btn {
+  padding: 8px 10px;
+  border: none;
+  border-radius: 6px;
+  background: #1f8a5b;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+#stella-monthly-panel .smp-btn:hover {
+  background: #176c47;
+}
+#stella-monthly-panel .smp-clear {
+  background: #98a3ae;
+}
+#stella-monthly-panel .smp-clear:hover {
+  background: #7b8794;
+}
+#stella-monthly-panel .smp-export {
+  background: #b5761f;
+}
+#stella-monthly-panel .smp-export:hover {
+  background: #955f16;
+}
+
+#stella-monthly-panel .smp-actions-top,
+#stella-monthly-panel .smp-actions {
+  display: flex;
+  gap: 8px;
+}
+#stella-monthly-panel .smp-actions .smp-btn,
+#stella-monthly-panel .smp-actions-top .smp-btn {
+  flex: 1;
+}
+
+#stella-monthly-panel .smp-paste-wrap summary {
+  cursor: pointer;
+  font-size: 12px;
+  color: #176c47;
+  margin: 6px 0;
+}
+#stella-monthly-panel textarea.smp-paste {
+  width: 100%;
+  min-height: 80px;
+  box-sizing: border-box;
+  border: 1px solid #c7d0d9;
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 12px;
+  resize: vertical;
+  margin-bottom: 6px;
+}
+
+#stella-monthly-panel .smp-list-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 600;
+  color: #52606d;
+}
+#stella-monthly-panel .smp-btn-mini {
+  padding: 2px 8px;
+  border: 1px solid #c7d0d9;
+  border-radius: 6px;
+  background: #f5f7fa;
+  cursor: pointer;
+  font-size: 12px;
+}
+#stella-monthly-panel .smp-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+#stella-monthly-panel .smp-item {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+#stella-monthly-panel .smp-item-name {
+  flex: 2;
+  min-width: 0;
+  padding: 5px 6px;
+  border: 1px solid #d5dce3;
+  border-radius: 5px;
+  font-size: 12px;
+}
+#stella-monthly-panel .smp-item-value {
+  flex: 1;
+  min-width: 0;
+  padding: 5px 6px;
+  border: 1px solid #d5dce3;
+  border-radius: 5px;
+  font-size: 12px;
+}
+#stella-monthly-panel .smp-del {
+  border: none;
+  background: transparent;
+  color: #b44a1e;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+#stella-monthly-panel .smp-captured-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #52606d;
+  margin-bottom: 4px;
+}
+#stella-monthly-panel .smp-chip {
+  display: inline-block;
+  margin: 2px 4px 2px 0;
+  padding: 3px 8px;
+  border-radius: 12px;
+  background: #eef1f4;
+  color: #7b8794;
+  font-size: 11px;
+}
+#stella-monthly-panel .smp-chip.ok {
+  background: #d8f0e3;
+  color: #176c47;
+}
+
+#stella-monthly-panel .smp-status {
+  min-height: 16px;
+  font-size: 12px;
+}
+#stella-monthly-panel .smp-status.ok {
+  color: #176c47;
+}
+#stella-monthly-panel .smp-status.error {
+  color: #b44a1e;
+}
+#stella-monthly-panel .smp-status.info {
+  color: #52606d;
+}
+#stella-monthly-panel .smp-note {
+  font-size: 11px;
+  color: #7b8794;
+  line-height: 1.5;
+}
