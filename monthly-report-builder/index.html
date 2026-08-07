@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>月次レポート作成｜博多ステラ歯科</title>
+<style>
+  :root {
+    --green: #1f8a5b;
+    --green-d: #176c47;
+    --amber: #b5761f;
+    --line: #d5dce3;
+    --bg: #f4f7f6;
+    --ink: #1f2933;
+    --dim: #7b8794;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Kaku Gothic ProN",
+      "Yu Gothic", Meiryo, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    line-height: 1.6;
+  }
+  header {
+    background: var(--green);
+    color: #fff;
+    padding: 16px 20px;
+  }
+  header h1 { margin: 0; font-size: 18px; }
+  header .sub { font-size: 12px; opacity: 0.9; margin-top: 2px; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 16px; }
+  .topbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+  }
+  .topbar label { font-weight: 600; font-size: 13px; }
+  .topbar input[type="text"], .topbar input[type="month"] {
+    padding: 6px 8px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    font-size: 14px;
+  }
+  .topbar input.clinic { flex: 1; min-width: 200px; }
+
+  fieldset {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    margin: 0 0 14px;
+    padding: 8px 14px 14px;
+  }
+  legend {
+    font-weight: 700;
+    color: var(--green-d);
+    padding: 0 6px;
+    font-size: 15px;
+  }
+  .subhead {
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--dim);
+    margin: 10px 0 4px;
+    border-bottom: 1px dashed var(--line);
+    padding-bottom: 2px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 8px 14px;
+  }
+  .f {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .f label { font-size: 13px; }
+  .f input {
+    width: 96px;
+    padding: 6px 8px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    font-size: 14px;
+    text-align: right;
+  }
+  .f .unit { font-size: 12px; color: var(--dim); width: 20px; }
+  .f.wide input { width: 120px; }
+
+  .calc {
+    background: #eef7f1;
+    border: 1px solid #cfe7da;
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-top: 10px;
+  }
+  .calc .subhead { color: var(--green-d); border: none; margin: 0 0 4px; }
+  .calc .f label { font-weight: 600; }
+  .calc .cv { font-weight: 700; color: var(--green-d); font-variant-numeric: tabular-nums; }
+
+  .actions {
+    position: sticky;
+    bottom: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    background: rgba(244, 247, 246, 0.95);
+    padding: 12px 0;
+    margin-top: 6px;
+  }
+  button {
+    padding: 10px 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    color: #fff;
+    background: var(--green);
+  }
+  button:hover { background: var(--green-d); }
+  button.excel { background: var(--amber); flex: 1; min-width: 180px; }
+  button.excel:hover { background: #955f16; }
+  button.ghost { background: #fff; color: var(--ink); border: 1px solid var(--line); }
+  button.ghost:hover { background: #eef1f4; }
+  .status { font-size: 13px; min-height: 18px; padding: 4px 2px; }
+  .status.ok { color: var(--green-d); }
+  .status.err { color: #b44a1e; }
+  .note { font-size: 12px; color: var(--dim); margin-top: 4px; }
+  @media print { .actions, header { position: static; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>🗓 月次レポート作成システム</h1>
+  <div class="sub">アポツールの画面を見ながら数字を入力 → 月次Excelを作成（インストール不要・オフラインで動作）</div>
+</header>
+
+<div class="wrap">
+  <div class="topbar">
+    <label>医院名</label>
+    <input type="text" class="clinic" id="clinic_name" value="博多ステラ歯科・矯正歯科クリニック" />
+    <label>対象月</label>
+    <input type="month" id="month" />
+  </div>
+
+  <form id="f" autocomplete="off">
+    <!-- 来院・診療実績 -->
+    <fieldset>
+      <legend>① 来院・診療実績</legend>
+      <div class="subhead">一般・審美</div>
+      <div class="grid">
+        <div class="f"><label>初診</label><input type="number" id="ippan_shoshin" /><span class="unit">件</span></div>
+        <div class="f"><label>再初診</label><input type="number" id="ippan_saishoshin" /><span class="unit">件</span></div>
+        <div class="f"><label>再診</label><input type="number" id="ippan_saishin" /><span class="unit">件</span></div>
+        <div class="f"><label>基本処置なし</label><input type="number" id="ippan_kihon" /><span class="unit">件</span></div>
+      </div>
+      <div class="subhead">矯正</div>
+      <div class="grid">
+        <div class="f"><label>相談</label><input type="number" id="kyosei_soudan" /><span class="unit">件</span></div>
+        <div class="f"><label>検査</label><input type="number" id="kyosei_kensa" /><span class="unit">件</span></div>
+        <div class="f"><label>説明</label><input type="number" id="kyosei_setsumei" /><span class="unit">件</span></div>
+        <div class="f"><label>契約</label><input type="number" id="kyosei_keiyaku" /><span class="unit">件</span></div>
+        <div class="f"><label>保定</label><input type="number" id="kyosei_hotei" /><span class="unit">件</span></div>
+      </div>
+      <div class="calc">
+        <div class="subhead">自動計算：転換率</div>
+        <div class="grid">
+          <div class="f"><label>相談→検査率</label><span class="cv" id="c_kensa_ritsu">—</span></div>
+          <div class="f"><label>矯正成約率（契約÷相談）</label><span class="cv" id="c_seiyaku_ritsu">—</span></div>
+          <div class="f"><label>AP取得率（手入力）</label><input type="number" id="ap_ritsu" step="0.1" /><span class="unit">%</span></div>
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- 売上 -->
+    <fieldset>
+      <legend>② 売上（円）</legend>
+      <div class="grid">
+        <div class="f wide"><label>保険点数（売上）</label><input type="number" id="uri_hoken" /><span class="unit">円</span></div>
+        <div class="f wide"><label>自費総額</label><input type="number" id="uri_jihi" /><span class="unit">円</span></div>
+        <div class="f wide"><label>雑収入</label><input type="number" id="uri_zatsu" /><span class="unit">円</span></div>
+        <div class="f wide"><label>美容売上</label><input type="number" id="uri_biyo" /><span class="unit">円</span></div>
+      </div>
+      <div class="calc">
+        <div class="f wide"><label>合計売上高（保険＋自費総額＋雑収入＋美容）</label><span class="cv" id="c_uri_goukei">0 円</span></div>
+        <div class="note">※合計は上の4項目の自動合計です。医院の集計と合わない場合は各項目を調整してください。</div>
+      </div>
+    </fieldset>
+
+    <!-- リコール -->
+    <fieldset>
+      <legend>③ リコール</legend>
+      <div class="grid">
+        <div class="f"><label>本来対象者数</label><input type="number" id="recall_taisho" /><span class="unit">人</span></div>
+        <div class="f"><label>診療日数</label><input type="number" id="shinryo_days" /><span class="unit">日</span></div>
+      </div>
+      <div class="subhead">来院（間隔別）</div>
+      <div class="grid">
+        <div class="f"><label>1ヶ月</label><input type="number" id="recall_1m" /><span class="unit">人</span></div>
+        <div class="f"><label>2ヶ月</label><input type="number" id="recall_2m" /><span class="unit">人</span></div>
+        <div class="f"><label>3ヶ月</label><input type="number" id="recall_3m" /><span class="unit">人</span></div>
+        <div class="f"><label>4ヶ月</label><input type="number" id="recall_4m" /><span class="unit">人</span></div>
+        <div class="f"><label>6ヶ月</label><input type="number" id="recall_6m" /><span class="unit">人</span></div>
+      </div>
+      <div class="subhead">中断</div>
+      <div class="grid">
+        <div class="f"><label>当月 治療中断</label><input type="number" id="chudan_chiryo" /><span class="unit">人</span></div>
+        <div class="f"><label>当月 リコール中断</label><input type="number" id="chudan_recall" /><span class="unit">人</span></div>
+        <div class="f"><label>中断率（手入力）</label><input type="number" id="chudan_ritsu" step="0.1" /><span class="unit">%</span></div>
+        <div class="f"><label>リコール率（手入力）</label><input type="number" id="recall_ritsu" step="0.1" /><span class="unit">%</span></div>
+      </div>
+      <div class="calc">
+        <div class="f"><label>当月中断合計（治療＋リコール）</label><span class="cv" id="c_chudan_goukei">0 人</span></div>
+      </div>
+    </fieldset>
+
+    <!-- 自費分類 -->
+    <fieldset>
+      <legend>④ 自費分類（新患の流入経路）</legend>
+      <div class="subhead">一般・審美 <span id="c_ippan_total" class="cv" style="float:right">合計 0</span></div>
+      <div class="grid" id="ryunyu_ippan"></div>
+      <div class="subhead">矯正 <span id="c_kyosei_total" class="cv" style="float:right">合計 0</span></div>
+      <div class="grid" id="ryunyu_kyosei"></div>
+    </fieldset>
+
+    <!-- その他 -->
+    <fieldset>
+      <legend>⑤ その他</legend>
+      <div class="grid">
+        <div class="f"><label>口コミ数</label><input type="number" id="kuchikomi" /><span class="unit">件</span></div>
+      </div>
+    </fieldset>
+  </form>
+
+  <div class="actions">
+    <button type="button" class="excel" id="btn-excel">📊 月次Excelを作成してダウンロード</button>
+    <button type="button" class="ghost" id="btn-save">💾 一時保存</button>
+    <button type="button" class="ghost" id="btn-copy-prev">📂 先月を複製</button>
+    <button type="button" class="ghost" id="btn-clear">🗑 クリア</button>
+  </div>
+  <div class="status" id="status"></div>
+  <div class="note">入力内容はこのブラウザ内（この端末）に対象月ごとに保存されます。外部には送信されません。</div>
+</div>
+
+<script>
+/* ============================================================
+ * xlsx 生成エンジン（外部ライブラリ不要）
+ * ============================================================ */
+(function () {
+  "use strict";
+  const enc = new TextEncoder();
+  const CRC_TABLE = (() => {
+    const t = new Uint32Array(256);
+    for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; }
+    return t;
+  })();
+  function crc32(b) { let c = 0xffffffff; for (let i = 0; i < b.length; i++) c = CRC_TABLE[(c ^ b[i]) & 0xff] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; }
+  function zip(files) {
+    const chunks = [], central = []; let offset = 0;
+    for (const f of files) {
+      const nb = enc.encode(f.name), data = f.data, crc = crc32(data);
+      const lh = new Uint8Array(30 + nb.length), dv = new DataView(lh.buffer);
+      dv.setUint32(0, 0x04034b50, true); dv.setUint16(4, 20, true); dv.setUint16(6, 0, true); dv.setUint16(8, 0, true);
+      dv.setUint16(10, 0, true); dv.setUint16(12, 0x21, true); dv.setUint32(14, crc, true);
+      dv.setUint32(18, data.length, true); dv.setUint32(22, data.length, true);
+      dv.setUint16(26, nb.length, true); dv.setUint16(28, 0, true); lh.set(nb, 30);
+      chunks.push(lh, data);
+      const cd = new Uint8Array(46 + nb.length), cdv = new DataView(cd.buffer);
+      cdv.setUint32(0, 0x02014b50, true); cdv.setUint16(4, 20, true); cdv.setUint16(6, 20, true); cdv.setUint16(8, 0, true);
+      cdv.setUint16(10, 0, true); cdv.setUint16(12, 0, true); cdv.setUint16(14, 0x21, true); cdv.setUint32(16, crc, true);
+      cdv.setUint32(20, data.length, true); cdv.setUint32(24, data.length, true); cdv.setUint16(28, nb.length, true);
+      cdv.setUint16(30, 0, true); cdv.setUint16(32, 0, true); cdv.setUint16(34, 0, true); cdv.setUint16(36, 0, true);
+      cdv.setUint32(38, 0, true); cdv.setUint32(42, offset, true); cd.set(nb, 46);
+      central.push(cd); offset += lh.length + data.length;
+    }
+    const cdStart = offset; let cdSize = 0;
+    for (const c of central) { chunks.push(c); cdSize += c.length; }
+    const eo = new Uint8Array(22), edv = new DataView(eo.buffer);
+    edv.setUint32(0, 0x06054b50, true); edv.setUint16(4, 0, true); edv.setUint16(6, 0, true);
+    edv.setUint16(8, central.length, true); edv.setUint16(10, central.length, true);
+    edv.setUint32(12, cdSize, true); edv.setUint32(16, cdStart, true); edv.setUint16(20, 0, true);
+    chunks.push(eo);
+    let total = 0; for (const c of chunks) total += c.length;
+    const out = new Uint8Array(total); let p = 0; for (const c of chunks) { out.set(c, p); p += c.length; }
+    return out;
+  }
+  function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
+  function colName(n) { let s = ""; n++; while (n > 0) { const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - 1) / 26); } return s; }
+  function cellXml(r, ci, cell) {
+    const ref = colName(ci) + r; let v = cell, bold = false;
+    if (cell && typeof cell === "object") { v = cell.v; bold = !!cell.bold; }
+    const s = bold ? ' s="1"' : "";
+    if (v === null || v === undefined || v === "") return `<c r="${ref}"${s}/>`;
+    if (typeof v === "number" && isFinite(v)) return `<c r="${ref}"${s}><v>${v}</v></c>`;
+    return `<c r="${ref}"${s} t="inlineStr"><is><t xml:space="preserve">${esc(v)}</t></is></c>`;
+  }
+  const CT = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>';
+  const RELS = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>';
+  const WBR = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>';
+  const STY = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border/></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
+  function wb(name) { return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="' + esc(name).slice(0, 31) + '" sheetId="1" r:id="rId1"/></sheets></workbook>'; }
+  function sheet(rows) {
+    let sd = "";
+    rows.forEach((row, i) => { const r = i + 1; let cs = ""; (row || []).forEach((c, ci) => cs += cellXml(r, ci, c)); sd += `<row r="${r}">${cs}</row>`; });
+    return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><cols><col min="1" max="1" width="40" customWidth="1"/><col min="2" max="2" width="16" customWidth="1"/></cols><sheetData>' + sd + '</sheetData></worksheet>';
+  }
+  window.__xlsx = function (name, rows) {
+    return zip([
+      { name: "[Content_Types].xml", data: enc.encode(CT) },
+      { name: "_rels/.rels", data: enc.encode(RELS) },
+      { name: "xl/workbook.xml", data: enc.encode(wb(name)) },
+      { name: "xl/_rels/workbook.xml.rels", data: enc.encode(WBR) },
+      { name: "xl/styles.xml", data: enc.encode(STY) },
+      { name: "xl/worksheets/sheet1.xml", data: enc.encode(sheet(rows)) },
+    ]);
+  };
+})();
+
+/* ============================================================
+ * フォーム・計算・保存・Excel出力
+ * ============================================================ */
+(function () {
+  "use strict";
+  const RYUNYU = ["紹介（家族・知人・患者）", "ホームページ", "Google・Yahoo", "チラシ", "建物", "マップ", "他医院紹介", "SNS", "イーパーク", "駅の看板", "不明", "その他"];
+  const KEY = "hakataStellaMonthly:";
+
+  const $ = (id) => document.getElementById(id);
+  const monthEl = $("month");
+  const statusEl = $("status");
+
+  // 自費分類の入力欄を生成
+  RYUNYU.forEach((label, i) => {
+    ["ippan", "kyosei"].forEach((g) => {
+      const div = document.createElement("div");
+      div.className = "f";
+      div.innerHTML = `<label>${label}</label><input type="number" id="ryu_${g}_${i}" /><span class="unit">件</span>`;
+      $("ryunyu_" + g).appendChild(div);
+    });
+  });
+
+  const inputs = () => Array.from(document.querySelectorAll("#f input, #clinic_name"));
+  const num = (id) => { const v = parseFloat(($(id) ? $(id).value : "").toString().replace(/,/g, "")); return isFinite(v) ? v : 0; };
+  const fmt = (n) => (n || 0).toLocaleString("ja-JP");
+  const rate = (a, b) => (b > 0 ? Math.round((a / b) * 1000) / 10 : null);
+
+  function nowMonth() { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0"); }
+  function monthLabel(ym) { const [y, m] = (ym || "").split("-"); return y && m ? `${y}年${Number(m)}月` : ym; }
+
+  function recompute() {
+    const soudan = num("kyosei_soudan"), kensa = num("kyosei_kensa"), keiyaku = num("kyosei_keiyaku");
+    const kr = rate(kensa, soudan), sr = rate(keiyaku, soudan);
+    $("c_kensa_ritsu").textContent = kr == null ? "—" : kr + "%";
+    $("c_seiyaku_ritsu").textContent = sr == null ? "—" : sr + "%";
+
+    const goukei = num("uri_hoken") + num("uri_jihi") + num("uri_zatsu") + num("uri_biyo");
+    $("c_uri_goukei").textContent = fmt(goukei) + " 円";
+
+    $("c_chudan_goukei").textContent = fmt(num("chudan_chiryo") + num("chudan_recall")) + " 人";
+
+    let ti = 0, tk = 0;
+    RYUNYU.forEach((_, i) => { ti += num("ryu_ippan_" + i); tk += num("ryu_kyosei_" + i); });
+    $("c_ippan_total").textContent = "合計 " + fmt(ti);
+    $("c_kyosei_total").textContent = "合計 " + fmt(tk);
+  }
+
+  function collect() { const o = {}; inputs().forEach((i) => (o[i.id] = i.value)); o.__month = monthEl.value; return o; }
+  function apply(o) { inputs().forEach((i) => (i.value = o && o[i.id] != null ? o[i.id] : "")); recompute(); }
+
+  function save(silent) {
+    const o = collect();
+    localStorage.setItem(KEY + monthEl.value, JSON.stringify(o));
+    if (!silent) setStatus("保存しました（" + monthLabel(monthEl.value) + "）", "ok");
+  }
+  function load(ym) {
+    const raw = localStorage.getItem(KEY + ym);
+    if (raw) { try { apply(JSON.parse(raw)); return true; } catch (e) {} }
+    return false;
+  }
+  function prevMonth(ym) {
+    const [y, m] = ym.split("-").map(Number);
+    const d = m === 1 ? [y - 1, 12] : [y, m - 1];
+    return d[0] + "-" + String(d[1]).padStart(2, "0");
+  }
+
+  function setStatus(msg, type) { statusEl.textContent = msg || ""; statusEl.className = "status " + (type || ""); }
+
+  function buildRows() {
+    const rows = [];
+    const clinic = $("clinic_name").value || "当院";
+    rows.push([{ v: `${clinic}　月次報告　${monthLabel(monthEl.value)}`, bold: true }]);
+    rows.push([]);
+
+    const H = (t) => rows.push([{ v: t, bold: true }]);
+    const SH = (t) => rows.push([{ v: t, bold: true }]);
+    const R = (name, id, unit) => rows.push([name, numCell(id, unit)]);
+    const RV = (name, value, bold) => rows.push([bold ? { v: name, bold: true } : name, bold ? { v: value, bold: true } : value]);
+    function numCell(id, unit) { const v = num(id); return unit ? v : v; }
+
+    H("■ 来院・診療実績");
+    SH("【一般・審美】");
+    R("初診", "ippan_shoshin"); R("再初診", "ippan_saishoshin"); R("再診", "ippan_saishin"); R("基本処置なし", "ippan_kihon");
+    SH("【矯正】");
+    R("相談", "kyosei_soudan"); R("検査", "kyosei_kensa"); R("説明", "kyosei_setsumei"); R("契約", "kyosei_keiyaku"); R("保定", "kyosei_hotei");
+    rows.push([]);
+
+    H("■ 転換率（自動計算）");
+    const soudan = num("kyosei_soudan");
+    RV("相談→検査率", rate(num("kyosei_kensa"), soudan) == null ? "—" : rate(num("kyosei_kensa"), soudan) + "%");
+    RV("矯正成約率（契約÷相談）", rate(num("kyosei_keiyaku"), soudan) == null ? "—" : rate(num("kyosei_keiyaku"), soudan) + "%");
+    RV("AP取得率", num("ap_ritsu") ? num("ap_ritsu") + "%" : "—");
+    rows.push([]);
+
+    H("■ 売上（円）");
+    R("保険点数（売上）", "uri_hoken"); R("自費総額", "uri_jihi"); R("雑収入", "uri_zatsu"); R("美容売上", "uri_biyo");
+    RV("合計売上高", num("uri_hoken") + num("uri_jihi") + num("uri_zatsu") + num("uri_biyo"), true);
+    rows.push([]);
+
+    H("■ リコール");
+    R("本来対象者数", "recall_taisho");
+    R("来院 1ヶ月", "recall_1m"); R("来院 2ヶ月", "recall_2m"); R("来院 3ヶ月", "recall_3m"); R("来院 4ヶ月", "recall_4m"); R("来院 6ヶ月", "recall_6m");
+    R("当月 治療中断", "chudan_chiryo"); R("当月 リコール中断", "chudan_recall");
+    RV("当月中断合計（治療＋リコール）", num("chudan_chiryo") + num("chudan_recall"), true);
+    RV("中断率", num("chudan_ritsu") ? num("chudan_ritsu") + "%" : "—");
+    RV("リコール率", num("recall_ritsu") ? num("recall_ritsu") + "%" : "—");
+    R("診療日数", "shinryo_days");
+    rows.push([]);
+
+    H("■ 自費分類（新患の流入経路）");
+    SH("【一般・審美】");
+    let ti = 0; RYUNYU.forEach((lb, i) => { const v = num("ryu_ippan_" + i); ti += v; rows.push([lb, v]); });
+    RV("一般・審美 合計", ti, true);
+    SH("【矯正】");
+    let tk = 0; RYUNYU.forEach((lb, i) => { const v = num("ryu_kyosei_" + i); tk += v; rows.push([lb, v]); });
+    RV("矯正 合計", tk, true);
+    rows.push([]);
+
+    H("■ その他");
+    R("口コミ数", "kuchikomi");
+    rows.push([]);
+
+    rows.push([]);
+    rows.push([{ v: "作成日時：" + new Date().toLocaleString("ja-JP") }]);
+    return rows;
+  }
+
+  function exportExcel() {
+    try {
+      const rows = buildRows();
+      const bytes = window.__xlsx("月次報告", rows);
+      const blob = new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const clinic = ($("clinic_name").value || "月次").replace(/[\\/:*?"<>|]/g, "");
+      a.href = url; a.download = `月次報告_${monthEl.value}_${clinic}.xlsx`;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 3000);
+      save(true);
+      setStatus("Excelを作成しました：月次報告_" + monthEl.value + ".xlsx（保存済み）", "ok");
+    } catch (e) {
+      setStatus("エラー: " + e.message, "err");
+    }
+  }
+
+  // イベント配線
+  document.getElementById("f").addEventListener("input", recompute);
+  $("btn-excel").addEventListener("click", exportExcel);
+  $("btn-save").addEventListener("click", () => save(false));
+  $("btn-clear").addEventListener("click", () => {
+    if (!confirm(monthLabel(monthEl.value) + " の入力をクリアします。よろしいですか？（保存済みデータは残ります）")) return;
+    inputs().forEach((i) => { if (i.id !== "clinic_name") i.value = ""; });
+    recompute(); setStatus("クリアしました", "ok");
+  });
+  $("btn-copy-prev").addEventListener("click", () => {
+    const pm = prevMonth(monthEl.value);
+    const raw = localStorage.getItem(KEY + pm);
+    if (!raw) { setStatus(monthLabel(pm) + " の保存データがありません", "err"); return; }
+    try {
+      const o = JSON.parse(raw); o.__month = monthEl.value; apply(o);
+      setStatus(monthLabel(pm) + " の内容を複製しました（数字を今月分に修正してください）", "ok");
+    } catch (e) { setStatus("複製に失敗しました", "err"); }
+  });
+  monthEl.addEventListener("change", () => {
+    if (!load(monthEl.value)) { inputs().forEach((i) => { if (i.id !== "clinic_name") i.value = ""; }); recompute(); }
+    setStatus("");
+  });
+
+  // 初期化
+  monthEl.value = nowMonth();
+  load(monthEl.value);
+  recompute();
+})();
+</script>
+</body>
+</html>

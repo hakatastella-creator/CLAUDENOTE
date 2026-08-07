@@ -18,8 +18,13 @@ Gmail と Chatwork の未読メッセージを毎朝チェックし、過去の�
 LINE公式アカウントマネージャー上で、AIによる返信下書きを生成・挿入できる拡張機能。
 詳細は [`chrome-extension/README.md`](chrome-extension/README.md) を参照。
 
-## 月次レポート出力（アポツール用 Chrome拡張）
+## 月次レポート作成システム（入力フォーム型｜推奨）
 
-アポツールの画面（クリニックデータ／全ての予約／イベント）から月次KPIを取り込み、
-Excel（.xlsx）の月次レポートを書き出す拡張機能。集計値のみを扱い、患者の個人情報は取り込みません。
-詳細は [`apotool-extension/README.md`](apotool-extension/README.md) を参照。
+数字を入力するだけで月次Excel（.xlsx）を作る単一HTML。拡張機能もインストールも不要で、
+`index.html` をダブルクリックで開くだけ。合計・率は自動計算、入力は端末内に自動保存。
+詳細は [`monthly-report-builder/README.md`](monthly-report-builder/README.md) を参照。
+
+## 月次レポート出力（アポツール用 Chrome拡張｜非推奨）
+
+アポツールの画面から月次KPIを読み取る拡張機能。アポツールで拡張機能が使えなくなる見込みのため
+**非推奨**。上の入力フォーム型を使ってください。詳細は [`apotool-extension/README.md`](apotool-extension/README.md)。
