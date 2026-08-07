@@ -15,23 +15,29 @@
   header h1 { margin: 0; font-size: 18px; }
   header .sub { font-size: 12px; opacity: 0.9; margin-top: 2px; }
   .wrap { max-width: 860px; margin: 0 auto; padding: 16px; }
-  .topbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin-bottom: 14px; }
+  .topbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; }
   .topbar label { font-weight: 600; font-size: 13px; }
   .topbar input[type="text"], .topbar input[type="month"] { padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; font-size: 14px; }
   .topbar input.clinic { flex: 1; min-width: 200px; }
+  .legend-bar { font-size: 12px; color: var(--dim); margin: 0 0 12px; display: flex; gap: 12px; flex-wrap: wrap; }
 
   fieldset { background: #fff; border: 1px solid var(--line); border-radius: 10px; margin: 0 0 14px; padding: 8px 14px 14px; }
   legend { font-weight: 700; color: var(--green-d); padding: 0 6px; font-size: 15px; }
   .src { font-size: 11px; color: var(--dim); margin: 2px 0 8px; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px 14px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 8px 14px; }
   .f { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
   .f label { font-size: 13px; }
-  .f input { width: 96px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; font-size: 14px; text-align: right; }
+  .f input { width: 110px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; font-size: 14px; text-align: right; }
   .f .unit { font-size: 12px; color: var(--dim); width: 20px; }
+
+  .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 10px; margin-left: 6px; vertical-align: middle; }
+  .tag.glance { background: #d8f0e3; color: #176c47; }
+  .tag.count { background: #fdecd6; color: #9a5b12; }
+  .tag.manual { background: #e6eefb; color: #25508a; }
 
   fieldset.calc { background: #eef7f1; border-color: #cfe7da; }
   fieldset.calc legend { color: var(--green-d); }
-  .calc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 6px 14px; }
+  .calc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 6px 14px; }
   .calc-grid .f label { font-weight: 600; }
   .calc-grid .cv { font-weight: 700; color: var(--green-d); font-variant-numeric: tabular-nums; }
 
@@ -59,7 +65,7 @@
   .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 18px; }
   .kpi-card { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; border-top: 3px solid var(--series); background: #fbfdff; }
   .kpi-card .k-label { font-size: 11px; color: var(--ink2); }
-  .kpi-card .k-value { font-size: 20px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.25; }
+  .kpi-card .k-value { font-size: 19px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.25; }
   .kpi-card .k-sub { font-size: 10px; color: var(--muted); }
   .rep-section { margin: 0 0 18px; break-inside: avoid; }
   .rep-section > h3 { font-size: 14px; font-weight: 700; color: var(--green-d); border-left: 4px solid var(--green); padding-left: 8px; margin: 0 0 8px; }
@@ -70,6 +76,7 @@
   table.rep td { text-align: right; font-variant-numeric: tabular-nums; }
   table.rep th.lab { font-weight: 600; }
   table.rep tr.total th, table.rep tr.total td { background: #f2f7f4; font-weight: 700; }
+  table.rep tr.sub th, table.rep tr.sub td { background: #f7fafc; font-weight: 600; }
   .tbl-title { font-size: 11px; color: var(--muted); margin: 0 0 4px; }
   .chart .c-title { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
   .chart-svg { width: 100%; height: auto; }
@@ -81,7 +88,7 @@
   .rep-foot { margin-top: 14px; padding-top: 8px; border-top: 1px solid var(--line); font-size: 10px; color: var(--muted); }
   @media (max-width: 620px) { .kpi-row { grid-template-columns: repeat(2, 1fr); } .rep-cols { grid-template-columns: 1fr; } }
   @media print {
-    header, .topbar, #f, .actions, .status, .wrap > .note { display: none !important; }
+    header, .topbar, .legend-bar, #f, .actions, .status, .wrap > .note { display: none !important; }
     #report.show { position: static; background: #fff; overflow: visible; }
     .rep-toolbar { display: none !important; }
     .report-page { box-shadow: none; margin: 0; max-width: none; padding: 0; }
@@ -93,7 +100,7 @@
 <body>
 <header>
   <h1>🗓 月次レポート作成システム</h1>
-  <div class="sub">アポツールの画面（クリニックデータ／全ての予約／イベント）を見ながら数字を入力 → 月次レポートを作成</div>
+  <div class="sub">アポツールの画面を見ながら数字を入力 → 月次レポートを作成（受付向け）</div>
 </header>
 
 <div class="wrap">
@@ -102,6 +109,11 @@
     <input type="text" class="clinic" id="clinic_name" value="博多ステラ歯科・矯正歯科クリニック" />
     <label>対象月</label>
     <input type="month" id="month" />
+  </div>
+  <div class="legend-bar">
+    <span><span class="tag glance">一目</span> 画面の集計値を転記</span>
+    <span><span class="tag count">要カウント</span> イベント登録が無ければ数える</span>
+    <span><span class="tag manual">手入力</span> 会計・レセコンから</span>
   </div>
 
   <form id="f" autocomplete="off"></form>
@@ -190,59 +202,50 @@
 })();
 
 /* ============================================================
- * 入力項目（アポツール画面ベース）・計算・レポート
+ * 入力項目・計算・レポート
  * ============================================================ */
 (function () {
   "use strict";
-  const KEY = "hakataStellaMonthly2:";
+  const KEY = "hakataStellaMonthly3:";
+  const TAGN = { glance: "一目", count: "要カウント", manual: "手入力" };
 
-  // 画面ごとの入力項目。unit "%" は率（そのまま表示）、他は件数など。
   const SECTIONS = [
-    { title: "クリニックデータ｜予約・来院", src: "/user/dashboard/", fields: [
-      { id: "d_yoyaku", label: "総予約件数", unit: "件" },
-      { id: "d_raiin", label: "来院人数", unit: "人" },
-      { id: "d_mitei", label: "予約未定率", unit: "%" },
-      { id: "t_yoyaku", label: "目標 月間予約数", unit: "件" },
+    { title: "クリニックデータ｜予約・来院", src: "/user/dashboard/", tag: "glance", fields: [
+      { id: "d_yoyaku", label: "総予約件数", unit: "件" }, { id: "d_raiin", label: "来院人数", unit: "人" },
+      { id: "d_mitei", label: "予約未定率", unit: "%" }, { id: "t_yoyaku", label: "目標 月間予約数", unit: "件" },
       { id: "t_raiin", label: "目標 一日来院数", unit: "人" },
     ]},
-    { title: "クリニックデータ｜キャンセル", src: "/user/dashboard/", fields: [
-      { id: "c_jizen", label: "事前キャンセル", unit: "件" },
-      { id: "c_touji", label: "当日キャンセル", unit: "件" },
-      { id: "c_muidan", label: "無断キャンセル", unit: "件" },
-      { id: "c_after", label: "キャンセル後1M以内来院率", unit: "%" },
+    { title: "クリニックデータ｜キャンセル", src: "/user/dashboard/", tag: "glance", fields: [
+      { id: "c_jizen", label: "事前キャンセル", unit: "件" }, { id: "c_touji", label: "当日キャンセル", unit: "件" },
+      { id: "c_muidan", label: "無断キャンセル", unit: "件" }, { id: "c_after", label: "キャンセル後1M以内来院率", unit: "%" },
     ]},
-    { title: "クリニックデータ｜自費・保険", src: "/user/dashboard/", fields: [
-      { id: "j_jihi", label: "自費件数", unit: "件" },
-      { id: "j_hoken", label: "保険件数", unit: "件" },
+    { title: "クリニックデータ｜自費・保険（件数）", src: "/user/dashboard/", tag: "glance", fields: [
+      { id: "j_jihi", label: "自費件数", unit: "件" }, { id: "j_hoken", label: "保険件数", unit: "件" },
     ]},
-    { title: "クリニックデータ｜定期検診（リコール）", src: "/user/dashboard/", fields: [
-      { id: "r_taisho", label: "対象者数", unit: "人" },
-      { id: "r_yoyaku", label: "予約者数", unit: "人" },
-      { id: "r_raiin", label: "来院数", unit: "人" },
-      { id: "r_teiki", label: "定期検診来院率", unit: "%" },
+    { title: "クリニックデータ｜定期検診（リコール）", src: "/user/dashboard/", tag: "glance", fields: [
+      { id: "r_taisho", label: "対象者数", unit: "人" }, { id: "r_yoyaku", label: "予約者数", unit: "人" },
+      { id: "r_raiin", label: "来院数", unit: "人" }, { id: "r_teiki", label: "定期検診来院率", unit: "%" },
     ]},
-    { title: "クリニックデータ｜中断・患者ランク", src: "/user/dashboard/", fields: [
-      { id: "x_chudan", label: "中断患者数", unit: "人" },
-      { id: "rk_s", label: "患者ランク S", unit: "人" },
-      { id: "rk_a", label: "患者ランク A", unit: "人" },
-      { id: "rk_b", label: "患者ランク B", unit: "人" },
-      { id: "rk_c", label: "患者ランク C", unit: "人" },
-      { id: "rk_none", label: "患者ランク なし", unit: "人" },
+    { title: "クリニックデータ｜中断・患者ランク", src: "/user/dashboard/", tag: "glance", fields: [
+      { id: "x_chudan", label: "中断患者数", unit: "人" }, { id: "rk_s", label: "患者ランク S", unit: "人" },
+      { id: "rk_a", label: "患者ランク A", unit: "人" }, { id: "rk_b", label: "患者ランク B", unit: "人" },
+      { id: "rk_c", label: "患者ランク C", unit: "人" }, { id: "rk_none", label: "患者ランク なし", unit: "人" },
     ]},
-    { title: "全ての予約｜予約区分", src: "/user/patient/reservation", fields: [
-      { id: "v_total", label: "今月の予約総数", unit: "件" },
-      { id: "v_jihi", label: "区分 自費", unit: "件" },
-      { id: "v_cure", label: "区分 Cure", unit: "件" },
-      { id: "v_care", label: "区分 Care", unit: "件" },
-      { id: "v_web_cure", label: "Web予約 Cure", unit: "件" },
-      { id: "v_web_care", label: "Web予約 Care", unit: "件" },
+    { title: "全ての予約｜予約区分", src: "/user/patient/reservation", tag: "glance", fields: [
+      { id: "v_total", label: "今月の予約総数", unit: "件" }, { id: "v_jihi", label: "区分 自費", unit: "件" },
+      { id: "v_cure", label: "区分 Cure", unit: "件" }, { id: "v_care", label: "区分 Care", unit: "件" },
+      { id: "v_web_cure", label: "Web予約 Cure", unit: "件" }, { id: "v_web_care", label: "Web予約 Care", unit: "件" },
     ]},
-    { title: "イベント｜メニュー別 月間件数", src: "/user/event/", fields: [
-      { id: "e_soudan", label: "矯正相談", unit: "件" },
-      { id: "e_kensa", label: "検査", unit: "件" },
-      { id: "e_setsumei", label: "治療計画説明", unit: "件" },
-      { id: "e_hotei", label: "保定コンサル", unit: "件" },
-      { id: "e_recall", label: "リコール", unit: "件" },
+    { title: "矯正｜相談〜開始", src: "イベント／予約メニュー", tag: "count", note: "イベント画面に月間件数があれば一目・無ければ数える", fields: [
+      { id: "e_soudan", label: "相談", unit: "件" }, { id: "e_kensa", label: "検査", unit: "件" },
+      { id: "e_kaishi", label: "開始（契約）", unit: "件" }, { id: "e_setsumei", label: "治療計画説明（任意）", unit: "件" },
+      { id: "e_hotei", label: "保定コンサル（任意）", unit: "件" },
+    ]},
+    { title: "売上", src: "会計・レセコン（アポツール外）", tag: "manual", fields: [
+      { id: "u_hoken", label: "保険点数（売上）", unit: "円" }, { id: "u_jihi", label: "自費（一般・審美）", unit: "円" },
+      { id: "u_kyosei", label: "矯正 売上", unit: "円" }, { id: "u_white", label: "ホワイトニング 売上", unit: "円" },
+      { id: "u_biyo", label: "美容 売上（WT除く）", unit: "円" }, { id: "u_cancel", label: "キャンセル料", unit: "円" },
+      { id: "u_zatsu", label: "雑収入", unit: "円" },
     ]},
   ];
   const ALL = SECTIONS.flatMap((s) => s.fields);
@@ -252,6 +255,7 @@
   const statusEl = $("status");
   const num = (id) => { const v = parseFloat(($(id) ? $(id).value : "").toString().replace(/,/g, "")); return isFinite(v) ? v : 0; };
   const nf = (n) => (n || 0).toLocaleString("ja-JP");
+  const yen = (n) => "¥" + Math.round(n || 0).toLocaleString("ja-JP");
   const rate = (a, b) => (b > 0 ? Math.round((a / b) * 1000) / 10 : null);
   const pctS = (v) => (v == null ? "—" : v + "%");
   const escX = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -268,10 +272,10 @@
       const step = f.unit === "%" ? ' step="0.1"' : "";
       return `<div class="f"><label>${f.label}</label><input type="number"${step} id="${f.id}" /><span class="unit">${f.unit}</span></div>`;
     }).join("");
-    fs.innerHTML = `<legend>${i + 1}. ${sec.title}</legend><div class="src">アポツール：${sec.src}</div><div class="grid">${fields}</div>`;
+    const srcLine = `アポツール：${sec.src}` + (sec.note ? `（${sec.note}）` : "");
+    fs.innerHTML = `<legend>${i + 1}. ${sec.title}<span class="tag ${sec.tag}">${TAGN[sec.tag]}</span></legend><div class="src">${srcLine}</div><div class="grid">${fields}</div>`;
     form.appendChild(fs);
   });
-  // 自動計算カード
   const calcFs = document.createElement("fieldset");
   calcFs.className = "calc";
   calcFs.innerHTML = `<legend>自動計算（確認用）</legend><div class="calc-grid" id="calc"></div>`;
@@ -280,29 +284,29 @@
   // ---- 計算 ----
   function computed() {
     const cancel = num("c_jizen") + num("c_touji") + num("c_muidan");
+    const uriTotal = num("u_hoken") + num("u_jihi") + num("u_kyosei") + num("u_white") + num("u_biyo") + num("u_cancel") + num("u_zatsu");
+    const jihiSougaku = num("u_jihi") + num("u_kyosei") + num("u_white") + num("u_biyo") + num("u_cancel");
     return {
-      cancel,
+      cancel, uriTotal, jihiSougaku,
       cancelRate: rate(cancel, num("d_yoyaku")),
       jihiRate: rate(num("j_jihi"), num("j_jihi") + num("j_hoken")),
       recallGet: rate(num("r_yoyaku"), num("r_taisho")),
       recallVisit: rate(num("r_raiin"), num("r_yoyaku")),
       kensaRate: rate(num("e_kensa"), num("e_soudan")),
+      seiyakuRate: rate(num("e_kaishi"), num("e_soudan")),
       targetYoyaku: rate(num("d_yoyaku"), num("t_yoyaku")),
-      webTotal: num("v_web_cure") + num("v_web_care"),
       webRate: rate(num("v_web_cure") + num("v_web_care"), num("v_total")),
+      webTotal: num("v_web_cure") + num("v_web_care"),
     };
   }
   function recompute() {
     const c = computed();
     const rows = [
-      ["当月キャンセル件数", nf(c.cancel) + " 件"],
-      ["キャンセル率", pctS(c.cancelRate)],
-      ["自費率", pctS(c.jihiRate)],
-      ["定期検診 予約取得率", pctS(c.recallGet)],
-      ["定期検診 来院率", pctS(c.recallVisit)],
-      ["相談→検査率", pctS(c.kensaRate)],
-      ["目標達成率（予約）", pctS(c.targetYoyaku)],
-      ["Web予約率", pctS(c.webRate)],
+      ["合計売上高", yen(c.uriTotal)], ["自費総額", yen(c.jihiSougaku)],
+      ["キャンセル件数合計", nf(c.cancel) + " 件"], ["キャンセル率", pctS(c.cancelRate)],
+      ["自費率", pctS(c.jihiRate)], ["定期検診 予約取得率", pctS(c.recallGet)], ["定期検診 来院率", pctS(c.recallVisit)],
+      ["相談→検査率", pctS(c.kensaRate)], ["矯正成約率（開始÷相談）", pctS(c.seiyakuRate)],
+      ["目標達成率（予約）", pctS(c.targetYoyaku)], ["Web予約率", pctS(c.webRate)],
     ];
     $("calc").innerHTML = rows.map((r) => `<div class="f"><label>${r[0]}</label><span class="cv">${r[1]}</span></div>`).join("");
   }
@@ -317,7 +321,7 @@
 
   // ---- グラフ ----
   function barsH(rows, o) {
-    o = o || {}; const W = o.w || 420, rh = o.rh || 26, Lw = o.labelW || 96, Rw = o.valueW || 60;
+    o = o || {}; const W = o.w || 440, rh = o.rh || 26, Lw = o.labelW || 96, Rw = o.valueW || 60;
     const Bw = Math.max(40, W - Lw - Rw), max = Math.max(1, ...rows.map((r) => r.value));
     if (max <= 0 || !rows.length) return '<div class="empty">データがありません</div>';
     const H = rows.length * rh + 6; let s = "";
@@ -344,7 +348,7 @@
     return `<svg viewBox="0 0 ${W} ${H}" class="chart-svg" preserveAspectRatio="xMinYMin meet" role="img">${s}</svg>`;
   }
   function kvTable(rows) {
-    return `<table class="rep"><tbody>${rows.map((r) => `<tr class="${r[2] ? "total" : ""}"><th class="lab">${escX(r[0])}</th><td>${r[1]}</td></tr>`).join("")}</tbody></table>`;
+    return `<table class="rep"><tbody>${rows.map((r) => `<tr class="${r[2] || ""}"><th class="lab">${escX(r[0])}</th><td>${r[1]}</td></tr>`).join("")}</tbody></table>`;
   }
 
   // ---- レポート ----
@@ -354,13 +358,16 @@
     const c = computed();
     const kpi = (l, v, s) => `<div class="kpi-card"><div class="k-label">${l}</div><div class="k-value">${v}</div><div class="k-sub">${s || ""}</div></div>`;
 
-    const eventRows = [
-      { label: "矯正相談", value: num("e_soudan") }, { label: "検査", value: num("e_kensa") },
-      { label: "治療計画説明", value: num("e_setsumei") }, { label: "保定コンサル", value: num("e_hotei") },
-      { label: "リコール", value: num("e_recall") },
+    const salesRows = [
+      { label: "保険点数", value: num("u_hoken"), display: yen(num("u_hoken")) },
+      { label: "自費(一般)", value: num("u_jihi"), display: yen(num("u_jihi")) },
+      { label: "矯正", value: num("u_kyosei"), display: yen(num("u_kyosei")) },
+      { label: "ホワイトニング", value: num("u_white"), display: yen(num("u_white")) },
+      { label: "美容", value: num("u_biyo"), display: yen(num("u_biyo")) },
+      { label: "雑収入", value: num("u_zatsu"), display: yen(num("u_zatsu")) },
     ];
-    const kubunRows = [
-      { label: "自費", value: num("v_jihi") }, { label: "Cure", value: num("v_cure") }, { label: "Care", value: num("v_care") },
+    const kyoseiFunnel = [
+      { label: "相談", value: num("e_soudan") }, { label: "検査", value: num("e_kensa") }, { label: "開始", value: num("e_kaishi") },
     ];
     const cancelRows = [
       { label: "事前", value: num("c_jizen") }, { label: "当日", value: num("c_touji") }, { label: "無断", value: num("c_muidan") },
@@ -372,25 +379,37 @@
       { label: "S", value: num("rk_s") }, { label: "A", value: num("rk_a") }, { label: "B", value: num("rk_b") },
       { label: "C", value: num("rk_c") }, { label: "なし", value: num("rk_none") },
     ];
+    const kubunRows = [
+      { label: "自費", value: num("v_jihi") }, { label: "Cure", value: num("v_cure") }, { label: "Care", value: num("v_care") },
+    ];
 
+    const salesTable = kvTable([
+      ["保険点数（売上）", yen(num("u_hoken"))], ["自費（一般・審美）", yen(num("u_jihi"))],
+      ["矯正 売上", yen(num("u_kyosei"))], ["ホワイトニング 売上", yen(num("u_white"))],
+      ["美容 売上", yen(num("u_biyo"))], ["キャンセル料", yen(num("u_cancel"))], ["雑収入", yen(num("u_zatsu"))],
+      ["自費総額", yen(c.jihiSougaku), "sub"], ["合計売上高", yen(c.uriTotal), "total"],
+    ]);
     const yoyakuTable = kvTable([
       ["総予約件数", nf(num("d_yoyaku")) + " 件"], ["来院人数", nf(num("d_raiin")) + " 人"],
-      ["予約未定率", pctS(num("d_mitei") || null)],
-      ["目標 月間予約数", nf(num("t_yoyaku")) + " 件"], ["目標達成率（予約）", pctS(c.targetYoyaku)],
-      ["目標 一日来院数", nf(num("t_raiin")) + " 人"],
+      ["予約未定率", pctS(num("d_mitei") || null)], ["目標 月間予約数", nf(num("t_yoyaku")) + " 件"],
+      ["目標達成率（予約）", pctS(c.targetYoyaku), "sub"], ["目標 一日来院数", nf(num("t_raiin")) + " 人"],
     ]);
     const cancelTable = kvTable([
       ["事前キャンセル", nf(num("c_jizen")) + " 件"], ["当日キャンセル", nf(num("c_touji")) + " 件"],
-      ["無断キャンセル", nf(num("c_muidan")) + " 件"], ["キャンセル件数合計", nf(c.cancel) + " 件", true],
+      ["無断キャンセル", nf(num("c_muidan")) + " 件"], ["キャンセル件数合計", nf(c.cancel) + " 件", "total"],
       ["キャンセル率", pctS(c.cancelRate)], ["キャンセル後1M以内来院率", pctS(num("c_after") || null)],
     ]);
     const jihiTable = kvTable([
-      ["自費件数", nf(num("j_jihi")) + " 件"], ["保険件数", nf(num("j_hoken")) + " 件"], ["自費率", pctS(c.jihiRate), true],
+      ["自費件数", nf(num("j_jihi")) + " 件"], ["保険件数", nf(num("j_hoken")) + " 件"], ["自費率", pctS(c.jihiRate), "sub"],
+    ]);
+    const kyoseiTable = kvTable([
+      ["相談", nf(num("e_soudan")) + " 件"], ["検査", nf(num("e_kensa")) + " 件"], ["開始（契約）", nf(num("e_kaishi")) + " 件"],
+      ["相談→検査率", pctS(c.kensaRate), "sub"], ["矯正成約率（開始÷相談）", pctS(c.seiyakuRate), "total"],
     ]);
     const recallTable = kvTable([
       ["対象者数", nf(num("r_taisho")) + " 人"], ["予約者数", nf(num("r_yoyaku")) + " 人"],
-      ["予約取得率", pctS(c.recallGet)], ["来院数", nf(num("r_raiin")) + " 人"],
-      ["来院率", pctS(c.recallVisit)], ["定期検診来院率", pctS(num("r_teiki") || null)],
+      ["予約取得率", pctS(c.recallGet), "sub"], ["来院数", nf(num("r_raiin")) + " 人"],
+      ["来院率", pctS(c.recallVisit), "sub"], ["定期検診来院率", pctS(num("r_teiki") || null)],
     ]);
     const chudanTable = kvTable([
       ["中断患者数", nf(num("x_chudan")) + " 人"],
@@ -401,24 +420,37 @@
       ["今月の予約総数", nf(num("v_total")) + " 件"], ["区分 自費", nf(num("v_jihi")) + " 件"],
       ["区分 Cure", nf(num("v_cure")) + " 件"], ["区分 Care", nf(num("v_care")) + " 件"],
       ["Web予約 Cure", nf(num("v_web_cure")) + " 件"], ["Web予約 Care", nf(num("v_web_care")) + " 件"],
-      ["Web予約率", pctS(c.webRate), true],
+      ["Web予約率", pctS(c.webRate), "sub"],
     ]);
-    const eventTable = kvTable(eventRows.map((r) => [r.label, nf(r.value) + " 件"]).concat([["相談→検査率", pctS(c.kensaRate)]]));
 
     const page = `
       <div class="rep-header"><div class="clinic">${clinic}</div><div class="title">月次レポート</div><div class="month">${ml}</div></div>
       <div class="kpi-row">
+        ${kpi("合計売上高", yen(c.uriTotal))}
         ${kpi("総予約件数", nf(num("d_yoyaku")) + " 件", "来院 " + nf(num("d_raiin")) + " 人")}
         ${kpi("キャンセル率", pctS(c.cancelRate), "無断 " + nf(num("c_muidan")) + " 件")}
-        ${kpi("定期検診 来院率", pctS(c.recallVisit), "予約取得 " + pctS(c.recallGet))}
-        ${kpi("自費率", pctS(c.jihiRate), "自費 " + nf(num("j_jihi")) + " 件")}
+        ${kpi("矯正成約率", pctS(c.seiyakuRate), "開始 " + nf(num("e_kaishi")) + " 件")}
+      </div>
+
+      <div class="rep-section"><h3>売上</h3>
+        <div class="rep-cols">
+          <div>${salesTable}</div>
+          <div class="chart"><div class="c-title">売上構成</div>${barsH(salesRows, { valueW: 100, labelW: 100 })}</div>
+        </div>
       </div>
 
       <div class="rep-section"><h3>予約・来院／キャンセル</h3>
         <div class="rep-cols">
           <div>${yoyakuTable}<div style="height:8px"></div>${cancelTable}</div>
-          <div class="chart"><div class="c-title">キャンセル種別（件）</div>${barsH(cancelRows, { valueW: 46 })}
+          <div class="chart"><div class="c-title">キャンセル種別（件）</div>${barsH(cancelRows, { valueW: 46, labelW: 56 })}
             <div class="c-title" style="margin-top:10px">自費・保険</div>${jihiTable}</div>
+        </div>
+      </div>
+
+      <div class="rep-section"><h3>矯正（相談〜開始）</h3>
+        <div class="rep-cols">
+          <div>${kyoseiTable}</div>
+          <div class="chart"><div class="c-title">矯正ファネル（件）</div>${barsH(kyoseiFunnel, { valueW: 46, labelW: 56 })}</div>
         </div>
       </div>
 
@@ -443,14 +475,7 @@
         </div>
       </div>
 
-      <div class="rep-section"><h3>イベント（メニュー別）</h3>
-        <div class="rep-cols">
-          <div>${eventTable}</div>
-          <div class="chart"><div class="c-title">メニュー別 月間件数</div>${barsH(eventRows, { valueW: 46, labelW: 92 })}</div>
-        </div>
-      </div>
-
-      <div class="rep-foot">出典：アポツール（クリニックデータ／全ての予約／イベント）の画面表示。売上金額・患者個人情報は含みません。／作成日時：${new Date().toLocaleString("ja-JP")}</div>
+      <div class="rep-foot">出典：アポツール（クリニックデータ／全ての予約）の集計値＋矯正はカウント、売上は会計・レセコンから手入力。患者個人情報は含みません。／作成日時：${new Date().toLocaleString("ja-JP")}</div>
     `;
     document.querySelector("#report .report-page").innerHTML = page;
   }
@@ -462,7 +487,7 @@
     rows.push([{ v: `${clinic}　月次レポート　${monthLabel(monthEl.value)}`, bold: true }]);
     rows.push([]);
     SECTIONS.forEach((sec, i) => {
-      rows.push([{ v: `■ ${i + 1}. ${sec.title}`, bold: true }]);
+      rows.push([{ v: `■ ${i + 1}. ${sec.title}（${TAGN[sec.tag]}）`, bold: true }]);
       rows.push([{ v: "項目", bold: true }, { v: "値", bold: true }]);
       sec.fields.forEach((f) => { rows.push([f.label, f.unit === "%" ? (num(f.id) ? num(f.id) + "%" : "—") : num(f.id)]); });
       rows.push([]);
@@ -470,9 +495,10 @@
     const c = computed();
     rows.push([{ v: "■ 自動計算", bold: true }]);
     rows.push([{ v: "項目", bold: true }, { v: "値", bold: true }]);
-    [["当月キャンセル件数", c.cancel], ["キャンセル率", pctS(c.cancelRate)], ["自費率", pctS(c.jihiRate)],
-     ["定期検診 予約取得率", pctS(c.recallGet)], ["定期検診 来院率", pctS(c.recallVisit)], ["相談→検査率", pctS(c.kensaRate)],
-     ["目標達成率（予約）", pctS(c.targetYoyaku)], ["Web予約合計", c.webTotal], ["Web予約率", pctS(c.webRate)]
+    [["合計売上高", c.uriTotal], ["自費総額", c.jihiSougaku], ["当月キャンセル件数", c.cancel],
+     ["キャンセル率", pctS(c.cancelRate)], ["自費率", pctS(c.jihiRate)], ["定期検診 予約取得率", pctS(c.recallGet)],
+     ["定期検診 来院率", pctS(c.recallVisit)], ["相談→検査率", pctS(c.kensaRate)], ["矯正成約率（開始÷相談）", pctS(c.seiyakuRate)],
+     ["目標達成率（予約）", pctS(c.targetYoyaku)], ["Web予約率", pctS(c.webRate)]
     ].forEach((r) => rows.push([r[0], r[1]]));
     rows.push([]); rows.push([{ v: "作成日時：" + new Date().toLocaleString("ja-JP") }]);
     return rows;
