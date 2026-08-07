@@ -35,6 +35,12 @@
   .tag.count { background: #fdecd6; color: #9a5b12; }
   .tag.manual { background: #e6eefb; color: #25508a; }
 
+  .names-field { display: flex; flex-direction: column; gap: 4px; }
+  .names-field label { font-size: 13px; font-weight: 600; }
+  .names-count { color: var(--green-d); font-weight: 700; }
+  textarea.names-ta { width: 100%; min-height: 72px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; font-size: 13px; font-family: inherit; resize: vertical; }
+  .names-list { font-size: 11px; color: #52514e; line-height: 1.7; word-break: break-word; }
+
   fieldset.calc { background: #eef7f1; border-color: #cfe7da; }
   fieldset.calc legend { color: var(--green-d); }
   .calc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 6px 14px; }
@@ -206,7 +212,7 @@
  * ============================================================ */
 (function () {
   "use strict";
-  const KEY = "hakataStellaMonthly3:";
+  const KEY = "hakataStellaMonthly4:";
   const TAGN = { glance: "一目", count: "要カウント", manual: "手入力" };
 
   const SECTIONS = [
@@ -236,10 +242,10 @@
       { id: "v_cure", label: "区分 Cure", unit: "件" }, { id: "v_care", label: "区分 Care", unit: "件" },
       { id: "v_web_cure", label: "Web予約 Cure", unit: "件" }, { id: "v_web_care", label: "Web予約 Care", unit: "件" },
     ]},
-    { title: "矯正｜相談〜開始", src: "イベント／予約メニュー", tag: "count", note: "イベント画面に月間件数があれば一目・無ければ数える", fields: [
-      { id: "e_soudan", label: "相談", unit: "件" }, { id: "e_kensa", label: "検査", unit: "件" },
-      { id: "e_kaishi", label: "開始（契約）", unit: "件" }, { id: "e_setsumei", label: "治療計画説明（任意）", unit: "件" },
-      { id: "e_hotei", label: "保定コンサル（任意）", unit: "件" },
+    { title: "矯正（検査・説明・開始）", src: "先月の該当患者を氏名で入力（人数は自動集計）", tag: "count", type: "names", fields: [
+      { id: "km_kensa", label: "矯正検査した人", type: "names" },
+      { id: "km_setsumei", label: "治療計画説明した人", type: "names" },
+      { id: "km_kaishi", label: "矯正開始した人", type: "names" },
     ]},
     { title: "売上", src: "会計・レセコン（アポツール外）", tag: "manual", fields: [
       { id: "u_hoken", label: "保険点数（売上）", unit: "円" }, { id: "u_jihi", label: "自費（一般・審美）", unit: "円" },
@@ -259,6 +265,8 @@
   const rate = (a, b) => (b > 0 ? Math.round((a / b) * 1000) / 10 : null);
   const pctS = (v) => (v == null ? "—" : v + "%");
   const escX = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const namesList = (id) => (($(id) ? $(id).value : "") || "").split(/[\n,、，]/).map((s) => s.trim()).filter(Boolean);
+  const namesCount = (id) => namesList(id).length;
 
   function nowMonth() { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0"); }
   function monthLabel(ym) { const [y, m] = (ym || "").split("-"); return y && m ? `${y}年${Number(m)}月` : ym; }
@@ -268,10 +276,15 @@
   const form = $("f");
   SECTIONS.forEach((sec, i) => {
     const fs = document.createElement("fieldset");
-    const fields = sec.fields.map((f) => {
-      const step = f.unit === "%" ? ' step="0.1"' : "";
-      return `<div class="f"><label>${f.label}</label><input type="number"${step} id="${f.id}" /><span class="unit">${f.unit}</span></div>`;
-    }).join("");
+    let fields;
+    if (sec.type === "names") {
+      fields = sec.fields.map((f) => `<div class="names-field"><label>${f.label} <span class="names-count" id="cnt_${f.id}">0人</span></label><textarea id="${f.id}" class="names-ta" placeholder="1行に1名（例）&#10;田中 太郎"></textarea></div>`).join("");
+    } else {
+      fields = sec.fields.map((f) => {
+        const step = f.unit === "%" ? ' step="0.1"' : "";
+        return `<div class="f"><label>${f.label}</label><input type="number"${step} id="${f.id}" /><span class="unit">${f.unit}</span></div>`;
+      }).join("");
+    }
     const srcLine = `アポツール：${sec.src}` + (sec.note ? `（${sec.note}）` : "");
     fs.innerHTML = `<legend>${i + 1}. ${sec.title}<span class="tag ${sec.tag}">${TAGN[sec.tag]}</span></legend><div class="src">${srcLine}</div><div class="grid">${fields}</div>`;
     form.appendChild(fs);
@@ -292,8 +305,10 @@
       jihiRate: rate(num("j_jihi"), num("j_jihi") + num("j_hoken")),
       recallGet: rate(num("r_yoyaku"), num("r_taisho")),
       recallVisit: rate(num("r_raiin"), num("r_yoyaku")),
-      kensaRate: rate(num("e_kensa"), num("e_soudan")),
-      seiyakuRate: rate(num("e_kaishi"), num("e_soudan")),
+      kensaN: namesCount("km_kensa"), setsumeiN: namesCount("km_setsumei"), kaishiN: namesCount("km_kaishi"),
+      kensaSetsumei: rate(namesCount("km_setsumei"), namesCount("km_kensa")),
+      setsumeiKaishi: rate(namesCount("km_kaishi"), namesCount("km_setsumei")),
+      kensaKaishi: rate(namesCount("km_kaishi"), namesCount("km_kensa")),
       targetYoyaku: rate(num("d_yoyaku"), num("t_yoyaku")),
       webRate: rate(num("v_web_cure") + num("v_web_care"), num("v_total")),
       webTotal: num("v_web_cure") + num("v_web_care"),
@@ -301,11 +316,12 @@
   }
   function recompute() {
     const c = computed();
+    ["km_kensa", "km_setsumei", "km_kaishi"].forEach((id) => { const el = $("cnt_" + id); if (el) el.textContent = namesCount(id) + "人"; });
     const rows = [
       ["合計売上高", yen(c.uriTotal)], ["自費総額", yen(c.jihiSougaku)],
       ["キャンセル件数合計", nf(c.cancel) + " 件"], ["キャンセル率", pctS(c.cancelRate)],
       ["自費率", pctS(c.jihiRate)], ["定期検診 予約取得率", pctS(c.recallGet)], ["定期検診 来院率", pctS(c.recallVisit)],
-      ["相談→検査率", pctS(c.kensaRate)], ["矯正成約率（開始÷相談）", pctS(c.seiyakuRate)],
+      ["矯正 検査→説明率", pctS(c.kensaSetsumei)], ["矯正 検査→開始率", pctS(c.kensaKaishi)],
       ["目標達成率（予約）", pctS(c.targetYoyaku)], ["Web予約率", pctS(c.webRate)],
     ];
     $("calc").innerHTML = rows.map((r) => `<div class="f"><label>${r[0]}</label><span class="cv">${r[1]}</span></div>`).join("");
@@ -367,7 +383,7 @@
       { label: "雑収入", value: num("u_zatsu"), display: yen(num("u_zatsu")) },
     ];
     const kyoseiFunnel = [
-      { label: "相談", value: num("e_soudan") }, { label: "検査", value: num("e_kensa") }, { label: "開始", value: num("e_kaishi") },
+      { label: "検査", value: c.kensaN }, { label: "説明", value: c.setsumeiN }, { label: "開始", value: c.kaishiN },
     ];
     const cancelRows = [
       { label: "事前", value: num("c_jizen") }, { label: "当日", value: num("c_touji") }, { label: "無断", value: num("c_muidan") },
@@ -403,9 +419,10 @@
       ["自費件数", nf(num("j_jihi")) + " 件"], ["保険件数", nf(num("j_hoken")) + " 件"], ["自費率", pctS(c.jihiRate), "sub"],
     ]);
     const kyoseiTable = kvTable([
-      ["相談", nf(num("e_soudan")) + " 件"], ["検査", nf(num("e_kensa")) + " 件"], ["開始（契約）", nf(num("e_kaishi")) + " 件"],
-      ["相談→検査率", pctS(c.kensaRate), "sub"], ["矯正成約率（開始÷相談）", pctS(c.seiyakuRate), "total"],
+      ["矯正検査", c.kensaN + " 人"], ["治療計画説明", c.setsumeiN + " 人"], ["矯正開始", c.kaishiN + " 人"],
+      ["検査→説明率", pctS(c.kensaSetsumei), "sub"], ["検査→開始率", pctS(c.kensaKaishi), "total"],
     ]);
+    const kyoseiNames = `<div class="tbl-title" style="margin-top:8px">対象者（氏名）</div><div class="names-list"><b>検査</b>：${escX(namesList("km_kensa").join("、") || "—")}<br><b>説明</b>：${escX(namesList("km_setsumei").join("、") || "—")}<br><b>開始</b>：${escX(namesList("km_kaishi").join("、") || "—")}</div>`;
     const recallTable = kvTable([
       ["対象者数", nf(num("r_taisho")) + " 人"], ["予約者数", nf(num("r_yoyaku")) + " 人"],
       ["予約取得率", pctS(c.recallGet), "sub"], ["来院数", nf(num("r_raiin")) + " 人"],
@@ -429,7 +446,7 @@
         ${kpi("合計売上高", yen(c.uriTotal))}
         ${kpi("総予約件数", nf(num("d_yoyaku")) + " 件", "来院 " + nf(num("d_raiin")) + " 人")}
         ${kpi("キャンセル率", pctS(c.cancelRate), "無断 " + nf(num("c_muidan")) + " 件")}
-        ${kpi("矯正成約率", pctS(c.seiyakuRate), "開始 " + nf(num("e_kaishi")) + " 件")}
+        ${kpi("矯正開始", nf(c.kaishiN) + " 人", "検査→開始 " + pctS(c.kensaKaishi))}
       </div>
 
       <div class="rep-section"><h3>売上</h3>
@@ -447,10 +464,10 @@
         </div>
       </div>
 
-      <div class="rep-section"><h3>矯正（相談〜開始）</h3>
+      <div class="rep-section"><h3>矯正（検査・説明・開始）</h3>
         <div class="rep-cols">
-          <div>${kyoseiTable}</div>
-          <div class="chart"><div class="c-title">矯正ファネル（件）</div>${barsH(kyoseiFunnel, { valueW: 46, labelW: 56 })}</div>
+          <div>${kyoseiTable}${kyoseiNames}</div>
+          <div class="chart"><div class="c-title">矯正ファネル（人）</div>${barsH(kyoseiFunnel, { valueW: 46, labelW: 56 })}</div>
         </div>
       </div>
 
@@ -489,7 +506,15 @@
     SECTIONS.forEach((sec, i) => {
       rows.push([{ v: `■ ${i + 1}. ${sec.title}（${TAGN[sec.tag]}）`, bold: true }]);
       rows.push([{ v: "項目", bold: true }, { v: "値", bold: true }]);
-      sec.fields.forEach((f) => { rows.push([f.label, f.unit === "%" ? (num(f.id) ? num(f.id) + "%" : "—") : num(f.id)]); });
+      sec.fields.forEach((f) => {
+        if (f.type === "names") {
+          const list = namesList(f.id);
+          rows.push([f.label + "（人数）", list.length]);
+          rows.push([f.label + " 氏名", list.join("、")]);
+        } else {
+          rows.push([f.label, f.unit === "%" ? (num(f.id) ? num(f.id) + "%" : "—") : num(f.id)]);
+        }
+      });
       rows.push([]);
     });
     const c = computed();
@@ -497,7 +522,7 @@
     rows.push([{ v: "項目", bold: true }, { v: "値", bold: true }]);
     [["合計売上高", c.uriTotal], ["自費総額", c.jihiSougaku], ["当月キャンセル件数", c.cancel],
      ["キャンセル率", pctS(c.cancelRate)], ["自費率", pctS(c.jihiRate)], ["定期検診 予約取得率", pctS(c.recallGet)],
-     ["定期検診 来院率", pctS(c.recallVisit)], ["相談→検査率", pctS(c.kensaRate)], ["矯正成約率（開始÷相談）", pctS(c.seiyakuRate)],
+     ["定期検診 来院率", pctS(c.recallVisit)], ["矯正 検査→説明率", pctS(c.kensaSetsumei)], ["矯正 検査→開始率", pctS(c.kensaKaishi)],
      ["目標達成率（予約）", pctS(c.targetYoyaku)], ["Web予約率", pctS(c.webRate)]
     ].forEach((r) => rows.push([r[0], r[1]]));
     rows.push([]); rows.push([{ v: "作成日時：" + new Date().toLocaleString("ja-JP") }]);
