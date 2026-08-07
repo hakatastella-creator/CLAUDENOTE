@@ -90,6 +90,7 @@
   table.rep td { text-align: right; font-variant-numeric: tabular-nums; }
   table.rep th.lab { font-weight: 600; }
   table.rep tr.total th, table.rep tr.total td { background: #f2f7f4; font-weight: 700; }
+  table.rep tr.rep-spacer td { border: none; height: 8px; padding: 0; background: #fff; }
   table.rep tr.sub th, table.rep tr.sub td { background: #f7fafc; font-weight: 600; }
   .tbl-title { font-size: 11px; color: var(--muted); margin: 0 0 4px; }
   .chart .c-title { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
@@ -220,7 +221,7 @@
  * ============================================================ */
 (function () {
   "use strict";
-  const KEY = "hakataStellaMonthly5:";
+  const KEY = "hakataStellaMonthly6:";
   const TAGN = { glance: "一目", count: "要カウント", manual: "手入力" };
 
   const SECTIONS = [
@@ -261,7 +262,8 @@
       { id: "ub_hifu", label: "ハイフ", unit: "円" },
       { id: "ub_white", label: "ホワイトニング", unit: "円" },
       { head: "自費 内訳（ハイフ・WT以外の自費診療）" },
-      { id: "uj_zirconia", label: "ジルコニア", unit: "円" },
+      { id: "uj_zir_inlay", label: "ジルコニア インレー", unit: "円" },
+      { id: "uj_zir_crown", label: "ジルコニア クラウン", unit: "円" },
       { id: "uj_ceramic", label: "セラミック", unit: "円" },
       { id: "uj_laminate", label: "ラミネート", unit: "円" },
       { id: "uj_db", label: "ダイレクトボンディング", unit: "円" },
@@ -349,7 +351,7 @@
     const cancel = num("c_jizen") + num("c_touji") + num("c_muidan");
     const kyoseiUri = num("uk_full") + num("uk_mod") + num("uk_light");
     const biyoUri = num("ub_hifu") + num("ub_white");
-    const jihiUri = num("uj_zirconia") + num("uj_ceramic") + num("uj_laminate") + num("uj_db") + num("uj_botox") + num("uj_other");
+    const jihiUri = num("uj_zir_inlay") + num("uj_zir_crown") + num("uj_ceramic") + num("uj_laminate") + num("uj_db") + num("uj_botox") + num("uj_other");
     const jihiSougaku = kyoseiUri + biyoUri + jihiUri + num("u_cancel");
     const uriTotal = num("u_hoken") + jihiSougaku + num("u_zatsu");
     const pipe = readPipeline();
@@ -418,7 +420,7 @@
     return `<svg viewBox="0 0 ${W} ${H}" class="chart-svg" preserveAspectRatio="xMinYMin meet" role="img">${s}</svg>`;
   }
   function kvTable(rows) {
-    return `<table class="rep"><tbody>${rows.map((r) => `<tr class="${r[2] || ""}"><th class="lab">${escX(r[0])}</th><td>${r[1]}</td></tr>`).join("")}</tbody></table>`;
+    return `<table class="rep"><tbody>${rows.map((r) => r === "spacer" ? `<tr class="rep-spacer"><td colspan="2"></td></tr>` : `<tr class="${r[2] || ""}"><th class="lab">${escX(r[0])}</th><td>${r[1]}</td></tr>`).join("")}</tbody></table>`;
   }
 
   // ---- レポート ----
@@ -441,7 +443,8 @@
       { label: "ライト", value: num("uk_light"), display: yen(num("uk_light")) },
     ];
     const jihiUchiwake = [
-      { label: "ジルコニア", value: num("uj_zirconia"), display: yen(num("uj_zirconia")) },
+      { label: "ジルコニアIN", value: num("uj_zir_inlay"), display: yen(num("uj_zir_inlay")) },
+      { label: "ジルコニアCR", value: num("uj_zir_crown"), display: yen(num("uj_zir_crown")) },
       { label: "セラミック", value: num("uj_ceramic"), display: yen(num("uj_ceramic")) },
       { label: "ラミネート", value: num("uj_laminate"), display: yen(num("uj_laminate")) },
       { label: "ダイレクトBD", value: num("uj_db"), display: yen(num("uj_db")) },
@@ -474,14 +477,15 @@
     ];
 
     const salesTable = kvTable([
-      ["保険点数（売上）", yen(num("u_hoken"))],
+      ["保険点数（売上）", yen(num("u_hoken"))], "spacer",
       ["矯正 フル", yen(num("uk_full"))], ["矯正 モデレート", yen(num("uk_mod"))], ["矯正 ライト", yen(num("uk_light"))],
-      ["矯正 計", yen(c.kyoseiUri), "sub"],
-      ["ハイフ", yen(num("ub_hifu"))], ["ホワイトニング", yen(num("ub_white"))], ["美容 計", yen(c.biyoUri), "sub"],
-      ["ジルコニア", yen(num("uj_zirconia"))], ["セラミック", yen(num("uj_ceramic"))], ["ラミネート", yen(num("uj_laminate"))],
+      ["矯正 計", yen(c.kyoseiUri), "sub"], "spacer",
+      ["ハイフ", yen(num("ub_hifu"))], ["ホワイトニング", yen(num("ub_white"))], ["美容 計", yen(c.biyoUri), "sub"], "spacer",
+      ["ジルコニア インレー", yen(num("uj_zir_inlay"))], ["ジルコニア クラウン", yen(num("uj_zir_crown"))],
+      ["セラミック", yen(num("uj_ceramic"))], ["ラミネート", yen(num("uj_laminate"))],
       ["ダイレクトボンディング", yen(num("uj_db"))], ["ボトックス", yen(num("uj_botox"))], ["その他自費", yen(num("uj_other"))],
-      ["自費 計", yen(c.jihiUri), "sub"],
-      ["キャンセル料", yen(num("u_cancel"))], ["雑収入", yen(num("u_zatsu"))],
+      ["自費 計", yen(c.jihiUri), "sub"], "spacer",
+      ["キャンセル料", yen(num("u_cancel"))], ["雑収入", yen(num("u_zatsu"))], "spacer",
       ["自費総額", yen(c.jihiSougaku), "sub"], ["合計売上高", yen(c.uriTotal), "total"],
     ]);
     const yoyakuTable = kvTable([
@@ -595,9 +599,9 @@
         rows.push([f.label, f.unit === "%" ? (num(f.id) ? num(f.id) + "%" : "—") : num(f.id)]);
       });
       if (sec.title === "売上") {
-        rows.push([{ v: "矯正 計", bold: true }, c.kyoseiUri]);
-        rows.push([{ v: "美容 計", bold: true }, c.biyoUri]);
-        rows.push([{ v: "自費 計", bold: true }, c.jihiUri]);
+        rows.push([{ v: "矯正 計", bold: true }, c.kyoseiUri]); rows.push([]);
+        rows.push([{ v: "美容 計", bold: true }, c.biyoUri]); rows.push([]);
+        rows.push([{ v: "自費 計", bold: true }, c.jihiUri]); rows.push([]);
         rows.push([{ v: "自費総額", bold: true }, c.jihiSougaku]);
         rows.push([{ v: "合計売上高", bold: true }, c.uriTotal]);
       }
