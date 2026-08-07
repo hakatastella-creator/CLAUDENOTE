@@ -29,6 +29,7 @@
   .f label { font-size: 13px; }
   .f input { width: 110px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; font-size: 14px; text-align: right; }
   .f .unit { font-size: 12px; color: var(--dim); width: 20px; }
+  .grid .subhead { grid-column: 1 / -1; font-weight: 600; font-size: 12px; color: var(--green-d); margin: 6px 0 0; padding-bottom: 2px; border-bottom: 1px dashed var(--line); }
 
   .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 10px; margin-left: 6px; vertical-align: middle; }
   .tag.glance { background: #d8f0e3; color: #176c47; }
@@ -219,7 +220,7 @@
  * ============================================================ */
 (function () {
   "use strict";
-  const KEY = "hakataStellaMonthly4:";
+  const KEY = "hakataStellaMonthly5:";
   const TAGN = { glance: "一目", count: "要カウント", manual: "手入力" };
 
   const SECTIONS = [
@@ -251,13 +252,27 @@
     ]},
     { title: "矯正パイプライン", src: "検査→説明予約→治療計画説明→支払→開始 を患者ごとに管理（先月を複製して更新）", tag: "count", type: "pipeline", fields: [] },
     { title: "売上", src: "会計・レセコン（アポツール外）", tag: "manual", fields: [
-      { id: "u_hoken", label: "保険点数（売上）", unit: "円" }, { id: "u_jihi", label: "自費（一般・審美）", unit: "円" },
-      { id: "u_kyosei", label: "矯正 売上", unit: "円" }, { id: "u_white", label: "ホワイトニング 売上", unit: "円" },
-      { id: "u_biyo", label: "美容 売上（WT除く）", unit: "円" }, { id: "u_cancel", label: "キャンセル料", unit: "円" },
+      { id: "u_hoken", label: "保険点数（売上）", unit: "円" },
+      { head: "矯正 内訳" },
+      { id: "uk_full", label: "フル", unit: "円" },
+      { id: "uk_mod", label: "モデレート", unit: "円" },
+      { id: "uk_light", label: "ライト", unit: "円" },
+      { head: "美容 内訳（ハイフ・ホワイトニング）" },
+      { id: "ub_hifu", label: "ハイフ", unit: "円" },
+      { id: "ub_white", label: "ホワイトニング", unit: "円" },
+      { head: "自費 内訳（ハイフ・WT以外の自費診療）" },
+      { id: "uj_zirconia", label: "ジルコニア", unit: "円" },
+      { id: "uj_ceramic", label: "セラミック", unit: "円" },
+      { id: "uj_laminate", label: "ラミネート", unit: "円" },
+      { id: "uj_db", label: "ダイレクトボンディング", unit: "円" },
+      { id: "uj_botox", label: "ボトックス", unit: "円" },
+      { id: "uj_other", label: "その他自費", unit: "円" },
+      { head: "その他" },
+      { id: "u_cancel", label: "キャンセル料", unit: "円" },
       { id: "u_zatsu", label: "雑収入", unit: "円" },
     ]},
   ];
-  const ALL = SECTIONS.flatMap((s) => s.fields);
+  const ALL = SECTIONS.flatMap((s) => s.fields).filter((f) => f.id);
 
   const $ = (id) => document.getElementById(id);
   const monthEl = $("month");
@@ -316,6 +331,7 @@
         `<button type="button" class="ghost" id="pipe-add">＋ 患者を追加</button>`;
     } else {
       const fields = sec.fields.map((f) => {
+        if (f.head) return `<div class="subhead">${f.head}</div>`;
         const step = f.unit === "%" ? ' step="0.1"' : "";
         return `<div class="f"><label>${f.label}</label><input type="number"${step} id="${f.id}" /><span class="unit">${f.unit}</span></div>`;
       }).join("");
@@ -331,12 +347,15 @@
   // ---- 計算 ----
   function computed() {
     const cancel = num("c_jizen") + num("c_touji") + num("c_muidan");
-    const uriTotal = num("u_hoken") + num("u_jihi") + num("u_kyosei") + num("u_white") + num("u_biyo") + num("u_cancel") + num("u_zatsu");
-    const jihiSougaku = num("u_jihi") + num("u_kyosei") + num("u_white") + num("u_biyo") + num("u_cancel");
+    const kyoseiUri = num("uk_full") + num("uk_mod") + num("uk_light");
+    const biyoUri = num("ub_hifu") + num("ub_white");
+    const jihiUri = num("uj_zirconia") + num("uj_ceramic") + num("uj_laminate") + num("uj_db") + num("uj_botox") + num("uj_other");
+    const jihiSougaku = kyoseiUri + biyoUri + jihiUri + num("u_cancel");
+    const uriTotal = num("u_hoken") + jihiSougaku + num("u_zatsu");
     const pipe = readPipeline();
     const pc = (s) => pipe.filter((p) => p[s]).length;
     return {
-      cancel, uriTotal, jihiSougaku, pipe,
+      cancel, uriTotal, jihiSougaku, kyoseiUri, biyoUri, jihiUri, pipe,
       cancelRate: rate(cancel, num("d_yoyaku")),
       jihiRate: rate(num("j_jihi"), num("j_jihi") + num("j_hoken")),
       recallGet: rate(num("r_yoyaku"), num("r_taisho")),
@@ -353,6 +372,7 @@
     const c = computed();
     const rows = [
       ["合計売上高", yen(c.uriTotal)], ["自費総額", yen(c.jihiSougaku)],
+      ["矯正 売上計", yen(c.kyoseiUri)], ["美容 売上計", yen(c.biyoUri)], ["自費 売上計", yen(c.jihiUri)],
       ["キャンセル件数合計", nf(c.cancel) + " 件"], ["キャンセル率", pctS(c.cancelRate)],
       ["自費率", pctS(c.jihiRate)], ["定期検診 予約取得率", pctS(c.recallGet)], ["定期検診 来院率", pctS(c.recallVisit)],
       ["矯正 検査/説明/支払/開始", `${c.kensaN} / ${c.setsumeiN} / ${c.shiharaiN} / ${c.kaishiN} 人`],
@@ -408,13 +428,25 @@
     const c = computed();
     const kpi = (l, v, s) => `<div class="kpi-card"><div class="k-label">${l}</div><div class="k-value">${v}</div><div class="k-sub">${s || ""}</div></div>`;
 
-    const salesRows = [
+    const salesCat = [
       { label: "保険点数", value: num("u_hoken"), display: yen(num("u_hoken")) },
-      { label: "自費(一般)", value: num("u_jihi"), display: yen(num("u_jihi")) },
-      { label: "矯正", value: num("u_kyosei"), display: yen(num("u_kyosei")) },
-      { label: "ホワイトニング", value: num("u_white"), display: yen(num("u_white")) },
-      { label: "美容", value: num("u_biyo"), display: yen(num("u_biyo")) },
+      { label: "矯正", value: c.kyoseiUri, display: yen(c.kyoseiUri) },
+      { label: "美容", value: c.biyoUri, display: yen(c.biyoUri) },
+      { label: "自費", value: c.jihiUri, display: yen(c.jihiUri) },
       { label: "雑収入", value: num("u_zatsu"), display: yen(num("u_zatsu")) },
+    ];
+    const kyoseiUchiwake = [
+      { label: "フル", value: num("uk_full"), display: yen(num("uk_full")) },
+      { label: "モデレート", value: num("uk_mod"), display: yen(num("uk_mod")) },
+      { label: "ライト", value: num("uk_light"), display: yen(num("uk_light")) },
+    ];
+    const jihiUchiwake = [
+      { label: "ジルコニア", value: num("uj_zirconia"), display: yen(num("uj_zirconia")) },
+      { label: "セラミック", value: num("uj_ceramic"), display: yen(num("uj_ceramic")) },
+      { label: "ラミネート", value: num("uj_laminate"), display: yen(num("uj_laminate")) },
+      { label: "ダイレクトBD", value: num("uj_db"), display: yen(num("uj_db")) },
+      { label: "ボトックス", value: num("uj_botox"), display: yen(num("uj_botox")) },
+      { label: "その他", value: num("uj_other"), display: yen(num("uj_other")) },
     ];
     const kyoseiFunnel = [
       { label: "検査", value: c.kensaN }, { label: "説明予約", value: c.yoyakuN }, { label: "説明", value: c.setsumeiN },
@@ -442,9 +474,14 @@
     ];
 
     const salesTable = kvTable([
-      ["保険点数（売上）", yen(num("u_hoken"))], ["自費（一般・審美）", yen(num("u_jihi"))],
-      ["矯正 売上", yen(num("u_kyosei"))], ["ホワイトニング 売上", yen(num("u_white"))],
-      ["美容 売上", yen(num("u_biyo"))], ["キャンセル料", yen(num("u_cancel"))], ["雑収入", yen(num("u_zatsu"))],
+      ["保険点数（売上）", yen(num("u_hoken"))],
+      ["矯正 フル", yen(num("uk_full"))], ["矯正 モデレート", yen(num("uk_mod"))], ["矯正 ライト", yen(num("uk_light"))],
+      ["矯正 計", yen(c.kyoseiUri), "sub"],
+      ["ハイフ", yen(num("ub_hifu"))], ["ホワイトニング", yen(num("ub_white"))], ["美容 計", yen(c.biyoUri), "sub"],
+      ["ジルコニア", yen(num("uj_zirconia"))], ["セラミック", yen(num("uj_ceramic"))], ["ラミネート", yen(num("uj_laminate"))],
+      ["ダイレクトボンディング", yen(num("uj_db"))], ["ボトックス", yen(num("uj_botox"))], ["その他自費", yen(num("uj_other"))],
+      ["自費 計", yen(c.jihiUri), "sub"],
+      ["キャンセル料", yen(num("u_cancel"))], ["雑収入", yen(num("u_zatsu"))],
       ["自費総額", yen(c.jihiSougaku), "sub"], ["合計売上高", yen(c.uriTotal), "total"],
     ]);
     const yoyakuTable = kvTable([
@@ -489,7 +526,9 @@
       <div class="rep-section"><h3>売上</h3>
         <div class="rep-cols">
           <div>${salesTable}</div>
-          <div class="chart"><div class="c-title">売上構成</div>${barsH(salesRows, { valueW: 100, labelW: 100 })}</div>
+          <div class="chart"><div class="c-title">売上構成（カテゴリ別）</div>${barsH(salesCat, { valueW: 96, labelW: 72 })}
+            <div class="c-title" style="margin-top:10px">矯正 内訳</div>${barsH(kyoseiUchiwake, { valueW: 96, labelW: 76 })}
+            <div class="c-title" style="margin-top:10px">自費 内訳</div>${barsH(jihiUchiwake, { valueW: 90, labelW: 84 })}</div>
         </div>
       </div>
 
@@ -551,12 +590,22 @@
         return;
       }
       rows.push([{ v: "項目", bold: true }, { v: "値", bold: true }]);
-      sec.fields.forEach((f) => { rows.push([f.label, f.unit === "%" ? (num(f.id) ? num(f.id) + "%" : "—") : num(f.id)]); });
+      sec.fields.forEach((f) => {
+        if (f.head) { rows.push([{ v: "〔" + f.head + "〕", bold: true }]); return; }
+        rows.push([f.label, f.unit === "%" ? (num(f.id) ? num(f.id) + "%" : "—") : num(f.id)]);
+      });
+      if (sec.title === "売上") {
+        rows.push([{ v: "矯正 計", bold: true }, c.kyoseiUri]);
+        rows.push([{ v: "美容 計", bold: true }, c.biyoUri]);
+        rows.push([{ v: "自費 計", bold: true }, c.jihiUri]);
+        rows.push([{ v: "自費総額", bold: true }, c.jihiSougaku]);
+        rows.push([{ v: "合計売上高", bold: true }, c.uriTotal]);
+      }
       rows.push([]);
     });
     rows.push([{ v: "■ 自動計算", bold: true }]);
     rows.push([{ v: "項目", bold: true }, { v: "値", bold: true }]);
-    [["合計売上高", c.uriTotal], ["自費総額", c.jihiSougaku], ["当月キャンセル件数", c.cancel],
+    [["合計売上高", c.uriTotal], ["自費総額", c.jihiSougaku], ["矯正 売上計", c.kyoseiUri], ["美容 売上計", c.biyoUri], ["自費 売上計", c.jihiUri], ["当月キャンセル件数", c.cancel],
      ["キャンセル率", pctS(c.cancelRate)], ["自費率", pctS(c.jihiRate)], ["定期検診 予約取得率", pctS(c.recallGet)],
      ["定期検診 来院率", pctS(c.recallVisit)], ["矯正 検査/説明予約/説明/支払/開始（人）", `${c.kensaN}/${c.yoyakuN}/${c.setsumeiN}/${c.shiharaiN}/${c.kaishiN}`],
      ["目標達成率（予約）", pctS(c.targetYoyaku)], ["Web予約率", pctS(c.webRate)]
