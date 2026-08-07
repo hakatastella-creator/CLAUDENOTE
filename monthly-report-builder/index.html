@@ -221,7 +221,7 @@
  * ============================================================ */
 (function () {
   "use strict";
-  const KEY = "hakataStellaMonthly6:";
+  const KEY = "hakataStellaMonthly7:";
   const TAGN = { glance: "一目", count: "要カウント", manual: "手入力" };
 
   const SECTIONS = [
@@ -262,12 +262,11 @@
       { id: "ub_hifu", label: "ハイフ", unit: "円" },
       { id: "ub_white", label: "ホワイトニング", unit: "円" },
       { head: "自費 内訳（ハイフ・WT以外の自費診療）" },
-      { id: "uj_zir_inlay", label: "ジルコニア インレー", unit: "円" },
-      { id: "uj_zir_crown", label: "ジルコニア クラウン", unit: "円" },
-      { id: "uj_ceramic", label: "セラミック", unit: "円" },
-      { id: "uj_laminate", label: "ラミネート", unit: "円" },
-      { id: "uj_db", label: "ダイレクトボンディング", unit: "円" },
+      { id: "uj_inlay", label: "インレー", unit: "円" },
+      { id: "uj_crown", label: "クラウン", unit: "円" },
       { id: "uj_botox", label: "ボトックス", unit: "円" },
+      { id: "uj_db", label: "ダイレクトボンディング", unit: "円" },
+      { id: "uj_laminate", label: "ラミネート（任意）", unit: "円" },
       { id: "uj_other", label: "その他自費", unit: "円" },
       { head: "その他" },
       { id: "u_cancel", label: "キャンセル料", unit: "円" },
@@ -351,7 +350,7 @@
     const cancel = num("c_jizen") + num("c_touji") + num("c_muidan");
     const kyoseiUri = num("uk_full") + num("uk_mod") + num("uk_light");
     const biyoUri = num("ub_hifu") + num("ub_white");
-    const jihiUri = num("uj_zir_inlay") + num("uj_zir_crown") + num("uj_ceramic") + num("uj_laminate") + num("uj_db") + num("uj_botox") + num("uj_other");
+    const jihiUri = num("uj_inlay") + num("uj_crown") + num("uj_botox") + num("uj_db") + num("uj_laminate") + num("uj_other");
     const jihiSougaku = kyoseiUri + biyoUri + jihiUri + num("u_cancel");
     const uriTotal = num("u_hoken") + jihiSougaku + num("u_zatsu");
     const pipe = readPipeline();
@@ -443,12 +442,11 @@
       { label: "ライト", value: num("uk_light"), display: yen(num("uk_light")) },
     ];
     const jihiUchiwake = [
-      { label: "ジルコニアIN", value: num("uj_zir_inlay"), display: yen(num("uj_zir_inlay")) },
-      { label: "ジルコニアCR", value: num("uj_zir_crown"), display: yen(num("uj_zir_crown")) },
-      { label: "セラミック", value: num("uj_ceramic"), display: yen(num("uj_ceramic")) },
-      { label: "ラミネート", value: num("uj_laminate"), display: yen(num("uj_laminate")) },
-      { label: "ダイレクトBD", value: num("uj_db"), display: yen(num("uj_db")) },
+      { label: "インレー", value: num("uj_inlay"), display: yen(num("uj_inlay")) },
+      { label: "クラウン", value: num("uj_crown"), display: yen(num("uj_crown")) },
       { label: "ボトックス", value: num("uj_botox"), display: yen(num("uj_botox")) },
+      { label: "ダイレクトBD", value: num("uj_db"), display: yen(num("uj_db")) },
+      { label: "ラミネート", value: num("uj_laminate"), display: yen(num("uj_laminate")) },
       { label: "その他", value: num("uj_other"), display: yen(num("uj_other")) },
     ];
     const kyoseiFunnel = [
@@ -481,9 +479,9 @@
       ["矯正 フル", yen(num("uk_full"))], ["矯正 モデレート", yen(num("uk_mod"))], ["矯正 ライト", yen(num("uk_light"))],
       ["矯正 計", yen(c.kyoseiUri), "sub"], "spacer",
       ["ハイフ", yen(num("ub_hifu"))], ["ホワイトニング", yen(num("ub_white"))], ["美容 計", yen(c.biyoUri), "sub"], "spacer",
-      ["ジルコニア インレー", yen(num("uj_zir_inlay"))], ["ジルコニア クラウン", yen(num("uj_zir_crown"))],
-      ["セラミック", yen(num("uj_ceramic"))], ["ラミネート", yen(num("uj_laminate"))],
-      ["ダイレクトボンディング", yen(num("uj_db"))], ["ボトックス", yen(num("uj_botox"))], ["その他自費", yen(num("uj_other"))],
+      ["インレー", yen(num("uj_inlay"))], ["クラウン", yen(num("uj_crown"))],
+      ["ボトックス", yen(num("uj_botox"))], ["ダイレクトボンディング", yen(num("uj_db"))],
+      ["ラミネート（任意）", yen(num("uj_laminate"))], ["その他自費", yen(num("uj_other"))],
       ["自費 計", yen(c.jihiUri), "sub"], "spacer",
       ["キャンセル料", yen(num("u_cancel"))], ["雑収入", yen(num("u_zatsu"))], "spacer",
       ["自費総額", yen(c.jihiSougaku), "sub"], ["合計売上高", yen(c.uriTotal), "total"],
