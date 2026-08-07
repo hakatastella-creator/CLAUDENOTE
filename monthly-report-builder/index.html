@@ -246,11 +246,6 @@
       { id: "rk_a", label: "患者ランク A", unit: "人" }, { id: "rk_b", label: "患者ランク B", unit: "人" },
       { id: "rk_c", label: "患者ランク C", unit: "人" }, { id: "rk_none", label: "患者ランク なし", unit: "人" },
     ]},
-    { title: "全ての予約｜予約区分", src: "/user/patient/reservation", tag: "glance", fields: [
-      { id: "v_total", label: "今月の予約総数", unit: "件" }, { id: "v_jihi", label: "区分 自費", unit: "件" },
-      { id: "v_cure", label: "区分 Cure", unit: "件" }, { id: "v_care", label: "区分 Care", unit: "件" },
-      { id: "v_web_cure", label: "Web予約 Cure", unit: "件" }, { id: "v_web_care", label: "Web予約 Care", unit: "件" },
-    ]},
     { title: "矯正パイプライン", src: "検査→説明予約→治療計画説明→支払→開始 を患者ごとに管理（先月を複製して更新）", tag: "count", type: "pipeline", fields: [] },
     { title: "売上", src: "会計・レセコン（アポツール外）", tag: "manual", fields: [
       { id: "u_hoken", label: "保険点数（売上）", unit: "円" },
@@ -365,8 +360,6 @@
       setsumeiMibarai: pipe.filter((p) => p.setsumei && !p.shiharai).length,
       shiharaiMikaishi: pipe.filter((p) => p.shiharai && !p.kaishi).length,
       targetYoyaku: rate(num("d_yoyaku"), num("t_yoyaku")),
-      webRate: rate(num("v_web_cure") + num("v_web_care"), num("v_total")),
-      webTotal: num("v_web_cure") + num("v_web_care"),
     };
   }
   function recompute() {
@@ -377,7 +370,7 @@
       ["キャンセル件数合計", nf(c.cancel) + " 件"], ["キャンセル率", pctS(c.cancelRate)],
       ["自費率", pctS(c.jihiRate)], ["定期検診 予約取得率", pctS(c.recallGet)], ["定期検診 来院率", pctS(c.recallVisit)],
       ["矯正 検査/説明/支払/開始", `${c.kensaN} / ${c.setsumeiN} / ${c.shiharaiN} / ${c.kaishiN} 人`],
-      ["目標達成率（予約）", pctS(c.targetYoyaku)], ["Web予約率", pctS(c.webRate)],
+      ["目標達成率（予約）", pctS(c.targetYoyaku)],
     ];
     $("calc").innerHTML = rows.map((r) => `<div class="f"><label>${r[0]}</label><span class="cv">${r[1]}</span></div>`).join("");
   }
@@ -470,10 +463,6 @@
       { label: "S", value: num("rk_s") }, { label: "A", value: num("rk_a") }, { label: "B", value: num("rk_b") },
       { label: "C", value: num("rk_c") }, { label: "なし", value: num("rk_none") },
     ];
-    const kubunRows = [
-      { label: "自費", value: num("v_jihi") }, { label: "Cure", value: num("v_cure") }, { label: "Care", value: num("v_care") },
-    ];
-
     const salesTable = kvTable([
       ["保険点数（売上）", yen(num("u_hoken"))], "spacer",
       ["矯正 フル", yen(num("uk_full"))], ["矯正 モデレート", yen(num("uk_mod"))], ["矯正 ライト", yen(num("uk_light"))],
@@ -508,12 +497,6 @@
       ["中断患者数", nf(num("x_chudan")) + " 人"],
       ["ランク S / A / B", nf(num("rk_s")) + " / " + nf(num("rk_a")) + " / " + nf(num("rk_b"))],
       ["ランク C / なし", nf(num("rk_c")) + " / " + nf(num("rk_none"))],
-    ]);
-    const kubunTable = kvTable([
-      ["今月の予約総数", nf(num("v_total")) + " 件"], ["区分 自費", nf(num("v_jihi")) + " 件"],
-      ["区分 Cure", nf(num("v_cure")) + " 件"], ["区分 Care", nf(num("v_care")) + " 件"],
-      ["Web予約 Cure", nf(num("v_web_cure")) + " 件"], ["Web予約 Care", nf(num("v_web_care")) + " 件"],
-      ["Web予約率", pctS(c.webRate), "sub"],
     ]);
 
     const page = `
@@ -563,14 +546,7 @@
         </div>
       </div>
 
-      <div class="rep-section"><h3>予約区分（全ての予約）</h3>
-        <div class="rep-cols">
-          <div>${kubunTable}</div>
-          <div class="chart"><div class="c-title">区分別 件数</div>${barsH(kubunRows, { valueW: 46, labelW: 56 })}</div>
-        </div>
-      </div>
-
-      <div class="rep-foot">出典：アポツール（クリニックデータ／全ての予約）の集計値＋矯正はカウント、売上は会計・レセコンから手入力。患者個人情報は含みません。／作成日時：${new Date().toLocaleString("ja-JP")}</div>
+      <div class="rep-foot">出典：アポツール（クリニックデータ）の集計値＋矯正はカウント、売上は会計・レセコンから手入力。患者個人情報は含みません。／作成日時：${new Date().toLocaleString("ja-JP")}</div>
     `;
     document.querySelector("#report .report-page").innerHTML = page;
   }
@@ -610,7 +586,7 @@
     [["合計売上高", c.uriTotal], ["自費総額", c.jihiSougaku], ["矯正 売上計", c.kyoseiUri], ["美容 売上計", c.biyoUri], ["自費 売上計", c.jihiUri], ["当月キャンセル件数", c.cancel],
      ["キャンセル率", pctS(c.cancelRate)], ["自費率", pctS(c.jihiRate)], ["定期検診 予約取得率", pctS(c.recallGet)],
      ["定期検診 来院率", pctS(c.recallVisit)], ["矯正 検査/説明予約/説明/支払/開始（人）", `${c.kensaN}/${c.yoyakuN}/${c.setsumeiN}/${c.shiharaiN}/${c.kaishiN}`],
-     ["目標達成率（予約）", pctS(c.targetYoyaku)], ["Web予約率", pctS(c.webRate)]
+     ["目標達成率（予約）", pctS(c.targetYoyaku)]
     ].forEach((r) => rows.push([r[0], r[1]]));
     rows.push([]); rows.push([{ v: "作成日時：" + new Date().toLocaleString("ja-JP") }]);
     return rows;
