@@ -241,10 +241,8 @@
       { id: "r_taisho", label: "対象者数", unit: "人" }, { id: "r_yoyaku", label: "予約者数", unit: "人" },
       { id: "r_raiin", label: "来院数", unit: "人" }, { id: "r_teiki", label: "定期検診来院率", unit: "%" },
     ]},
-    { title: "クリニックデータ｜中断・患者ランク", src: "/user/dashboard/", tag: "glance", fields: [
-      { id: "x_chudan", label: "中断患者数", unit: "人" }, { id: "rk_s", label: "患者ランク S", unit: "人" },
-      { id: "rk_a", label: "患者ランク A", unit: "人" }, { id: "rk_b", label: "患者ランク B", unit: "人" },
-      { id: "rk_c", label: "患者ランク C", unit: "人" }, { id: "rk_none", label: "患者ランク なし", unit: "人" },
+    { title: "クリニックデータ｜中断", src: "/user/dashboard/", tag: "glance", fields: [
+      { id: "x_chudan", label: "中断患者数", unit: "人" },
     ]},
     { title: "矯正パイプライン", src: "検査→説明予約→治療計画説明→支払→開始 を患者ごとに管理（先月を複製して更新）", tag: "count", type: "pipeline", fields: [] },
     { title: "売上", src: "会計・レセコン（アポツール外）", tag: "manual", fields: [
@@ -467,10 +465,6 @@
     const recallFunnel = [
       { label: "対象者数", value: num("r_taisho") }, { label: "予約者数", value: num("r_yoyaku") }, { label: "来院数", value: num("r_raiin") },
     ];
-    const rankRows = [
-      { label: "S", value: num("rk_s") }, { label: "A", value: num("rk_a") }, { label: "B", value: num("rk_b") },
-      { label: "C", value: num("rk_c") }, { label: "なし", value: num("rk_none") },
-    ];
     const salesTable = kvTable([
       ["保険点数（売上）", yen(num("u_hoken"))], "spacer",
       ["矯正 フル", yen(num("uk_full"))], ["矯正 モデレート", yen(num("uk_mod"))], ["矯正 ライト", yen(num("uk_light"))], ["矯正 エクスプレス", yen(num("uk_express"))],
@@ -504,8 +498,6 @@
     ]);
     const chudanTable = kvTable([
       ["中断患者数", nf(num("x_chudan")) + " 人"],
-      ["ランク S / A / B", nf(num("rk_s")) + " / " + nf(num("rk_a")) + " / " + nf(num("rk_b"))],
-      ["ランク C / なし", nf(num("rk_c")) + " / " + nf(num("rk_none"))],
     ]);
 
     const page = `
@@ -548,11 +540,8 @@
         </div>
       </div>
 
-      <div class="rep-section"><h3>中断・患者ランク</h3>
-        <div class="rep-cols">
-          <div>${chudanTable}</div>
-          <div class="chart"><div class="c-title">患者ランク（人）</div>${barsV(rankRows)}</div>
-        </div>
+      <div class="rep-section"><h3>中断</h3>
+        <div style="max-width:340px">${chudanTable}</div>
       </div>
 
       <div class="rep-foot">出典：アポツール（クリニックデータ）の集計値＋矯正はカウント、売上は会計・レセコンから手入力。患者個人情報は含みません。／作成日時：${new Date().toLocaleString("ja-JP")}</div>
