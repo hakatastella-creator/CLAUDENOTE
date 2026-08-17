@@ -227,7 +227,7 @@
   const SECTIONS = [
     { title: "クリニックデータ｜予約・来院", src: "/user/dashboard/", tag: "glance", fields: [
       { id: "d_yoyaku", label: "総予約件数", unit: "件" }, { id: "d_raiin", label: "来院人数", unit: "人" },
-      { id: "d_mitei", label: "予約未定率", unit: "%" }, { id: "t_yoyaku", label: "目標 月間予約数", unit: "件" },
+      { id: "d_mitei", label: "予約未定者（矯正以外）", unit: "人" }, { id: "t_yoyaku", label: "目標 月間予約数", unit: "件" },
       { id: "t_raiin", label: "目標 一日来院数", unit: "人" },
     ]},
     { title: "クリニックデータ｜キャンセル", src: "/user/dashboard/", tag: "glance", fields: [
@@ -480,7 +480,7 @@
     ]);
     const yoyakuTable = kvTable([
       ["総予約件数", nf(num("d_yoyaku")) + " 件"], ["来院人数", nf(num("d_raiin")) + " 人"],
-      ["予約未定率", pctS(num("d_mitei") || null)], ["目標 月間予約数", nf(num("t_yoyaku")) + " 件"],
+      ["予約未定者（矯正以外）", nf(num("d_mitei")) + " 人"], ["目標 月間予約数", nf(num("t_yoyaku")) + " 件"],
       ["目標達成率（予約）", pctS(c.targetYoyaku), "sub"], ["目標 一日来院数", nf(num("t_raiin")) + " 人"],
     ]);
     const cancelTable = kvTable([
