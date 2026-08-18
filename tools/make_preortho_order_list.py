@@ -255,6 +255,11 @@ def build_sheet(wb):
         cell.font = Font(name=FONT, size=11, italic=True, color="9AA5A8")
     ws.cell(row=first, column=1).number_format = "yyyy/mm/dd"
 
+    # 表の右側の未使用列は非表示にして、白い余白が出ないようにする
+    ws.column_dimensions.group(
+        get_column_letter(ncols + 1), "XFD", outline_level=0, hidden=True
+    )
+
     ws.freeze_panes = f"A{first}"
     ws.auto_filter.ref = f"A{header_row}:{last_letter}{last}"
     ws.sheet_view.showGridLines = False
