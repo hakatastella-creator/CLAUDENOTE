@@ -2,6 +2,7 @@ import sys
 import traceback
 from datetime import datetime
 
+import config
 import gmail_client
 import chatwork_client
 from draft_generator import generate_reply
@@ -99,6 +100,10 @@ def build_summary_email(gmail_log, chatwork_log, chatwork_drafts):
 
 
 def main():
+    config.require(
+        "GMAIL_CLIENT_ID", "GMAIL_CLIENT_SECRET", "GMAIL_REFRESH_TOKEN",
+        "CHATWORK_API_TOKEN", "ANTHROPIC_API_KEY", "SUMMARY_TO_EMAIL",
+    )
     gmail_log = process_gmail()
     chatwork_log, chatwork_drafts = process_chatwork()
     summary = build_summary_email(gmail_log, chatwork_log, chatwork_drafts)
