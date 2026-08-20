@@ -77,3 +77,31 @@ def fetch_past_exchanges(room_id, limit):
             "send_time": datetime.fromtimestamp(m["send_time"], tz=timezone.utc).isoformat(),
         })
     return items
+
+
+def _post(path, data):
+    r = requests.post(f"{API_BASE}{path}", headers=_headers(), data=data, timeout=30)
+    r.raise_for_status()
+    return r.json()
+
+
+def my_chat_room_id():
+    """マイチャット（自分専用のチャット）のroom_idを返す。"""
+    for room in _get("/rooms"):
+        if room.get("type") == "my":
+            return room["room_id"]
+    raise RuntimeError("マイチャットが見つかりませんでした")
+
+
+def fetch_recent_messages(room_id):
+    """直近のメッセージ（最大100件）を古い順で返す。未読・既読を問わない。"""
+    try:
+        msgs = _get(f"/rooms/{room_id}/messages", params={"force": 1})
+    except requests.HTTPError:
+        return []
+    return msgs or []
+
+
+def send_message(room_id, body):
+    """メッセージを送信する。自分宛の通知は出さない。"""
+    return _post(f"/rooms/{room_id}/messages", {"body": body, "self_unread": "0"})
