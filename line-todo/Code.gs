@@ -9,6 +9,17 @@
 
 const PROPS = PropertiesService.getScriptProperties();
 
+/**
+ * 設定の読み取り。スクリプトプロパティを優先し、なければ Config.gs の CONFIG を使う。
+ * Config.gs は tools/setup_line_todo.py が自動生成します。
+ */
+function conf_(key) {
+  const v = PROPS.getProperty(key);
+  if (v) return v;
+  if (typeof CONFIG !== 'undefined' && CONFIG[key]) return CONFIG[key];
+  return '';
+}
+
 const HEADERS = ['登録日時', '種別', 'やること', '期限', '目安時間', 'メモ', '完了', '登録者'];
 const COL = { AT: 1, KIND: 2, TASK: 3, DUE: 4, SPAN: 5, NOTE: 6, DONE: 7, BY: 8 };
 
@@ -248,7 +259,7 @@ function fmtDate_(d) {
 /* ------------------------------------------------------------------ */
 
 function spreadsheet_() {
-  const id = PROPS.getProperty('SPREADSHEET_ID');
+  const id = conf_('SPREADSHEET_ID');
   return id ? SpreadsheetApp.openById(id) : SpreadsheetApp.getActiveSpreadsheet();
 }
 
@@ -307,8 +318,8 @@ function styleRow_(sh, row) {
 /* ------------------------------------------------------------------ */
 
 function token_() {
-  const t = PROPS.getProperty('LINE_CHANNEL_ACCESS_TOKEN');
-  if (!t) throw new Error('スクリプトプロパティ LINE_CHANNEL_ACCESS_TOKEN が未設定です');
+  const t = conf_('LINE_CHANNEL_ACCESS_TOKEN');
+  if (!t) throw new Error('LINE_CHANNEL_ACCESS_TOKEN が未設定です（Config.gs またはスクリプトプロパティ）');
   return t;
 }
 
@@ -358,7 +369,7 @@ function displayName_(userId) {
 }
 
 function allowedIds_() {
-  return (PROPS.getProperty('ALLOWED_USER_IDS') || '')
+  return (conf_('ALLOWED_USER_IDS') || '')
     .split(',').map(function (s) { return s.trim(); }).filter(String);
 }
 

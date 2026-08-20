@@ -5,3 +5,7 @@ __pycache__/
 venv/
 *.log
 .DS_Store
+
+# LINE TODO セットアップで生成されるもの
+.line-todo-setup.json
+line-todo/Config.gs

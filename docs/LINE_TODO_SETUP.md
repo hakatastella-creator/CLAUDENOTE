@@ -20,6 +20,70 @@ Googleスプレッドシート（月ごとのシート）
 
 ---
 
+## かんたんセットアップ（推奨）
+
+Google側（スプレッドシート作成・Apps Script設置・デプロイ）は、付属のスクリプトが自動で行います。
+手作業は **LINEのチャネル作成** と **Google Cloudでの2つのAPI有効化**、そして認証画面で「許可」を押すことだけです。
+所要10分ほど。うまくいかない場合は、下の「手動セットアップ」に進んでください。
+
+### 手順1　LINE公式アカウントを作る（約7分）
+
+1. https://developers.line.biz/console/ にLINEアカウントでログイン
+2. プロバイダーを作成（例：博多ステラ歯科）
+3. 「新規チャネル作成」→ **Messaging API** → チャネル名「受付TODO」で作成
+4. 「Messaging API設定」タブで **チャネルアクセストークン（長期）** を発行してコピー
+5. 同じタブで **応答メッセージ：オフ**、**Webhook：オン**
+6. ページ下部のQRコードから、使う人全員が友だち追加
+
+### 手順2　Googleの準備（約2分）
+
+1. https://console.cloud.google.com/ で、Gmail連携に使っているプロジェクトを開く
+2. 「APIとサービス」→「ライブラリ」から次の2つを有効化
+   - **Google Apps Script API**
+   - **Google Sheets API**
+3. https://script.google.com/home/usersettings を開き、
+   **「Google Apps Script API」をオン**にする
+
+### 手順3　スクリプトを実行する（約1分）
+
+リポジトリを手元に置いたPCで実行します。
+
+```bash
+pip install -r requirements.txt
+
+export GMAIL_CLIENT_ID="（Gmail連携で使っているOAuthクライアントID）"
+export GMAIL_CLIENT_SECRET="（同シークレット）"
+
+python tools/setup_line_todo.py --token "手順1でコピーしたLINEのトークン"
+```
+
+ブラウザが開くのでGoogleアカウントを選び、「許可」を押します。
+完了すると **Webhook URL** が表示されます。
+
+### 手順4　LINEとつなぐ（約1分）
+
+表示された Webhook URL を、LINE Developers の「Messaging API設定」→ **Webhook URL** に貼り付けて
+「更新」→「検証」。成功と出れば、もうLINEに送るだけで登録されます。
+
+### 手順5　使う人を限定する（あとからでOK）
+
+1. 使う人それぞれがLINEで何か1通送る
+2. 返信に出る **Uで始まるID** を全員分集める
+3. 次を実行（Webhook URLは変わりません）
+
+```bash
+python tools/setup_line_todo.py --allow "U1a2b...,U9z8y..."
+```
+
+> `.line-todo-setup.json`（作成したシートやデプロイのID）と、実際のトークンが入った `Config.gs` は
+> `.gitignore` に入れてあり、リポジトリにはコミットされません。
+
+---
+
+# 手動セットアップ
+
+上のスクリプトを使わず、画面の操作だけで設定する場合はこちらです。
+
 ## 1. スプレッドシートを作る
 
 1. https://sheets.google.com で新しいスプレッドシートを作成

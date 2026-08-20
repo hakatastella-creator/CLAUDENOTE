@@ -20,6 +20,7 @@ Gmail と Chatwork の未読メッセージを毎朝チェックし、過去の�
 - **入力**: LINEにメッセージを送る（`#院長`、`#15分`、`8/25まで` などのタグで種別・目安時間・期限を指定）
 - **蓄積**: Googleスプレッドシートの月ごとのシートに自動追記
 - **仕組み**: LINE Messaging API → Google Apps Script（[`line-todo/Code.gs`](line-todo/Code.gs)）→ スプレッドシート
+- **セットアップ**: `python tools/setup_line_todo.py --token "..."` でスプレッドシート作成からデプロイまで自動実行
 
 セットアップ手順は [`docs/LINE_TODO_SETUP.md`](docs/LINE_TODO_SETUP.md) を参照。
 
