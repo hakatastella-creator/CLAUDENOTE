@@ -1,0 +1,1041 @@
+<title>ステラ受付メモ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Zen+Maru+Gothic:wght@500;700&display=swap">
+
+<script id="app-state" type="application/json">{"updatedAt":0,"items":[],"deleted":[]}</script>
+
+<style>
+  :root {
+    --ground:      #F2F5F3;
+    --surface:     #FFFFFF;
+    --surface-2:   #E9EFEC;
+    --ink:         #16211E;
+    --ink-2:       #566662;
+    --ink-3:       #8B9A96;
+    --line:        #DBE4E0;
+    --accent:      #12635B;
+    --accent-ink:  #FFFFFF;
+    --danger:      #A33B4F;
+    --cat-todo:    #12635B;
+    --cat-boss:    #A33B4F;
+    --cat-share:   #33518A;
+    --cat-buy:     #6F6017;
+    --shadow-up:   0 -1px 0 var(--line), 0 -10px 24px -18px rgba(15,40,34,.5);
+    --shadow-card: 0 1px 1px rgba(20,45,38,.04);
+    --radius:      14px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:      #0E1412;
+      --surface:     #172520;
+      --surface-2:   #1E2E29;
+      --ink:         #E7EEEA;
+      --ink-2:       #A2B2AD;
+      --ink-3:       #778783;
+      --line:        #26332F;
+      --accent:      #57B9AC;
+      --accent-ink:  #06211E;
+      --danger:      #E5849A;
+      --cat-todo:    #57B9AC;
+      --cat-boss:    #E5849A;
+      --cat-share:   #92ACE6;
+      --cat-buy:     #C6B25C;
+      --shadow-up:   0 -1px 0 var(--line), 0 -10px 24px -18px rgba(0,0,0,.9);
+      --shadow-card: 0 1px 1px rgba(0,0,0,.18);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground:      #0E1412;
+    --surface:     #172520;
+    --surface-2:   #1E2E29;
+    --ink:         #E7EEEA;
+    --ink-2:       #A2B2AD;
+    --ink-3:       #778783;
+    --line:        #26332F;
+    --accent:      #57B9AC;
+    --accent-ink:  #06211E;
+    --danger:      #E5849A;
+    --cat-todo:    #57B9AC;
+    --cat-boss:    #E5849A;
+    --cat-share:   #92ACE6;
+    --cat-buy:     #C6B25C;
+    --shadow-up:   0 -1px 0 var(--line), 0 -10px 24px -18px rgba(0,0,0,.9);
+    --shadow-card: 0 1px 1px rgba(0,0,0,.18);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "Noto Sans JP", -apple-system, "Hiragino Sans", "Yu Gothic UI", sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .app {
+    max-width: 560px;
+    margin: 0 auto;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    background: var(--ground);
+  }
+
+  /* ---------- header ---------- */
+  .top {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+  }
+  .top-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px 8px;
+  }
+  .brand { flex: 1; min-width: 0; }
+  .eyebrow {
+    font-family: "Zen Maru Gothic", "Noto Sans JP", sans-serif;
+    font-size: 11px;
+    letter-spacing: .14em;
+    color: var(--ink-3);
+    margin: 0;
+  }
+  h1 {
+    font-family: "Zen Maru Gothic", "Noto Sans JP", sans-serif;
+    font-weight: 700;
+    font-size: 21px;
+    line-height: 1.2;
+    margin: 1px 0 0;
+    letter-spacing: .01em;
+  }
+  .status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    color: var(--ink-3);
+    white-space: nowrap;
+  }
+  .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--accent);
+    flex: none;
+  }
+  .status[data-state="saving"] .dot { background: var(--ink-3); animation: pulse 1.1s ease-in-out infinite; }
+  .status[data-state="error"]  .dot { background: var(--danger); }
+  .status[data-state="local"]  .dot { background: var(--ink-3); }
+  @keyframes pulse { 50% { opacity: .25; } }
+
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 2px 16px 11px;
+  }
+
+  .fchip {
+    flex: none;
+    font-family: "Zen Maru Gothic", "Noto Sans JP", sans-serif;
+    font-size: 12.5px;
+    font-weight: 500;
+    padding: 5px 11px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--ink-2);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .fchip .n {
+    font-size: 11.5px;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-3);
+  }
+  .fchip[aria-pressed="true"] {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--ground);
+  }
+  .fchip[aria-pressed="true"] .n { color: var(--ground); opacity: .65; }
+
+  /* ---------- list ---------- */
+  .list {
+    flex: 1;
+    padding: 14px 16px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .item {
+    display: flex;
+    align-items: flex-start;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--cat);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+  }
+  .item.todo  { --cat: var(--cat-todo); }
+  .item.boss  { --cat: var(--cat-boss); }
+  .item.share { --cat: var(--cat-share); }
+  .item.buy   { --cat: var(--cat-buy); }
+
+  .check {
+    flex: none;
+    width: 46px;
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    color: var(--cat);
+  }
+  .check .box {
+    width: 21px; height: 21px;
+    border-radius: 50%;
+    border: 2px solid var(--cat);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .check svg { width: 13px; height: 13px; opacity: 0; }
+  .item.is-done .check .box { background: var(--cat); border-color: var(--cat); }
+  .item.is-done .check svg { opacity: 1; color: var(--surface); }
+
+  .body {
+    flex: 1;
+    min-width: 0;
+    padding: 11px 4px 11px 0;
+    background: none;
+    border: 0;
+    text-align: left;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+  }
+  .text {
+    margin: 0;
+    font-size: 15.5px;
+    line-height: 1.5;
+    word-break: break-word;
+    white-space: pre-wrap;
+  }
+  .item.is-done .text { color: var(--ink-3); text-decoration: line-through; text-decoration-thickness: 1px; }
+  .meta {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 4px;
+    font-size: 11.5px;
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+  }
+  .tag {
+    font-family: "Zen Maru Gothic", "Noto Sans JP", sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--cat);
+    letter-spacing: .04em;
+  }
+
+  .del {
+    flex: none;
+    width: 42px;
+    align-self: stretch;
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    color: var(--ink-3);
+    font-family: "Zen Maru Gothic", "Noto Sans JP", sans-serif;
+    font-size: 11px;
+    line-height: 1;
+  }
+  .del svg { width: 15px; height: 15px; }
+  .del.confirm { color: var(--danger); font-weight: 700; }
+
+  .empty {
+    margin: 34px 8px;
+    text-align: center;
+    color: var(--ink-3);
+    font-size: 14px;
+    line-height: 1.9;
+  }
+  .empty strong {
+    display: block;
+    font-family: "Zen Maru Gothic", "Noto Sans JP", sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--ink-2);
+    margin-bottom: 4px;
+  }
+
+  .done-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+    padding: 0 2px;
+  }
+  .done-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: 0;
+    padding: 4px 0;
+    cursor: pointer;
+    font-family: "Zen Maru Gothic", "Noto Sans JP", sans-serif;
+    font-size: 13px;
+    color: var(--ink-2);
+  }
+  .done-toggle svg { width: 12px; height: 12px; transition: transform .18s ease; }
+  .done-toggle[aria-expanded="true"] svg { transform: rotate(90deg); }
+  .clear {
+    margin-left: auto;
+    background: none;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 4px 11px;
+    font-family: "Zen Maru Gothic", "Noto Sans JP", sans-serif;
+    font-size: 12px;
+    color: var(--ink-2);
+    cursor: pointer;
+  }
+  .clear.confirm { color: var(--danger); border-color: var(--danger); }
+
+  .banner {
+    margin: 14px 16px 0;
+    padding: 10px 13px;
+    border-radius: 12px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    font-size: 13px;
+    color: var(--ink-2);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .banner button {
+    margin-left: auto;
+    flex: none;
+    background: var(--accent);
+    color: var(--accent-ink);
+    border: 0;
+    border-radius: 999px;
+    padding: 5px 12px;
+    font-family: "Zen Maru Gothic", "Noto Sans JP", sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  /* ---------- compose ---------- */
+  .compose {
+    position: sticky;
+    bottom: 0;
+    z-index: 20;
+    background: var(--surface);
+    box-shadow: var(--shadow-up);
+    padding: 9px 12px calc(10px + env(safe-area-inset-bottom));
+  }
+  .cats {
+    display: flex;
+    gap: 6px;
+    padding-bottom: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .cats::-webkit-scrollbar { display: none; }
+  .cchip {
+    flex: none;
+    font-family: "Zen Maru Gothic", "Noto Sans JP", sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 6px 13px;
+    border-radius: 999px;
+    border: 1.5px solid var(--cat);
+    background: transparent;
+    color: var(--cat);
+    cursor: pointer;
+  }
+  .cchip.todo  { --cat: var(--cat-todo); }
+  .cchip.boss  { --cat: var(--cat-boss); }
+  .cchip.share { --cat: var(--cat-share); }
+  .cchip.buy   { --cat: var(--cat-buy); }
+  .cchip[aria-pressed="true"] { background: var(--cat); color: var(--surface); }
+
+  .entry {
+    display: flex;
+    align-items: flex-end;
+    gap: 9px;
+  }
+  textarea {
+    flex: 1;
+    min-width: 0;
+    resize: none;
+    font-family: inherit;
+    font-size: 17px;
+    line-height: 1.45;
+    color: var(--ink);
+    background: var(--ground);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 10px 15px;
+    height: 44px;
+    max-height: 148px;
+    overflow-y: auto;
+  }
+  textarea::placeholder { color: var(--ink-3); }
+
+  .send {
+    flex: none;
+    width: 46px; height: 46px;
+    border-radius: 50%;
+    border: 0;
+    background: var(--accent);
+    color: var(--accent-ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: opacity .15s ease, transform .12s ease;
+  }
+  .send svg { width: 21px; height: 21px; }
+  .send:disabled { opacity: .3; cursor: default; }
+  .send:not(:disabled):active { transform: scale(.93); }
+
+  .hint {
+    margin: 7px 2px 0;
+    font-size: 11px;
+    color: var(--ink-3);
+    text-align: center;
+  }
+
+  button:focus-visible, textarea:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<div class="app">
+  <header class="top">
+    <div class="top-row">
+      <div class="brand">
+        <p class="eyebrow">博多ステラ歯科</p>
+        <h1>受付メモ</h1>
+      </div>
+      <div class="status" id="status" data-state="saved">
+        <span class="dot"></span><span id="status-text">保存済み</span>
+      </div>
+    </div>
+    <div class="filters" id="filters"></div>
+  </header>
+
+  <div id="banner-slot"></div>
+  <main class="list" id="list"></main>
+
+  <div class="compose" id="compose">
+    <div class="cats" id="cats"></div>
+    <div class="entry">
+      <textarea id="input" rows="1" placeholder="メモを入力…" aria-label="メモを入力"></textarea>
+      <button class="send" id="send" disabled aria-label="メモを追加">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"></path></svg>
+      </button>
+    </div>
+    <p class="hint" id="hint"></p>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var CATS = [
+    { id: "todo",  label: "やること" },
+    { id: "boss",  label: "院長から" },
+    { id: "share", label: "申し送り" },
+    { id: "buy",   label: "買うもの" }
+  ];
+  var CAT_LABEL = {};
+  CATS.forEach(function (c) { CAT_LABEL[c.id] = c.label; });
+
+  var LS_STATE = "stella-memo/state/v1";
+  var LS_PREFS = "stella-memo/prefs/v1";
+  var SS_DRAFT = "stella-memo/draft/v1";
+  var STATE_FILE = "data/state.json";
+  var TOMBSTONE_MS = 21 * 24 * 60 * 60 * 1000;
+  var TRASH_ICON = '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path>';
+
+  var state = { updatedAt: 0, items: [], deleted: [] };
+  var cat = "todo";
+  var filter = "all";
+  var showDone = false;
+  var readOnly = false;
+  var canSave = true;
+  var useFilesForm = true;
+  var saving = false;
+  var dirty = false;
+  var saveTimer = null;
+  var api = null;
+  var apiPromise = null;
+
+  /* ---------- storage helpers (never throw) ---------- */
+  function lsGet(key) {
+    try { var v = localStorage.getItem(key); return v ? JSON.parse(v) : null; }
+    catch (e) { return null; }
+  }
+  function lsSet(key, val) {
+    try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {}
+  }
+  function ssGet(key) {
+    try { return sessionStorage.getItem(key); } catch (e) { return null; }
+  }
+  function ssSet(key, val) {
+    try { if (val) sessionStorage.setItem(key, val); else sessionStorage.removeItem(key); } catch (e) {}
+  }
+
+  /* ---------- state shape ---------- */
+  function normalize(raw) {
+    var s = { updatedAt: 0, items: [], deleted: [] };
+    if (!raw || typeof raw !== "object") return s;
+    s.updatedAt = Number(raw.updatedAt) || 0;
+    if (Array.isArray(raw.items)) {
+      raw.items.forEach(function (it) {
+        if (!it || typeof it.text !== "string" || !it.id) return;
+        s.items.push({
+          id: String(it.id),
+          text: it.text,
+          cat: CAT_LABEL[it.cat] ? it.cat : "todo",
+          done: !!it.done,
+          createdAt: Number(it.createdAt) || 0,
+          updatedAt: Number(it.updatedAt) || Number(it.createdAt) || 0,
+          doneAt: Number(it.doneAt) || 0
+        });
+      });
+    }
+    if (Array.isArray(raw.deleted)) {
+      raw.deleted.forEach(function (d) {
+        if (d && d.id) s.deleted.push({ id: String(d.id), at: Number(d.at) || 0 });
+      });
+    }
+    return s;
+  }
+
+  /* Item-level merge, so two phones writing at once never lose a memo. */
+  function merge(a, b) {
+    a = normalize(a); b = normalize(b);
+    var byId = {};
+    a.items.concat(b.items).forEach(function (it) {
+      var prev = byId[it.id];
+      if (!prev || it.updatedAt > prev.updatedAt) byId[it.id] = it;
+    });
+    var tombs = {};
+    a.deleted.concat(b.deleted).forEach(function (d) {
+      if (!tombs[d.id] || d.at > tombs[d.id].at) tombs[d.id] = d;
+    });
+    var cutoff = Date.now() - TOMBSTONE_MS;
+    var items = [];
+    Object.keys(byId).forEach(function (id) {
+      var it = byId[id];
+      var t = tombs[id];
+      if (t && t.at >= it.updatedAt) return;
+      items.push(it);
+    });
+    items.sort(function (x, y) { return x.createdAt - y.createdAt; });
+    var deleted = [];
+    Object.keys(tombs).forEach(function (id) {
+      if (tombs[id].at >= cutoff) deleted.push(tombs[id]);
+    });
+    return { updatedAt: Math.max(a.updatedAt, b.updatedAt), items: items, deleted: deleted };
+  }
+
+  function fingerprint(s) {
+    return s.items.map(function (it) {
+      return [it.id, it.text, it.cat, it.done ? 1 : 0].join("");
+    }).join("") + "|" + s.deleted.length;
+  }
+
+  /* ---------- saving ---------- */
+  function getApi() {
+    if (apiPromise) return apiPromise;
+    if (!window.claude || typeof window.claude.use !== "function") {
+      apiPromise = Promise.resolve(null);
+      return apiPromise;
+    }
+    apiPromise = window.claude.use("artifact").then(function (ns) {
+      api = ns || null;
+      return api;
+    }, function () { return null; });
+    return apiPromise;
+  }
+
+  function setStatus(kind, text) {
+    var el = document.getElementById("status");
+    el.setAttribute("data-state", kind);
+    document.getElementById("status-text").textContent = text;
+  }
+
+  function scheduleSave() {
+    dirty = true;
+    lsSet(LS_STATE, state);
+    if (!canSave) { setStatus("local", "この端末のみ"); return; }
+    setStatus("saving", "保存中…");
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(save, 800);
+  }
+
+  function stateJson() {
+    return JSON.stringify(state).replace(/</g, "\\u003c");
+  }
+
+  function save() {
+    if (saving || !dirty) return;
+    getApi().then(function (ns) {
+      if (!ns) {
+        canSave = false;
+        setStatus("local", "この端末のみ");
+        return;
+      }
+      saving = true;
+      dirty = false;
+      state.updatedAt = Date.now();
+      lsSet(LS_STATE, state);
+      (useFilesForm ? saveFiles(ns) : saveHtml(ns)).then(function () {
+        saving = false;
+        setStatus("saved", "保存済み");
+        if (dirty) scheduleSave();
+      }, function (err) {
+        saving = false;
+        dirty = true;
+        handleSaveError(err, ns);
+      });
+    });
+  }
+
+  function saveFiles(ns) {
+    var files = {};
+    files[STATE_FILE] = stateJson();
+    return ns.publish(files);
+  }
+
+  /* Fallback: rewrite this page's own stored source with the new state block. */
+  function saveHtml(ns) {
+    var OPEN = "<" + 'script id="app-state" type="application/json">';
+    var CLOSE = "<" + "/script>";
+    return fetch(location.pathname, { cache: "no-store" })
+      .then(function (r) { return r.text(); })
+      .then(function (src) {
+        var i = src.indexOf(OPEN);
+        var j = i < 0 ? -1 : src.indexOf(CLOSE, i);
+        if (i < 0 || j < 0 || !/^\s*<!doctype/i.test(src)) {
+          throw { code: "page_unreadable", message: "保存先が見つかりません" };
+        }
+        return ns.publish(src.slice(0, i + OPEN.length) + stateJson() + src.slice(j));
+      });
+  }
+
+  function handleSaveError(err, ns) {
+    var code = (err && err.code) || "upstream_error";
+    if (code === "conflict") {
+      // Someone else published first; every view is already reloading to theirs.
+      // This device keeps its copy in localStorage and merges on the way back in.
+      setStatus("saving", "更新中…");
+      return;
+    }
+    if (code === "not_writer" || code === "not_granted" ||
+        code === "consent_required" || code === "not_declared") {
+      canSave = false;
+      readOnly = true;
+      setStatus("local", "閲覧のみ");
+      render();
+      return;
+    }
+    if (useFilesForm && code !== "page_unreadable" && code !== "too_large") {
+      useFilesForm = false;
+      saving = true;
+      dirty = false;
+      saveHtml(ns).then(function () {
+        saving = false;
+        setStatus("saved", "保存済み");
+      }, function (e2) {
+        saving = false;
+        dirty = true;
+        handleSaveError(e2, ns);
+      });
+      return;
+    }
+    if (code === "rate_limited") {
+      setStatus("saving", "保存中…");
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(save, 5000);
+      return;
+    }
+    setStatus("error", "保存できません");
+    showRetryBanner();
+  }
+
+  function showRetryBanner() {
+    var slot = document.getElementById("banner-slot");
+    if (slot.querySelector(".banner")) return;
+    var b = document.createElement("div");
+    b.className = "banner";
+    var msg = document.createElement("span");
+    msg.textContent = "保存できませんでした。内容はこの端末に残っています。";
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = "再試行";
+    btn.addEventListener("click", function () {
+      slot.innerHTML = "";
+      useFilesForm = true;
+      setStatus("saving", "保存中…");
+      save();
+    });
+    b.appendChild(msg);
+    b.appendChild(btn);
+    slot.appendChild(b);
+  }
+
+  /* ---------- actions ---------- */
+  function addItem(text) {
+    var now = Date.now();
+    state.items.push({
+      id: now.toString(36) + Math.random().toString(36).slice(2, 7),
+      text: text,
+      cat: cat,
+      done: false,
+      createdAt: now,
+      updatedAt: now,
+      doneAt: 0
+    });
+    render();
+    scheduleSave();
+  }
+
+  function findItem(id) {
+    var found = null;
+    state.items.forEach(function (it) { if (it.id === id) found = it; });
+    return found;
+  }
+
+  function toggleItem(id) {
+    var it = findItem(id);
+    if (!it) return;
+    it.done = !it.done;
+    it.doneAt = it.done ? Date.now() : 0;
+    it.updatedAt = Date.now();
+    render();
+    scheduleSave();
+  }
+
+  function deleteItem(id) {
+    var keep = [];
+    var hit = false;
+    state.items.forEach(function (it) {
+      if (it.id === id) { hit = true; } else { keep.push(it); }
+    });
+    if (!hit) return;
+    state.items = keep;
+    state.deleted.push({ id: id, at: Date.now() });
+    render();
+    scheduleSave();
+  }
+
+  function clearDone() {
+    var now = Date.now();
+    var keep = [];
+    state.items.forEach(function (it) {
+      if (it.done) state.deleted.push({ id: it.id, at: now });
+      else keep.push(it);
+    });
+    state.items = keep;
+    render();
+    scheduleSave();
+  }
+
+  /* ---------- rendering ---------- */
+  function fmtTime(ts) {
+    if (!ts) return "";
+    var d = new Date(ts);
+    var now = new Date();
+    var hm = ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2);
+    if (d.toDateString() === now.toDateString()) return hm;
+    return (d.getMonth() + 1) + "/" + d.getDate() + " " + hm;
+  }
+
+  function icon(path, w) {
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="' + (w || 2) +
+           '" stroke-linecap="round" stroke-linejoin="round">' + path + "</svg>";
+  }
+
+  function renderFilters() {
+    var open = state.items.filter(function (it) { return !it.done; });
+    var box = document.getElementById("filters");
+    var defs = [{ id: "all", label: "すべて" }].concat(CATS);
+    box.innerHTML = "";
+    defs.forEach(function (d) {
+      var n = d.id === "all" ? open.length
+            : open.filter(function (it) { return it.cat === d.id; }).length;
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "fchip";
+      b.setAttribute("aria-pressed", filter === d.id ? "true" : "false");
+      b.innerHTML = "<span>" + d.label + '</span><span class="n">' + n + "</span>";
+      b.addEventListener("click", function () {
+        filter = d.id;
+        savePrefs();
+        render();
+      });
+      box.appendChild(b);
+    });
+  }
+
+  function itemEl(it) {
+    var row = document.createElement("article");
+    row.className = "item " + it.cat + (it.done ? " is-done" : "");
+
+    var check = document.createElement("button");
+    check.type = "button";
+    check.className = "check";
+    check.setAttribute("aria-label", it.done ? "未完了に戻す" : "完了にする");
+    check.innerHTML = '<span class="box">' + icon('<path d="M20 6L9 17l-5-5"></path>', 3.2) + "</span>";
+
+    var body = document.createElement("button");
+    body.type = "button";
+    body.className = "body";
+    var p = document.createElement("p");
+    p.className = "text";
+    p.textContent = it.text;
+    var meta = document.createElement("div");
+    meta.className = "meta";
+    var tag = document.createElement("span");
+    tag.className = "tag";
+    tag.textContent = CAT_LABEL[it.cat];
+    var when = document.createElement("span");
+    when.textContent = fmtTime(it.done ? (it.doneAt || it.createdAt) : it.createdAt);
+    meta.appendChild(tag);
+    meta.appendChild(when);
+    body.appendChild(p);
+    body.appendChild(meta);
+
+    row.appendChild(check);
+    row.appendChild(body);
+
+    if (readOnly) {
+      check.disabled = true;
+      body.disabled = true;
+      return row;
+    }
+
+    check.addEventListener("click", function () { toggleItem(it.id); });
+    body.addEventListener("click", function () { toggleItem(it.id); });
+
+    var del = document.createElement("button");
+    del.type = "button";
+    del.className = "del";
+    del.setAttribute("aria-label", "削除");
+    del.innerHTML = icon(TRASH_ICON, 1.8);
+    var armed = null;
+    del.addEventListener("click", function () {
+      if (del.classList.contains("confirm")) {
+        clearTimeout(armed);
+        deleteItem(it.id);
+        return;
+      }
+      del.classList.add("confirm");
+      del.textContent = "削除?";
+      armed = setTimeout(function () {
+        del.classList.remove("confirm");
+        del.innerHTML = icon(TRASH_ICON, 1.8);
+      }, 3000);
+    });
+    row.appendChild(del);
+    return row;
+  }
+
+  function render() {
+    renderFilters();
+
+    var list = document.getElementById("list");
+    list.innerHTML = "";
+
+    var open = state.items.filter(function (it) {
+      return !it.done && (filter === "all" || it.cat === filter);
+    });
+    var done = state.items.filter(function (it) {
+      return it.done && (filter === "all" || it.cat === filter);
+    }).sort(function (a, b) { return (b.doneAt || 0) - (a.doneAt || 0); });
+
+    if (open.length) {
+      open.forEach(function (it) { list.appendChild(itemEl(it)); });
+    } else {
+      var e = document.createElement("div");
+      e.className = "empty";
+      var head = document.createElement("strong");
+      if (!state.items.length) {
+        head.textContent = "メモはまだありません";
+        e.appendChild(head);
+        e.appendChild(document.createTextNode("下の入力欄から、思いついたその場で。"));
+      } else if (done.length) {
+        head.textContent = "残りはありません";
+        e.appendChild(head);
+        e.appendChild(document.createTextNode("ここのぶんは全部おわりました。"));
+      } else {
+        head.textContent = "この分類のメモはありません";
+        e.appendChild(head);
+        e.appendChild(document.createTextNode("上のタブで切り替えられます。"));
+      }
+      list.appendChild(e);
+    }
+
+    if (done.length) {
+      var dh = document.createElement("div");
+      dh.className = "done-head";
+      var t = document.createElement("button");
+      t.type = "button";
+      t.className = "done-toggle";
+      t.setAttribute("aria-expanded", showDone ? "true" : "false");
+      t.innerHTML = icon('<path d="M9 5l7 7-7 7"></path>', 2.4) +
+                    "<span>完了 " + done.length + "件</span>";
+      t.addEventListener("click", function () { showDone = !showDone; savePrefs(); render(); });
+      dh.appendChild(t);
+
+      if (showDone && !readOnly) {
+        var c = document.createElement("button");
+        c.type = "button";
+        c.className = "clear";
+        c.textContent = "完了を消す";
+        var armed = null;
+        c.addEventListener("click", function () {
+          if (c.classList.contains("confirm")) { clearTimeout(armed); clearDone(); return; }
+          c.classList.add("confirm");
+          c.textContent = "もう一度で消去";
+          armed = setTimeout(function () {
+            c.classList.remove("confirm");
+            c.textContent = "完了を消す";
+          }, 3000);
+        });
+        dh.appendChild(c);
+      }
+      list.appendChild(dh);
+
+      if (showDone) done.forEach(function (it) { list.appendChild(itemEl(it)); });
+    }
+
+    document.getElementById("compose").style.display = readOnly ? "none" : "";
+    document.getElementById("hint").textContent = readOnly
+      ? ""
+      : (matchMedia("(pointer: fine)").matches
+          ? "Enter で追加 / Shift+Enter で改行"
+          : "タップで完了、もう一度タップで戻せます");
+  }
+
+  /* ---------- compose ---------- */
+  var input = document.getElementById("input");
+  var send = document.getElementById("send");
+
+  function renderCats() {
+    var box = document.getElementById("cats");
+    box.innerHTML = "";
+    CATS.forEach(function (c) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "cchip " + c.id;
+      b.textContent = c.label;
+      b.setAttribute("aria-pressed", cat === c.id ? "true" : "false");
+      b.addEventListener("click", function () {
+        cat = c.id;
+        savePrefs();
+        renderCats();
+        input.focus();
+      });
+      box.appendChild(b);
+    });
+  }
+
+  function syncEntry() {
+    input.style.height = "44px";
+    input.style.height = Math.min(input.scrollHeight + 2, 148) + "px";
+    send.disabled = !input.value.trim();
+    ssSet(SS_DRAFT, input.value);
+  }
+
+  function submit() {
+    var text = input.value.trim();
+    if (!text) return;
+    addItem(text);
+    input.value = "";
+    ssSet(SS_DRAFT, "");
+    syncEntry();
+    input.focus();
+  }
+
+  input.addEventListener("input", syncEntry);
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !e.shiftKey && !e.isComposing &&
+        matchMedia("(pointer: fine)").matches) {
+      e.preventDefault();
+      submit();
+    }
+  });
+  send.addEventListener("click", submit);
+
+  function savePrefs() {
+    lsSet(LS_PREFS, { cat: cat, filter: filter, showDone: showDone });
+  }
+
+  /* ---------- boot ---------- */
+  var prefs = lsGet(LS_PREFS);
+  if (prefs) {
+    if (CAT_LABEL[prefs.cat]) cat = prefs.cat;
+    if (prefs.filter === "all" || CAT_LABEL[prefs.filter]) filter = prefs.filter;
+    showDone = !!prefs.showDone;
+  }
+
+  var embedded = null;
+  try { embedded = JSON.parse(document.getElementById("app-state").textContent); } catch (e) {}
+  state = merge(embedded, lsGet(LS_STATE));
+
+  var draft = ssGet(SS_DRAFT);
+  if (draft) input.value = draft;
+
+  renderCats();
+  render();
+  syncEntry();
+
+  // The published data file is the shared record. Adopt it, then fold in
+  // anything this device wrote while it was offline or mid-conflict.
+  fetch(STATE_FILE, { cache: "no-store" })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (remote) {
+      if (!remote) return;
+      var normalized = normalize(remote);
+      state = merge(state, normalized);
+      render();
+      if (fingerprint(state) !== fingerprint(normalized)) scheduleSave();
+    })
+    .catch(function () {});
+
+  getApi().then(function (ns) {
+    if (!ns) { canSave = false; setStatus("local", "この端末のみ"); }
+    else setStatus("saved", "保存済み");
+  });
+})();
+</script>
