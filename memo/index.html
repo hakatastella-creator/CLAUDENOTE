@@ -3,7 +3,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Zen+Maru+Gothic:wght@500;700&display=swap">
 
-<script id="app-state" type="application/json">{"updatedAt":0,"items":[],"deleted":[]}</script>
+<script id="app-state" type="application/json">{"v":2,"updatedAt":1787649995767,"folders":[{"id":"todo","name":"やること","color":"teal","monthly":false,"order":0,"updatedAt":1787649943258},{"id":"boss","name":"院長から","color":"rose","monthly":false,"order":1,"updatedAt":1787649943258},{"id":"monthly","name":"毎月やること","color":"indigo","monthly":true,"order":2,"updatedAt":1787649943258},{"id":"buy","name":"買うもの","color":"olive","monthly":false,"order":3,"updatedAt":1787649943258}],"items":[{"id":"mt724vhudct6j","text":"ポップ作り","folder":"todo","done":true,"createdAt":1787565147762,"updatedAt":1787632808002,"doneAt":1787632808002},{"id":"mt7253sce0pt9","text":"動画編集","folder":"todo","done":false,"createdAt":1787565158508,"updatedAt":1787632756611,"doneAt":0},{"id":"mt86ee80eiebs","text":"売り上げ目標作る","folder":"boss","done":false,"createdAt":1787632776576,"updatedAt":1787632776576,"doneAt":0},{"id":"mt86fedwnm4cr","text":"受付物品ショーケース改善","folder":"todo","done":false,"createdAt":1787632823444,"updatedAt":1787632823444,"doneAt":0},{"id":"mt8fx2w3viv75","text":"毎月15日➡キャンペーン決める","folder":"monthly","done":false,"createdAt":1787648764899,"updatedAt":1787649943258,"doneAt":0},{"id":"mt8fxkbxks84q","text":"毎月7日➡勤怠締め切り","folder":"monthly","done":false,"createdAt":1787648787501,"updatedAt":1787649943258,"doneAt":0},{"id":"mt8fy0y6vxngj","text":"毎月20日➡シフト送る","folder":"monthly","done":false,"createdAt":1787648809038,"updatedAt":1787649943258,"doneAt":0}],"deleted":[],"deletedFolders":[]}</script>
 
 <style>
   :root {
@@ -17,10 +17,13 @@
     --accent:      #12635B;
     --accent-ink:  #FFFFFF;
     --danger:      #A33B4F;
-    --cat-todo:    #12635B;
-    --cat-boss:    #A33B4F;
-    --cat-share:   #33518A;
-    --cat-buy:     #6F6017;
+    --scrim:       rgba(12,30,26,.44);
+    --c-teal:      #12635B;
+    --c-rose:      #A33B4F;
+    --c-indigo:    #33518A;
+    --c-olive:     #6F6017;
+    --c-plum:      #6B4080;
+    --c-clay:      #8A4B2A;
     --shadow-up:   0 -1px 0 var(--line), 0 -10px 24px -18px rgba(15,40,34,.5);
     --shadow-card: 0 1px 1px rgba(20,45,38,.04);
     --radius:      14px;
@@ -37,10 +40,13 @@
       --accent:      #57B9AC;
       --accent-ink:  #06211E;
       --danger:      #E5849A;
-      --cat-todo:    #57B9AC;
-      --cat-boss:    #E5849A;
-      --cat-share:   #92ACE6;
-      --cat-buy:     #C6B25C;
+      --scrim:       rgba(0,0,0,.62);
+      --c-teal:      #57B9AC;
+      --c-rose:      #E5849A;
+      --c-indigo:    #92ACE6;
+      --c-olive:     #C6B25C;
+      --c-plum:      #C29BDA;
+      --c-clay:      #DFA07A;
       --shadow-up:   0 -1px 0 var(--line), 0 -10px 24px -18px rgba(0,0,0,.9);
       --shadow-card: 0 1px 1px rgba(0,0,0,.18);
     }
@@ -56,13 +62,23 @@
     --accent:      #57B9AC;
     --accent-ink:  #06211E;
     --danger:      #E5849A;
-    --cat-todo:    #57B9AC;
-    --cat-boss:    #E5849A;
-    --cat-share:   #92ACE6;
-    --cat-buy:     #C6B25C;
+    --scrim:       rgba(0,0,0,.62);
+    --c-teal:      #57B9AC;
+    --c-rose:      #E5849A;
+    --c-indigo:    #92ACE6;
+    --c-olive:     #C6B25C;
+    --c-plum:      #C29BDA;
+    --c-clay:      #DFA07A;
     --shadow-up:   0 -1px 0 var(--line), 0 -10px 24px -18px rgba(0,0,0,.9);
     --shadow-card: 0 1px 1px rgba(0,0,0,.18);
   }
+
+  .c-teal   { --cat: var(--c-teal); }
+  .c-rose   { --cat: var(--c-rose); }
+  .c-indigo { --cat: var(--c-indigo); }
+  .c-olive  { --cat: var(--c-olive); }
+  .c-plum   { --cat: var(--c-plum); }
+  .c-clay   { --cat: var(--c-clay); }
 
   * { box-sizing: border-box; }
 
@@ -140,7 +156,6 @@
     gap: 6px;
     padding: 2px 16px 11px;
   }
-
   .fchip {
     flex: none;
     font-family: "Zen Maru Gothic", "Noto Sans JP", sans-serif;
@@ -155,6 +170,12 @@
     display: flex;
     align-items: center;
     gap: 5px;
+  }
+  .fchip .swat {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--cat);
+    flex: none;
   }
   .fchip .n {
     font-size: 11.5px;
@@ -187,10 +208,6 @@
     box-shadow: var(--shadow-card);
     overflow: hidden;
   }
-  .item.todo  { --cat: var(--cat-todo); }
-  .item.boss  { --cat: var(--cat-boss); }
-  .item.share { --cat: var(--cat-share); }
-  .item.buy   { --cat: var(--cat-buy); }
 
   .check {
     flex: none;
@@ -353,12 +370,20 @@
     box-shadow: var(--shadow-up);
     padding: 9px 12px calc(10px + env(safe-area-inset-bottom));
   }
+  .cats-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding-bottom: 8px;
+  }
   .cats {
+    flex: 1;
+    min-width: 0;
     display: flex;
     gap: 6px;
-    padding-bottom: 8px;
     overflow-x: auto;
     scrollbar-width: none;
+    padding: 1px 0;
   }
   .cats::-webkit-scrollbar { display: none; }
   .cchip {
@@ -372,12 +397,22 @@
     background: transparent;
     color: var(--cat);
     cursor: pointer;
+    white-space: nowrap;
   }
-  .cchip.todo  { --cat: var(--cat-todo); }
-  .cchip.boss  { --cat: var(--cat-boss); }
-  .cchip.share { --cat: var(--cat-share); }
-  .cchip.buy   { --cat: var(--cat-buy); }
   .cchip[aria-pressed="true"] { background: var(--cat); color: var(--surface); }
+  .cog {
+    flex: none;
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--ground);
+    color: var(--ink-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .cog svg { width: 17px; height: 17px; }
 
   .entry {
     display: flex;
@@ -426,7 +461,145 @@
     text-align: center;
   }
 
-  button:focus-visible, textarea:focus-visible {
+  /* ---------- folder sheet ---------- */
+  .scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    background: var(--scrim);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .sheet {
+    width: 100%;
+    max-width: 560px;
+    max-height: 88dvh;
+    overflow-y: auto;
+    background: var(--ground);
+    border-radius: 18px 18px 0 0;
+    padding: 6px 14px calc(18px + env(safe-area-inset-bottom));
+  }
+  .grip {
+    width: 36px; height: 4px;
+    border-radius: 2px;
+    background: var(--line);
+    margin: 6px auto 10px;
+  }
+  .sheet-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+  .sheet-head h2 {
+    flex: 1;
+    margin: 0;
+    font-family: "Zen Maru Gothic", "Noto Sans JP", sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+  }
+  .sheet-done {
+    background: var(--accent);
+    color: var(--accent-ink);
+    border: 0;
+    border-radius: 999px;
+    padding: 6px 16px;
+    font-family: "Zen Maru Gothic", "Noto Sans JP", sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .sheet-note {
+    margin: 0 2px 12px;
+    font-size: 12px;
+    color: var(--ink-3);
+    line-height: 1.7;
+  }
+  .frows { display: flex; flex-direction: column; gap: 9px; }
+  .frow {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--cat);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+  }
+  .frow-top { display: flex; align-items: center; gap: 9px; }
+  .fname {
+    flex: 1;
+    min-width: 0;
+    font-family: inherit;
+    font-size: 16px;
+    color: var(--ink);
+    background: var(--ground);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 7px 10px;
+  }
+  .swatches { display: flex; gap: 6px; flex-wrap: wrap; }
+  .sw {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    border: 0;
+    padding: 0;
+    background: var(--cat);
+    cursor: pointer;
+  }
+  .sw[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--ink-2); }
+  .frow-bot { display: flex; align-items: center; gap: 8px; }
+  .toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 5px 11px;
+    font-family: "Zen Maru Gothic", "Noto Sans JP", sans-serif;
+    font-size: 12.5px;
+    color: var(--ink-2);
+    cursor: pointer;
+  }
+  .toggle .mark {
+    width: 14px; height: 14px;
+    border-radius: 4px;
+    border: 1.5px solid var(--ink-3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .toggle .mark svg { width: 10px; height: 10px; opacity: 0; color: var(--accent-ink); }
+  .toggle[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+  .toggle[aria-pressed="true"] .mark { background: var(--accent); border-color: var(--accent); }
+  .toggle[aria-pressed="true"] .mark svg { opacity: 1; }
+  .fdel {
+    margin-left: auto;
+    background: none;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 5px 11px;
+    font-family: "Zen Maru Gothic", "Noto Sans JP", sans-serif;
+    font-size: 12.5px;
+    color: var(--ink-3);
+    cursor: pointer;
+  }
+  .fdel.confirm { color: var(--danger); border-color: var(--danger); font-weight: 700; }
+  .fadd {
+    margin-top: 11px;
+    width: 100%;
+    background: none;
+    border: 1px dashed var(--line);
+    border-radius: var(--radius);
+    padding: 12px;
+    font-family: "Zen Maru Gothic", "Noto Sans JP", sans-serif;
+    font-size: 14px;
+    color: var(--ink-2);
+    cursor: pointer;
+  }
+
+  button:focus-visible, textarea:focus-visible, input:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
   }
@@ -453,7 +626,12 @@
   <main class="list" id="list"></main>
 
   <div class="compose" id="compose">
-    <div class="cats" id="cats"></div>
+    <div class="cats-row">
+      <div class="cats" id="cats"></div>
+      <button class="cog" id="cog" aria-label="フォルダを編集">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5v.2a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1h.2a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg>
+      </button>
+    </div>
     <div class="entry">
       <textarea id="input" rows="1" placeholder="メモを入力…" aria-label="メモを入力"></textarea>
       <button class="send" id="send" disabled aria-label="メモを追加">
@@ -468,29 +646,32 @@
 (function () {
   "use strict";
 
-  var CATS = [
-    { id: "todo",  label: "やること" },
-    { id: "boss",  label: "院長から" },
-    { id: "share", label: "申し送り" },
-    { id: "buy",   label: "買うもの" }
+  var COLORS = ["teal", "rose", "indigo", "olive", "plum", "clay"];
+  var COLOR_SET = {};
+  COLORS.forEach(function (c) { COLOR_SET[c] = true; });
+
+  var DEFAULT_FOLDERS = [
+    { id: "todo",    name: "やること",     color: "teal",   monthly: false },
+    { id: "boss",    name: "院長から",     color: "rose",   monthly: false },
+    { id: "monthly", name: "毎月やること", color: "indigo", monthly: true  },
+    { id: "buy",     name: "買うもの",     color: "olive",  monthly: false }
   ];
-  var CAT_LABEL = {};
-  CATS.forEach(function (c) { CAT_LABEL[c.id] = c.label; });
+  // Folders that existed before folders were editable, kept so old memos land somewhere.
+  var LEGACY_NAMES = { share: { name: "申し送り", color: "plum" } };
 
   var LS_STATE = "stella-memo/state/v1";
   var LS_PREFS = "stella-memo/prefs/v1";
   var SS_DRAFT = "stella-memo/draft/v1";
-  var STATE_FILE = "data/state.json";
   var TOMBSTONE_MS = 21 * 24 * 60 * 60 * 1000;
   var TRASH_ICON = '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path>';
+  var TICK_ICON = '<path d="M20 6L9 17l-5-5"></path>';
 
-  var state = { updatedAt: 0, items: [], deleted: [] };
-  var cat = "todo";
+  var state = { updatedAt: 0, folders: [], items: [], deleted: [], deletedFolders: [] };
+  var current = "todo";
   var filter = "all";
   var showDone = false;
   var readOnly = false;
   var canSave = true;
-  var useFilesForm = true;
   var saving = false;
   var dirty = false;
   var saveTimer = null;
@@ -513,17 +694,40 @@
   }
 
   /* ---------- state shape ---------- */
+  function newId() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  }
+
+  /* Accepts both the original flat shape (items carrying `cat`) and the
+     folder shape, so a phone holding an old copy still merges cleanly. */
   function normalize(raw) {
-    var s = { updatedAt: 0, items: [], deleted: [] };
+    var s = { updatedAt: 0, folders: [], items: [], deleted: [], deletedFolders: [] };
     if (!raw || typeof raw !== "object") return s;
     s.updatedAt = Number(raw.updatedAt) || 0;
+
+    var seen = {};
+    if (Array.isArray(raw.folders)) {
+      raw.folders.forEach(function (f) {
+        if (!f || !f.id || seen[f.id]) return;
+        seen[f.id] = true;
+        s.folders.push({
+          id: String(f.id),
+          name: typeof f.name === "string" && f.name.trim() ? f.name : "フォルダ",
+          color: COLOR_SET[f.color] ? f.color : "teal",
+          monthly: !!f.monthly,
+          order: Number(f.order) || 0,
+          updatedAt: Number(f.updatedAt) || 0
+        });
+      });
+    }
+
     if (Array.isArray(raw.items)) {
       raw.items.forEach(function (it) {
         if (!it || typeof it.text !== "string" || !it.id) return;
         s.items.push({
           id: String(it.id),
           text: it.text,
-          cat: CAT_LABEL[it.cat] ? it.cat : "todo",
+          folder: String(it.folder || it.cat || "todo"),
           done: !!it.done,
           createdAt: Number(it.createdAt) || 0,
           updatedAt: Number(it.updatedAt) || Number(it.createdAt) || 0,
@@ -531,46 +735,147 @@
         });
       });
     }
-    if (Array.isArray(raw.deleted)) {
-      raw.deleted.forEach(function (d) {
-        if (d && d.id) s.deleted.push({ id: String(d.id), at: Number(d.at) || 0 });
+
+    [["deleted", "deleted"], ["deletedFolders", "deletedFolders"]].forEach(function (pair) {
+      var src = raw[pair[0]];
+      if (!Array.isArray(src)) return;
+      src.forEach(function (d) {
+        if (d && d.id) s[pair[1]].push({ id: String(d.id), at: Number(d.at) || 0 });
+      });
+    });
+
+    return s;
+  }
+
+  /* Make sure every folder an item points at exists, and that there is at
+     least one folder to point at. */
+  function ensureFolders(s) {
+    var have = {};
+    s.folders.forEach(function (f) { have[f.id] = true; });
+    var gone = {};
+    s.deletedFolders.forEach(function (d) { gone[d.id] = true; });
+
+    if (!s.folders.length) {
+      DEFAULT_FOLDERS.forEach(function (d, i) {
+        if (gone[d.id]) return;
+        s.folders.push({ id: d.id, name: d.name, color: d.color, monthly: d.monthly, order: i, updatedAt: 0 });
+        have[d.id] = true;
       });
     }
+
+    s.items.forEach(function (it) {
+      if (have[it.folder]) return;
+      var legacy = LEGACY_NAMES[it.folder];
+      var preset = null;
+      DEFAULT_FOLDERS.forEach(function (d) { if (d.id === it.folder) preset = d; });
+      if ((legacy || preset) && !gone[it.folder]) {
+        s.folders.push({
+          id: it.folder,
+          name: (preset || legacy).name,
+          color: (preset || legacy).color,
+          monthly: preset ? preset.monthly : false,
+          order: s.folders.length,
+          updatedAt: 0
+        });
+        have[it.folder] = true;
+      } else {
+        it.folder = s.folders.length ? s.folders[0].id : "todo";
+      }
+    });
+
+    if (!s.folders.length) {
+      s.folders.push({ id: "todo", name: "やること", color: "teal", monthly: false, order: 0, updatedAt: 0 });
+      s.items.forEach(function (it) { it.folder = "todo"; });
+    }
+
+    s.folders.sort(function (a, b) { return (a.order - b.order) || (a.id < b.id ? -1 : 1); });
     return s;
   }
 
   /* Item-level merge, so two phones writing at once never lose a memo. */
   function merge(a, b) {
     a = normalize(a); b = normalize(b);
-    var byId = {};
-    a.items.concat(b.items).forEach(function (it) {
-      var prev = byId[it.id];
-      if (!prev || it.updatedAt > prev.updatedAt) byId[it.id] = it;
-    });
-    var tombs = {};
-    a.deleted.concat(b.deleted).forEach(function (d) {
-      if (!tombs[d.id] || d.at > tombs[d.id].at) tombs[d.id] = d;
-    });
+    var out = { updatedAt: Math.max(a.updatedAt, b.updatedAt), folders: [], items: [], deleted: [], deletedFolders: [] };
     var cutoff = Date.now() - TOMBSTONE_MS;
-    var items = [];
-    Object.keys(byId).forEach(function (id) {
-      var it = byId[id];
-      var t = tombs[id];
-      if (t && t.at >= it.updatedAt) return;
-      items.push(it);
-    });
-    items.sort(function (x, y) { return x.createdAt - y.createdAt; });
-    var deleted = [];
-    Object.keys(tombs).forEach(function (id) {
-      if (tombs[id].at >= cutoff) deleted.push(tombs[id]);
-    });
-    return { updatedAt: Math.max(a.updatedAt, b.updatedAt), items: items, deleted: deleted };
+
+    function newest(listA, listB) {
+      var byId = {};
+      listA.concat(listB).forEach(function (x) {
+        var prev = byId[x.id];
+        if (!prev || x.updatedAt > prev.updatedAt) byId[x.id] = x;
+      });
+      return byId;
+    }
+    function tombs(listA, listB) {
+      var t = {};
+      listA.concat(listB).forEach(function (d) {
+        if (!t[d.id] || d.at > t[d.id].at) t[d.id] = d;
+      });
+      return t;
+    }
+    function survivors(byId, t) {
+      var kept = [];
+      Object.keys(byId).forEach(function (id) {
+        var x = byId[id];
+        if (t[id] && t[id].at >= x.updatedAt) return;
+        kept.push(x);
+      });
+      return kept;
+    }
+    function living(t) {
+      var kept = [];
+      Object.keys(t).forEach(function (id) { if (t[id].at >= cutoff) kept.push(t[id]); });
+      return kept;
+    }
+
+    var itemTombs = tombs(a.deleted, b.deleted);
+    var folderTombs = tombs(a.deletedFolders, b.deletedFolders);
+
+    out.items = survivors(newest(a.items, b.items), itemTombs)
+      .sort(function (x, y) { return x.createdAt - y.createdAt; });
+    out.folders = survivors(newest(a.folders, b.folders), folderTombs);
+    out.deleted = living(itemTombs);
+    out.deletedFolders = living(folderTombs);
+
+    return ensureFolders(out);
   }
 
   function fingerprint(s) {
     return s.items.map(function (it) {
-      return [it.id, it.text, it.cat, it.done ? 1 : 0].join("");
-    }).join("") + "|" + s.deleted.length;
+      return [it.id, it.text, it.folder, it.done ? 1 : 0, it.doneAt].join("");
+    }).join("") + "||" + s.folders.map(function (f) {
+      return [f.id, f.name, f.color, f.monthly ? 1 : 0].join("");
+    }).join("");
+  }
+
+  /* ---------- folders ---------- */
+  function folderOf(it) {
+    var f = null;
+    state.folders.forEach(function (x) { if (x.id === it.folder) f = x; });
+    return f || state.folders[0];
+  }
+
+  function monthKey(ts) {
+    var d = new Date(ts);
+    return d.getFullYear() + "-" + (d.getMonth() + 1);
+  }
+
+  /* A memo in a monthly folder counts as done only for the month it was
+     ticked in, so every folder resets itself when the month turns over —
+     no scheduled job, and it works the same on every device. */
+  function isDone(it) {
+    if (!it.done) return false;
+    var f = folderOf(it);
+    if (f && f.monthly) return monthKey(it.doneAt || it.updatedAt) === monthKey(Date.now());
+    return true;
+  }
+
+  function nextColor() {
+    var used = {};
+    state.folders.forEach(function (f) { used[f.color] = true; });
+    var pick = null;
+    COLORS.forEach(function (c) { if (!pick && !used[c]) pick = c; });
+    return pick || COLORS[state.folders.length % COLORS.length];
   }
 
   /* ---------- saving ---------- */
@@ -588,8 +893,7 @@
   }
 
   function setStatus(kind, text) {
-    var el = document.getElementById("status");
-    el.setAttribute("data-state", kind);
+    document.getElementById("status").setAttribute("data-state", kind);
     document.getElementById("status-text").textContent = text;
   }
 
@@ -599,13 +903,15 @@
     if (!canSave) { setStatus("local", "この端末のみ"); return; }
     setStatus("saving", "保存中…");
     clearTimeout(saveTimer);
-    saveTimer = setTimeout(save, 800);
+    saveTimer = setTimeout(save, 1400);
   }
 
   function stateJson() {
     return JSON.stringify(state).replace(/</g, "\\u003c");
   }
 
+  /* Saving rewrites this page's own stored source with the new state block
+     and publishes it as the next version. */
   function save() {
     if (saving || !dirty) return;
     getApi().then(function (ns) {
@@ -618,45 +924,36 @@
       dirty = false;
       state.updatedAt = Date.now();
       lsSet(LS_STATE, state);
-      (useFilesForm ? saveFiles(ns) : saveHtml(ns)).then(function () {
-        saving = false;
-        setStatus("saved", "保存済み");
-        if (dirty) scheduleSave();
-      }, function (err) {
-        saving = false;
-        dirty = true;
-        handleSaveError(err, ns);
-      });
+
+      var OPEN = "<" + 'script id="app-state" type="application/json">';
+      var CLOSE = "<" + "/script>";
+      fetch(location.pathname, { cache: "no-store" })
+        .then(function (r) { return r.text(); })
+        .then(function (src) {
+          var i = src.indexOf(OPEN);
+          var j = i < 0 ? -1 : src.indexOf(CLOSE, i);
+          if (i < 0 || j < 0 || !/^\s*<!doctype/i.test(src)) {
+            throw { code: "page_unreadable", message: "保存先が見つかりません" };
+          }
+          return ns.publish(src.slice(0, i + OPEN.length) + stateJson() + src.slice(j));
+        })
+        .then(function () {
+          saving = false;
+          setStatus("saved", "保存済み");
+          if (dirty) scheduleSave();
+        }, function (err) {
+          saving = false;
+          dirty = true;
+          handleSaveError(err);
+        });
     });
   }
 
-  function saveFiles(ns) {
-    var files = {};
-    files[STATE_FILE] = stateJson();
-    return ns.publish(files);
-  }
-
-  /* Fallback: rewrite this page's own stored source with the new state block. */
-  function saveHtml(ns) {
-    var OPEN = "<" + 'script id="app-state" type="application/json">';
-    var CLOSE = "<" + "/script>";
-    return fetch(location.pathname, { cache: "no-store" })
-      .then(function (r) { return r.text(); })
-      .then(function (src) {
-        var i = src.indexOf(OPEN);
-        var j = i < 0 ? -1 : src.indexOf(CLOSE, i);
-        if (i < 0 || j < 0 || !/^\s*<!doctype/i.test(src)) {
-          throw { code: "page_unreadable", message: "保存先が見つかりません" };
-        }
-        return ns.publish(src.slice(0, i + OPEN.length) + stateJson() + src.slice(j));
-      });
-  }
-
-  function handleSaveError(err, ns) {
+  function handleSaveError(err) {
     var code = (err && err.code) || "upstream_error";
     if (code === "conflict") {
-      // Someone else published first; every view is already reloading to theirs.
-      // This device keeps its copy in localStorage and merges on the way back in.
+      // Someone else published first; every view is already reloading to
+      // theirs. This device keeps its copy and merges on the way back in.
       setStatus("saving", "更新中…");
       return;
     }
@@ -666,20 +963,6 @@
       readOnly = true;
       setStatus("local", "閲覧のみ");
       render();
-      return;
-    }
-    if (useFilesForm && code !== "page_unreadable" && code !== "too_large") {
-      useFilesForm = false;
-      saving = true;
-      dirty = false;
-      saveHtml(ns).then(function () {
-        saving = false;
-        setStatus("saved", "保存済み");
-      }, function (e2) {
-        saving = false;
-        dirty = true;
-        handleSaveError(e2, ns);
-      });
       return;
     }
     if (code === "rate_limited") {
@@ -704,7 +987,6 @@
     btn.textContent = "再試行";
     btn.addEventListener("click", function () {
       slot.innerHTML = "";
-      useFilesForm = true;
       setStatus("saving", "保存中…");
       save();
     });
@@ -717,9 +999,9 @@
   function addItem(text) {
     var now = Date.now();
     state.items.push({
-      id: now.toString(36) + Math.random().toString(36).slice(2, 7),
+      id: newId(),
       text: text,
-      cat: cat,
+      folder: current,
       done: false,
       createdAt: now,
       updatedAt: now,
@@ -738,7 +1020,8 @@
   function toggleItem(id) {
     var it = findItem(id);
     if (!it) return;
-    it.done = !it.done;
+    var wasDone = isDone(it);
+    it.done = !wasDone;
     it.doneAt = it.done ? Date.now() : 0;
     it.updatedAt = Date.now();
     render();
@@ -749,7 +1032,7 @@
     var keep = [];
     var hit = false;
     state.items.forEach(function (it) {
-      if (it.id === id) { hit = true; } else { keep.push(it); }
+      if (it.id === id) hit = true; else keep.push(it);
     });
     if (!hit) return;
     state.items = keep;
@@ -762,7 +1045,8 @@
     var now = Date.now();
     var keep = [];
     state.items.forEach(function (it) {
-      if (it.done) state.deleted.push({ id: it.id, at: now });
+      var f = folderOf(it);
+      if (isDone(it) && !(f && f.monthly)) state.deleted.push({ id: it.id, at: now });
       else keep.push(it);
     });
     state.items = keep;
@@ -786,36 +1070,52 @@
   }
 
   function renderFilters() {
-    var open = state.items.filter(function (it) { return !it.done; });
     var box = document.getElementById("filters");
-    var defs = [{ id: "all", label: "すべて" }].concat(CATS);
     box.innerHTML = "";
-    defs.forEach(function (d) {
-      var n = d.id === "all" ? open.length
-            : open.filter(function (it) { return it.cat === d.id; }).length;
+
+    var all = document.createElement("button");
+    all.type = "button";
+    all.className = "fchip";
+    all.setAttribute("aria-pressed", filter === "all" ? "true" : "false");
+    all.innerHTML = "<span>すべて</span>" + '<span class="n">' +
+      state.items.filter(function (it) { return !isDone(it); }).length + "</span>";
+    all.addEventListener("click", function () { filter = "all"; savePrefs(); render(); });
+    box.appendChild(all);
+
+    state.folders.forEach(function (f) {
+      var n = state.items.filter(function (it) {
+        return it.folder === f.id && !isDone(it);
+      }).length;
       var b = document.createElement("button");
       b.type = "button";
-      b.className = "fchip";
-      b.setAttribute("aria-pressed", filter === d.id ? "true" : "false");
-      b.innerHTML = "<span>" + d.label + '</span><span class="n">' + n + "</span>";
-      b.addEventListener("click", function () {
-        filter = d.id;
-        savePrefs();
-        render();
-      });
+      b.className = "fchip c-" + f.color;
+      b.setAttribute("aria-pressed", filter === f.id ? "true" : "false");
+      var sw = document.createElement("span");
+      sw.className = "swat";
+      var nm = document.createElement("span");
+      nm.textContent = f.name;
+      var cnt = document.createElement("span");
+      cnt.className = "n";
+      cnt.textContent = n;
+      b.appendChild(sw);
+      b.appendChild(nm);
+      b.appendChild(cnt);
+      b.addEventListener("click", function () { filter = f.id; savePrefs(); render(); });
       box.appendChild(b);
     });
   }
 
   function itemEl(it) {
+    var f = folderOf(it);
+    var done = isDone(it);
     var row = document.createElement("article");
-    row.className = "item " + it.cat + (it.done ? " is-done" : "");
+    row.className = "item c-" + (f ? f.color : "teal") + (done ? " is-done" : "");
 
     var check = document.createElement("button");
     check.type = "button";
     check.className = "check";
-    check.setAttribute("aria-label", it.done ? "未完了に戻す" : "完了にする");
-    check.innerHTML = '<span class="box">' + icon('<path d="M20 6L9 17l-5-5"></path>', 3.2) + "</span>";
+    check.setAttribute("aria-label", done ? "未完了に戻す" : "完了にする");
+    check.innerHTML = '<span class="box">' + icon(TICK_ICON, 3.2) + "</span>";
 
     var body = document.createElement("button");
     body.type = "button";
@@ -827,9 +1127,9 @@
     meta.className = "meta";
     var tag = document.createElement("span");
     tag.className = "tag";
-    tag.textContent = CAT_LABEL[it.cat];
+    tag.textContent = (f && f.monthly ? "↻ " : "") + (f ? f.name : "");
     var when = document.createElement("span");
-    when.textContent = fmtTime(it.done ? (it.doneAt || it.createdAt) : it.createdAt);
+    when.textContent = fmtTime(done ? (it.doneAt || it.createdAt) : it.createdAt);
     meta.appendChild(tag);
     meta.appendChild(when);
     body.appendChild(p);
@@ -871,41 +1171,56 @@
   }
 
   function render() {
+    if (filter !== "all") {
+      var stillThere = false;
+      state.folders.forEach(function (f) { if (f.id === filter) stillThere = true; });
+      if (!stillThere) filter = "all";
+    }
     renderFilters();
+    renderCats();
 
     var list = document.getElementById("list");
     list.innerHTML = "";
 
-    var open = state.items.filter(function (it) {
-      return !it.done && (filter === "all" || it.cat === filter);
+    var inView = state.items.filter(function (it) {
+      return filter === "all" || it.folder === filter;
     });
-    var done = state.items.filter(function (it) {
-      return it.done && (filter === "all" || it.cat === filter);
-    }).sort(function (a, b) { return (b.doneAt || 0) - (a.doneAt || 0); });
+    var open = inView.filter(function (it) { return !isDone(it); });
+    var done = inView.filter(isDone).sort(function (a, b) { return (b.doneAt || 0) - (a.doneAt || 0); });
 
     if (open.length) {
       open.forEach(function (it) { list.appendChild(itemEl(it)); });
     } else {
+      var viewFolder = null;
+      state.folders.forEach(function (f) { if (f.id === filter) viewFolder = f; });
       var e = document.createElement("div");
       e.className = "empty";
-      var head = document.createElement("strong");
+      var h = document.createElement("strong");
+      var sub = "";
       if (!state.items.length) {
-        head.textContent = "メモはまだありません";
-        e.appendChild(head);
-        e.appendChild(document.createTextNode("下の入力欄から、思いついたその場で。"));
+        h.textContent = "メモはまだありません";
+        sub = "下の入力欄から、思いついたその場で。";
+      } else if (viewFolder && viewFolder.monthly && done.length) {
+        h.textContent = "今月分はおわりました";
+        sub = "来月になると自動でチェックが戻ります。";
       } else if (done.length) {
-        head.textContent = "残りはありません";
-        e.appendChild(head);
-        e.appendChild(document.createTextNode("ここのぶんは全部おわりました。"));
+        h.textContent = "残りはありません";
+        sub = "ここのぶんは全部おわりました。";
       } else {
-        head.textContent = "この分類のメモはありません";
-        e.appendChild(head);
-        e.appendChild(document.createTextNode("上のタブで切り替えられます。"));
+        h.textContent = "このフォルダは空です";
+        sub = "上のタブで切り替えられます。";
       }
+      e.appendChild(h);
+      e.appendChild(document.createTextNode(sub));
       list.appendChild(e);
     }
 
     if (done.length) {
+      var clearable = done.filter(function (it) {
+        var f = folderOf(it);
+        return !(f && f.monthly);
+      }).length;
+
       var dh = document.createElement("div");
       dh.className = "done-head";
       var t = document.createElement("button");
@@ -917,7 +1232,7 @@
       t.addEventListener("click", function () { showDone = !showDone; savePrefs(); render(); });
       dh.appendChild(t);
 
-      if (showDone && !readOnly) {
+      if (showDone && !readOnly && clearable) {
         var c = document.createElement("button");
         c.type = "button";
         c.className = "clear";
@@ -952,16 +1267,20 @@
   var send = document.getElementById("send");
 
   function renderCats() {
+    var exists = false;
+    state.folders.forEach(function (f) { if (f.id === current) exists = true; });
+    if (!exists && state.folders.length) current = state.folders[0].id;
+
     var box = document.getElementById("cats");
     box.innerHTML = "";
-    CATS.forEach(function (c) {
+    state.folders.forEach(function (f) {
       var b = document.createElement("button");
       b.type = "button";
-      b.className = "cchip " + c.id;
-      b.textContent = c.label;
-      b.setAttribute("aria-pressed", cat === c.id ? "true" : "false");
+      b.className = "cchip c-" + f.color;
+      b.textContent = f.name;
+      b.setAttribute("aria-pressed", current === f.id ? "true" : "false");
       b.addEventListener("click", function () {
-        cat = c.id;
+        current = f.id;
         savePrefs();
         renderCats();
         input.focus();
@@ -997,41 +1316,204 @@
   });
   send.addEventListener("click", submit);
 
+  /* ---------- folder sheet ---------- */
+  function openSheet() {
+    var scrim = document.createElement("div");
+    scrim.className = "scrim";
+    var sheet = document.createElement("div");
+    sheet.className = "sheet";
+    scrim.appendChild(sheet);
+
+    var grip = document.createElement("div");
+    grip.className = "grip";
+    sheet.appendChild(grip);
+
+    var head = document.createElement("div");
+    head.className = "sheet-head";
+    var h2 = document.createElement("h2");
+    h2.textContent = "フォルダ";
+    var doneBtn = document.createElement("button");
+    doneBtn.type = "button";
+    doneBtn.className = "sheet-done";
+    doneBtn.textContent = "完了";
+    doneBtn.addEventListener("click", close);
+    head.appendChild(h2);
+    head.appendChild(doneBtn);
+    sheet.appendChild(head);
+
+    var note = document.createElement("p");
+    note.className = "sheet-note";
+    note.textContent = "「毎月リセット」を付けたフォルダは、月が変わるとチェックが自動で外れます。毎月やることの置き場にどうぞ。";
+    sheet.appendChild(note);
+
+    var rows = document.createElement("div");
+    rows.className = "frows";
+    sheet.appendChild(rows);
+    state.folders.forEach(function (f) { rows.appendChild(folderRow(f, rows)); });
+
+    var add = document.createElement("button");
+    add.type = "button";
+    add.className = "fadd";
+    add.textContent = "＋ フォルダを追加";
+    add.addEventListener("click", function () {
+      var maxOrder = 0;
+      state.folders.forEach(function (f) { maxOrder = Math.max(maxOrder, f.order); });
+      var f = {
+        id: newId(),
+        name: "新しいフォルダ",
+        color: nextColor(),
+        monthly: false,
+        order: maxOrder + 1,
+        updatedAt: Date.now()
+      };
+      state.folders.push(f);
+      var row = folderRow(f, rows);
+      rows.appendChild(row);
+      render();
+      scheduleSave();
+      var nameInput = row.querySelector(".fname");
+      nameInput.focus();
+      nameInput.select();
+    });
+    sheet.appendChild(add);
+
+    scrim.addEventListener("click", function (e) { if (e.target === scrim) close(); });
+    document.addEventListener("keydown", onKey);
+    document.querySelector(".app").appendChild(scrim);
+
+    function onKey(e) { if (e.key === "Escape") close(); }
+    function close() {
+      document.removeEventListener("keydown", onKey);
+      scrim.remove();
+      render();
+    }
+  }
+
+  function folderRow(f, rows) {
+    var row = document.createElement("div");
+    row.className = "frow c-" + f.color;
+
+    var top = document.createElement("div");
+    top.className = "frow-top";
+    var name = document.createElement("input");
+    name.className = "fname";
+    name.type = "text";
+    name.value = f.name;
+    name.setAttribute("aria-label", "フォルダ名");
+    name.addEventListener("input", function () {
+      f.name = name.value.trim() ? name.value : "フォルダ";
+      f.updatedAt = Date.now();
+      renderCats();
+      renderFilters();
+      scheduleSave();
+    });
+    top.appendChild(name);
+    row.appendChild(top);
+
+    var sws = document.createElement("div");
+    sws.className = "swatches";
+    COLORS.forEach(function (c) {
+      var s = document.createElement("button");
+      s.type = "button";
+      s.className = "sw c-" + c;
+      s.setAttribute("aria-label", "色を変える");
+      s.setAttribute("aria-pressed", f.color === c ? "true" : "false");
+      s.addEventListener("click", function () {
+        f.color = c;
+        f.updatedAt = Date.now();
+        row.className = "frow c-" + c;
+        sws.querySelectorAll(".sw").forEach(function (el) { el.setAttribute("aria-pressed", "false"); });
+        s.setAttribute("aria-pressed", "true");
+        render();
+        scheduleSave();
+      });
+      sws.appendChild(s);
+    });
+    row.appendChild(sws);
+
+    var bot = document.createElement("div");
+    bot.className = "frow-bot";
+    var tog = document.createElement("button");
+    tog.type = "button";
+    tog.className = "toggle";
+    tog.setAttribute("aria-pressed", f.monthly ? "true" : "false");
+    tog.innerHTML = '<span class="mark">' + icon(TICK_ICON, 3.4) + "</span><span>毎月リセット</span>";
+    tog.addEventListener("click", function () {
+      f.monthly = !f.monthly;
+      f.updatedAt = Date.now();
+      tog.setAttribute("aria-pressed", f.monthly ? "true" : "false");
+      render();
+      scheduleSave();
+    });
+    bot.appendChild(tog);
+
+    var del = document.createElement("button");
+    del.type = "button";
+    del.className = "fdel";
+    del.textContent = "削除";
+    var armed = null;
+    del.addEventListener("click", function () {
+      if (state.folders.length < 2) return;
+      var count = state.items.filter(function (it) { return it.folder === f.id; }).length;
+      var target = null;
+      state.folders.forEach(function (x) { if (!target && x.id !== f.id) target = x; });
+      if (!del.classList.contains("confirm")) {
+        del.classList.add("confirm");
+        del.textContent = count
+          ? "メモ" + count + "件を「" + target.name + "」へ移して削除"
+          : "もう一度で削除";
+        armed = setTimeout(function () {
+          del.classList.remove("confirm");
+          del.textContent = "削除";
+        }, 4000);
+        return;
+      }
+      clearTimeout(armed);
+      var now = Date.now();
+      state.items.forEach(function (it) {
+        if (it.folder === f.id) { it.folder = target.id; it.updatedAt = now; }
+      });
+      state.folders = state.folders.filter(function (x) { return x.id !== f.id; });
+      state.deletedFolders.push({ id: f.id, at: now });
+      row.remove();
+      if (rows.children.length < 2) {
+        rows.querySelectorAll(".fdel").forEach(function (el) { el.style.display = "none"; });
+      }
+      render();
+      scheduleSave();
+    });
+    bot.appendChild(del);
+    if (state.folders.length < 2) del.style.display = "none";
+    row.appendChild(bot);
+
+    return row;
+  }
+
+  document.getElementById("cog").addEventListener("click", openSheet);
+
   function savePrefs() {
-    lsSet(LS_PREFS, { cat: cat, filter: filter, showDone: showDone });
+    lsSet(LS_PREFS, { cat: current, filter: filter, showDone: showDone });
   }
 
   /* ---------- boot ---------- */
-  var prefs = lsGet(LS_PREFS);
-  if (prefs) {
-    if (CAT_LABEL[prefs.cat]) cat = prefs.cat;
-    if (prefs.filter === "all" || CAT_LABEL[prefs.filter]) filter = prefs.filter;
-    showDone = !!prefs.showDone;
-  }
-
   var embedded = null;
   try { embedded = JSON.parse(document.getElementById("app-state").textContent); } catch (e) {}
   state = merge(embedded, lsGet(LS_STATE));
 
+  var prefs = lsGet(LS_PREFS);
+  if (prefs) {
+    var ids = { all: true };
+    state.folders.forEach(function (f) { ids[f.id] = true; });
+    if (ids[prefs.cat] && prefs.cat !== "all") current = prefs.cat;
+    if (ids[prefs.filter]) filter = prefs.filter;
+    showDone = !!prefs.showDone;
+  }
+
   var draft = ssGet(SS_DRAFT);
   if (draft) input.value = draft;
 
-  renderCats();
   render();
   syncEntry();
-
-  // The published data file is the shared record. Adopt it, then fold in
-  // anything this device wrote while it was offline or mid-conflict.
-  fetch(STATE_FILE, { cache: "no-store" })
-    .then(function (r) { return r.ok ? r.json() : null; })
-    .then(function (remote) {
-      if (!remote) return;
-      var normalized = normalize(remote);
-      state = merge(state, normalized);
-      render();
-      if (fingerprint(state) !== fingerprint(normalized)) scheduleSave();
-    })
-    .catch(function () {});
 
   getApi().then(function (ns) {
     if (!ns) { canSave = false; setStatus("local", "この端末のみ"); }
