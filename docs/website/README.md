@@ -16,6 +16,7 @@
 | [03-vendor-request.md](03-vendor-request.md) | 制作会社への更新依頼書（掲載位置・画像・要件・納期） | 制作会社 |
 | [04-vendor-email.md](04-vendor-email.md) | 依頼メールの文面（そのまま貼り付け可） | 医院内で使用 |
 | [05-approval-draft.md](05-approval-draft.md) | 院長への確認依頼用（一覧＋本文のみ・そのまま貼り付け可） | 院長 |
+| [05-approval-print.html](05-approval-print.html) | 院長への確認依頼用のPDF元データ（A4印刷用・記入欄つき） | 院長 |
 | [06-seo-meo.md](06-seo-meo.md) | SEO・MEO設定書（キーワード、タグ、構造化データ、Googleビジネスプロフィール） | 制作会社＋医院 |
 
 ## 医院でご記入が必要な箇所
