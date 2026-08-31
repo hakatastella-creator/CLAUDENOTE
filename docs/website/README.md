@@ -8,6 +8,7 @@
 | [02-case-gallery-ceramic-veneer.md](02-case-gallery-ceramic-veneer.md) | 症例集に追加するセラミック・ラミネートベニア症例の原稿とフォーマット | 制作会社 |
 | [03-vendor-request.md](03-vendor-request.md) | 制作会社への更新依頼書（掲載位置・画像・要件・納期） | 制作会社 |
 | [04-vendor-email.md](04-vendor-email.md) | 依頼メールの文面（そのまま貼り付け可） | 医院内で使用 |
+| [05-approval-draft.md](05-approval-draft.md) | 院長への確認依頼用（一覧＋本文のみ・そのまま貼り付け可） | 院長 |
 
 ## 医院でご記入が必要な箇所
 
