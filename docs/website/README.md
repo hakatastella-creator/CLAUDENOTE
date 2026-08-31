@@ -4,7 +4,7 @@
 
 | ファイル | 内容 | 渡す相手 |
 | --- | --- | --- |
-| [01-crown-lengthening-copy.md](01-crown-lengthening-copy.md) | 歯冠長延長術（クラウンレングスニング）の掲載原稿 | 制作会社 |
+| [01-crown-lengthening-copy.md](01-crown-lengthening-copy.md) | 歯冠長延長術（ガミースマイル）の掲載原稿 | 制作会社 |
 | [02-case-gallery-ceramic-veneer.md](02-case-gallery-ceramic-veneer.md) | 症例集に追加するセラミック・ラミネートベニア症例の原稿とフォーマット | 制作会社 |
 | [03-vendor-request.md](03-vendor-request.md) | 制作会社への更新依頼書（掲載位置・画像・要件・納期） | 制作会社 |
 | [04-vendor-email.md](04-vendor-email.md) | 依頼メールの文面（そのまま貼り付け可） | 医院内で使用 |
