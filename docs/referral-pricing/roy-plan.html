@@ -1,0 +1,481 @@
+<title>ロイ様ご紹介プラン</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Barlow+Semi+Condensed:wght@400;500;600&display=swap">
+<style>
+:root{
+  --ground:#FBFAF8;
+  --surface:#FFFFFF;
+  --surface-tint:#F4F1EB;
+  --ink:#14181D;
+  --ink-soft:#3C444C;
+  --muted:#6C7278;
+  --faint:#9AA0A5;
+  --brass:#9A7433;
+  --brass-soft:#EFE4CE;
+  --rule:#E4E0D7;
+  --rule-strong:#CFC9BC;
+  --save:#1F5F4E;
+  --shadow:0 1px 2px rgba(20,24,29,.05), 0 8px 24px -16px rgba(20,24,29,.28);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0F1317;
+    --surface:#161B21;
+    --surface-tint:#1C2229;
+    --ink:#EAE7E1;
+    --ink-soft:#C3C7CB;
+    --muted:#98A0A7;
+    --faint:#727A81;
+    --brass:#D8B57C;
+    --brass-soft:#2C2519;
+    --rule:#272D34;
+    --rule-strong:#3A424A;
+    --save:#7FC9AE;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0F1317;
+  --surface:#161B21;
+  --surface-tint:#1C2229;
+  --ink:#EAE7E1;
+  --ink-soft:#C3C7CB;
+  --muted:#98A0A7;
+  --faint:#727A81;
+  --brass:#D8B57C;
+  --brass-soft:#2C2519;
+  --rule:#272D34;
+  --rule-strong:#3A424A;
+  --save:#7FC9AE;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--ground);
+  color:var(--ink);
+  font-family:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Yu Gothic",system-ui,sans-serif;
+  font-size:15px;
+  line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:920px;margin:0 auto;padding:0 24px 96px}
+
+/* ---------- masthead ---------- */
+.masthead{padding:56px 0 0}
+.clinic{
+  font-size:11px;letter-spacing:.34em;text-transform:none;
+  color:var(--brass);font-weight:700;
+}
+.rule-brass{height:1px;background:var(--brass);opacity:.5;margin:16px 0 28px}
+h1{
+  font-family:"Shippori Mincho",serif;
+  font-weight:600;
+  font-size:clamp(30px,5.2vw,44px);
+  line-height:1.28;
+  letter-spacing:.02em;
+  margin:0;
+  text-wrap:balance;
+}
+h1 .thin{color:var(--muted);font-size:.56em;display:block;margin-top:12px;letter-spacing:.14em;font-weight:500}
+.lede{
+  margin:26px 0 0;max-width:60ch;color:var(--ink-soft);font-size:15.5px;
+}
+
+/* ---------- the two headline benefits ---------- */
+.benefits{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:1px;background:var(--rule);border:1px solid var(--rule);
+  margin:36px 0 0;border-radius:2px;overflow:hidden;
+}
+.benefit{background:var(--surface);padding:24px 26px}
+.benefit .cat{font-size:11.5px;letter-spacing:.22em;color:var(--muted);font-weight:700}
+.benefit .big{
+  font-family:"Shippori Mincho",serif;font-weight:700;
+  font-size:34px;line-height:1.2;margin-top:10px;color:var(--brass);
+  font-feature-settings:"palt";
+}
+.benefit .big em{font-style:normal;font-size:.52em;letter-spacing:.04em;color:var(--ink)}
+.benefit p{margin:8px 0 0;font-size:13px;color:var(--muted);line-height:1.7}
+
+.why{
+  margin:22px 0 0;padding:16px 20px;border-left:2px solid var(--brass);
+  background:var(--brass-soft);border-radius:0 2px 2px 0;
+  font-size:13.5px;color:var(--ink-soft);
+}
+
+/* ---------- sections ---------- */
+section{margin-top:64px}
+.sec-head{display:flex;align-items:baseline;gap:16px;border-bottom:1px solid var(--rule-strong);padding-bottom:10px}
+.sec-head h2{
+  font-family:"Shippori Mincho",serif;font-weight:600;font-size:22px;margin:0;letter-spacing:.04em;
+}
+.sec-head .tag{
+  margin-left:auto;font-size:11.5px;letter-spacing:.16em;color:var(--brass);font-weight:700;white-space:nowrap;
+}
+.sub-head{
+  margin:34px 0 0;font-size:12px;letter-spacing:.2em;color:var(--muted);font-weight:700;
+}
+
+/* ---------- price table ---------- */
+.tablewrap{overflow-x:auto;margin-top:12px}
+table{width:100%;border-collapse:collapse;min-width:560px}
+thead th{
+  font-size:11px;letter-spacing:.14em;color:var(--faint);font-weight:700;
+  text-align:right;padding:8px 0;border-bottom:1px solid var(--rule);white-space:nowrap;
+}
+thead th:first-child{text-align:left}
+tbody td{padding:15px 0;border-bottom:1px solid var(--rule);vertical-align:baseline}
+.name{font-weight:500;font-size:15px}
+.desc{display:block;font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.6;font-weight:400}
+td.n{
+  text-align:right;white-space:nowrap;
+  font-family:"Barlow Semi Condensed","Zen Kaku Gothic New",sans-serif;
+  font-variant-numeric:tabular-nums;
+}
+td.was{color:var(--faint);font-size:17px;text-decoration:line-through;text-decoration-thickness:1px;padding-left:24px}
+td.now{color:var(--ink);font-size:25px;font-weight:600;padding-left:22px;letter-spacing:.01em}
+td.now .yen{font-size:.56em;font-weight:500;color:var(--muted);margin-left:2px;letter-spacing:0}
+td.save{color:var(--save);font-size:15px;font-weight:600;padding-left:20px}
+
+/* ---------- bundle tiles ---------- */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-top:22px}
+.tile{
+  background:var(--surface);border:1px solid var(--rule);border-radius:2px;
+  padding:20px 22px;box-shadow:var(--shadow);
+}
+.tile .t-lab{font-size:12.5px;color:var(--muted);font-weight:500;line-height:1.6}
+.tile .t-was{
+  font-family:"Barlow Semi Condensed",sans-serif;font-variant-numeric:tabular-nums;
+  color:var(--faint);text-decoration:line-through;font-size:16px;margin-top:12px;
+}
+.tile .t-now{
+  font-family:"Barlow Semi Condensed",sans-serif;font-variant-numeric:tabular-nums;
+  font-size:32px;font-weight:600;line-height:1.15;
+}
+.tile .t-now .yen{font-size:.5em;color:var(--muted);margin-left:2px}
+.tile .t-save{margin-top:6px;font-size:12.5px;color:var(--save);font-weight:700}
+
+/* ---------- conditions ---------- */
+.terms{
+  margin-top:64px;background:var(--surface-tint);border:1px solid var(--rule);
+  border-radius:2px;padding:30px 32px;
+}
+.terms h3{
+  font-family:"Shippori Mincho",serif;font-size:16px;font-weight:600;margin:0 0 16px;letter-spacing:.06em;
+}
+.terms ul{margin:0;padding:0;list-style:none;display:grid;gap:11px}
+.terms li{position:relative;padding-left:20px;font-size:13.5px;color:var(--ink-soft);line-height:1.8}
+.terms li::before{
+  content:"";position:absolute;left:2px;top:11px;width:5px;height:5px;
+  background:var(--brass);border-radius:50%;
+}
+.terms li strong{font-weight:700;color:var(--ink)}
+.fill{
+  background:var(--brass-soft);border-bottom:1px dashed var(--brass);
+  padding:1px 8px;color:var(--brass);font-weight:700;font-size:12.5px;border-radius:2px;
+}
+
+footer{
+  margin-top:56px;padding-top:24px;border-top:1px solid var(--rule);
+  display:flex;flex-wrap:wrap;gap:12px 28px;align-items:baseline;
+  font-size:12.5px;color:var(--muted);
+}
+footer .name{font-family:"Shippori Mincho",serif;font-size:15px;color:var(--ink);letter-spacing:.08em;font-weight:600}
+
+@media (max-width:640px){
+  .wrap{padding:0 18px 72px}
+  .masthead{padding-top:40px}
+  td.now{font-size:22px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="clinic">博多ステラ歯科</div>
+    <div class="rule-brass"></div>
+    <h1>ロイ様ご紹介プラン
+      <span class="thin">特別価格のご案内</span>
+    </h1>
+    <p class="lede">
+      ロイ様よりご紹介いただいた方を対象に、セラミック治療と
+      マウスピース矯正を特別価格でご案内いたします。
+      セラミックは1本から、本数の条件なくご紹介価格が適用されます。
+    </p>
+
+    <div class="benefits">
+      <div class="benefit">
+        <div class="cat">セラミック治療</div>
+        <div class="big">20<em>％ OFF</em></div>
+        <p>かぶせ物・詰め物の全品目が対象。1本からこの価格です。</p>
+      </div>
+      <div class="benefit">
+        <div class="cat">マウスピース矯正</div>
+        <div class="big">44,000<em>円 無料</em></div>
+        <p>矯正をはじめる前の検査・診断料が無料になります。</p>
+      </div>
+    </div>
+
+    <p class="why">
+      セラミックの20％OFFは、当院が出せる最大の割引です。通常は10本以上をまとめて
+      治療された方にのみご案内している価格を、ロイ様のご紹介の方には本数を問わず
+      最初から適用いたします。
+    </p>
+  </header>
+
+  <!-- ============ ceramics ============ -->
+  <section>
+    <div class="sec-head">
+      <h2>セラミック治療</h2>
+      <span class="tag">全品目 20％OFF</span>
+    </div>
+
+    <div class="sub-head">前歯部（笑ったときに見える歯）</div>
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th>治療メニュー（1本あたり）</th>
+            <th>通常価格</th>
+            <th>ご紹介価格</th>
+            <th>お得額</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="name">ジルコニアセラミック S級</span>
+              <span class="desc">最上位グレード。色を何層も盛って天然歯の透明感とグラデーションを再現</span></td>
+            <td class="n was">143,000</td>
+            <td class="n now">114,400<span class="yen">円</span></td>
+            <td class="n save">−28,600</td>
+          </tr>
+          <tr>
+            <td><span class="name">ジルコニアセラミック ノーマル</span>
+              <span class="desc">単色仕上げ。白さと強度のバランス型で、いちばん選ばれている定番</span></td>
+            <td class="n was">110,000</td>
+            <td class="n now">88,000<span class="yen">円</span></td>
+            <td class="n save">−22,000</td>
+          </tr>
+          <tr>
+            <td><span class="name">ラミネートベニア</span>
+              <span class="desc">歯の表面に薄いセラミックを貼る方法。削る量が少なくて済む</span></td>
+            <td class="n was">110,000</td>
+            <td class="n now">88,000<span class="yen">円</span></td>
+            <td class="n save">−22,000</td>
+          </tr>
+          <tr>
+            <td><span class="name">スーパーエナメル</span>
+              <span class="desc">色を盛って仕上げるタイプ。立体的な色調再現に優れる</span></td>
+            <td class="n was">99,000</td>
+            <td class="n now">79,200<span class="yen">円</span></td>
+            <td class="n save">−19,800</td>
+          </tr>
+          <tr>
+            <td><span class="name">e-maxクラウン（前歯）</span>
+              <span class="desc">単色。透明感のあるオールセラミック</span></td>
+            <td class="n was">99,000</td>
+            <td class="n now">79,200<span class="yen">円</span></td>
+            <td class="n save">−19,800</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="sub-head">臼歯部（奥歯）</div>
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th>治療メニュー（1本あたり）</th>
+            <th>通常価格</th>
+            <th>ご紹介価格</th>
+            <th>お得額</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="name">フルジルコニアクラウン</span>
+              <span class="desc">奥歯用のかぶせ物。強度重視で、噛む力の強い方にも割れにくい</span></td>
+            <td class="n was">99,000</td>
+            <td class="n now">79,200<span class="yen">円</span></td>
+            <td class="n save">−19,800</td>
+          </tr>
+          <tr>
+            <td><span class="name">e-maxクラウン</span>
+              <span class="desc">奥歯用のかぶせ物。自然な色調</span></td>
+            <td class="n was">99,000</td>
+            <td class="n now">79,200<span class="yen">円</span></td>
+            <td class="n save">−19,800</td>
+          </tr>
+          <tr>
+            <td><span class="name">フルジルコニアインレー</span>
+              <span class="desc">部分的な詰め物。銀歯の入れ替えに</span></td>
+            <td class="n was">55,000</td>
+            <td class="n now">44,000<span class="yen">円</span></td>
+            <td class="n save">−11,000</td>
+          </tr>
+          <tr>
+            <td><span class="name">e-maxインレー</span>
+              <span class="desc">部分的な詰め物。白く自然に仕上がる</span></td>
+            <td class="n was">55,000</td>
+            <td class="n now">44,000<span class="yen">円</span></td>
+            <td class="n save">−11,000</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="sub-head">まとめて治療される場合の目安</div>
+    <div class="tiles">
+      <div class="tile">
+        <div class="t-lab">上の前歯6本<br>ジルコニアセラミック S級</div>
+        <div class="t-was">858,000</div>
+        <div class="t-now">686,400<span class="yen">円</span></div>
+        <div class="t-save">−171,600円</div>
+      </div>
+      <div class="tile">
+        <div class="t-lab">上の前歯6本<br>ジルコニアセラミック ノーマル</div>
+        <div class="t-was">660,000</div>
+        <div class="t-now">528,000<span class="yen">円</span></div>
+        <div class="t-save">−132,000円</div>
+      </div>
+      <div class="tile">
+        <div class="t-lab">奥歯のかぶせ物3本<br>フルジルコニアクラウン</div>
+        <div class="t-was">297,000</div>
+        <div class="t-now">237,600<span class="yen">円</span></div>
+        <div class="t-save">−59,400円</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ortho ============ -->
+  <section>
+    <div class="sec-head">
+      <h2>マウスピース矯正（インビザライン）</h2>
+      <span class="tag">検査診断料 44,000円 無料</span>
+    </div>
+    <p class="lede" style="margin-top:22px">
+      矯正は治療費そのものは通常どおりですが、はじめる前に必要な
+      矯正検査・診断料 44,000円（レントゲン・口腔内スキャン・治療計画の作成）を無料でご提供します。
+    </p>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th>プラン</th>
+            <th>通常のお支払い合計</th>
+            <th>ご紹介価格</th>
+            <th>お得額</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="name">インビザライン コンプリ（枚数無制限）</span>
+              <span class="desc">枚数の制限なし。抜歯を伴う症例や大きく動かす症例に</span></td>
+            <td class="n was">924,000</td>
+            <td class="n now">880,000<span class="yen">円</span></td>
+            <td class="n save">−44,000</td>
+          </tr>
+          <tr>
+            <td><span class="name">インビザライン モデレート　両顎</span>
+              <span class="desc">アライナー26枚。上下同時に動かす標準的なプラン</span></td>
+            <td class="n was">591,800</td>
+            <td class="n now">547,800<span class="yen">円</span></td>
+            <td class="n save">−44,000</td>
+          </tr>
+          <tr>
+            <td><span class="name">インビザライン モデレート　片顎</span>
+              <span class="desc">上下どちらか片方のみ</span></td>
+            <td class="n was">541,800</td>
+            <td class="n now">497,800<span class="yen">円</span></td>
+            <td class="n save">−44,000</td>
+          </tr>
+          <tr>
+            <td><span class="name">インビザライン ライト　両顎</span>
+              <span class="desc">アライナー14枚。軽度の乱れを整えるプラン</span></td>
+            <td class="n was">481,800</td>
+            <td class="n now">437,800<span class="yen">円</span></td>
+            <td class="n save">−44,000</td>
+          </tr>
+          <tr>
+            <td><span class="name">インビザライン ライト　片顎</span>
+              <span class="desc">上下どちらか片方のみ</span></td>
+            <td class="n was">437,800</td>
+            <td class="n now">393,800<span class="yen">円</span></td>
+            <td class="n save">−44,000</td>
+          </tr>
+          <tr>
+            <td><span class="name">インビザライン エクスプレス　両顎</span>
+              <span class="desc">アライナー7枚。ごく軽度の並びを短期間で</span></td>
+            <td class="n was">371,800</td>
+            <td class="n now">327,800<span class="yen">円</span></td>
+            <td class="n save">−44,000</td>
+          </tr>
+          <tr>
+            <td><span class="name">インビザライン エクスプレス　片顎</span>
+              <span class="desc">上下どちらか片方のみ</span></td>
+            <td class="n was">342,000</td>
+            <td class="n now">298,000<span class="yen">円</span></td>
+            <td class="n save">−44,000</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="sub-head">お子様の矯正</div>
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th>プラン</th>
+            <th>通常のお支払い合計</th>
+            <th>ご紹介価格</th>
+            <th>お得額</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="name">小児一期治療（インビザライン・ファースト）</span>
+              <span class="desc">乳歯と永久歯が混ざっている時期の治療</span></td>
+            <td class="n was">594,000</td>
+            <td class="n now">550,000<span class="yen">円</span></td>
+            <td class="n save">−44,000</td>
+          </tr>
+          <tr>
+            <td><span class="name">小児二期治療（フェーズ2）</span>
+              <span class="desc">永久歯が生えそろってからの仕上げの治療</span></td>
+            <td class="n was">484,000</td>
+            <td class="n now">440,000<span class="yen">円</span></td>
+            <td class="n save">−44,000</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ terms ============ -->
+  <div class="terms">
+    <h3>ご利用にあたって</h3>
+    <ul>
+      <li>対象は<strong>ロイ様のお店に在籍されているスタッフの方</strong>です。ご予約時、または初診の受付時に「ロイさんの紹介」とお伝えください。</li>
+      <li>表示価格はすべて<strong>税込</strong>です。1本からご紹介価格が適用され、本数の条件はありません。</li>
+      <li><strong>自費診療のみが対象</strong>です。保険診療は制度上、割引の対象にできませんのでご了承ください。</li>
+      <li>他の割引・キャンペーン・モニター価格との併用はできません。セラミックの20％OFFは当院の割引の下限で、これ以上のお値引きは承っておりません。</li>
+      <li>矯正の治療費には、装置代・調整料・リテーナー（保定装置）1セットが含まれます。治療計画を超えるアライナーの追加注文が必要になった場合は、別途費用が発生することがあります。</li>
+      <li>前歯を連続してつなげて製作する場合など、症例によっては上表と価格が異なることがあります。正確な費用は診察のうえお見積りいたします。</li>
+      <li>適用期間　<span class="fill">開始日〜終了日をご記入ください</span></li>
+      <li>ご予約・ご相談　<span class="fill">電話番号／LINE等をご記入ください</span></li>
+    </ul>
+  </div>
+
+  <footer>
+    <span class="name">博多ステラ歯科</span>
+    <span>ロイ様ご紹介プラン 特別価格表</span>
+    <span>2026年9月 作成</span>
+  </footer>
+
+</div>
