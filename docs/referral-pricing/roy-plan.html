@@ -138,6 +138,12 @@ td.was{color:var(--faint);font-size:17px;text-decoration:line-through;text-decor
 td.now{color:var(--ink);font-size:25px;font-weight:600;padding-left:22px;letter-spacing:.01em}
 td.now .yen{font-size:.56em;font-weight:500;color:var(--muted);margin-left:2px;letter-spacing:0}
 td.save{color:var(--save);font-size:15px;font-weight:600;padding-left:20px}
+td.same{color:var(--ink);font-size:20px;font-weight:500;padding-left:22px}
+td.same .yen{font-size:.7em;font-weight:400;color:var(--muted);margin-left:2px}
+td.free{padding-left:22px;line-height:1.35}
+td.free s{display:block;color:var(--faint);font-size:15px;text-decoration-thickness:1px}
+td.free b{display:block;color:var(--save);font-size:20px;font-weight:700;letter-spacing:.02em;
+  font-family:"Zen Kaku Gothic New",sans-serif}
 
 /* ---------- bundle tiles ---------- */
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-top:22px}
@@ -358,8 +364,8 @@ footer .name{font-family:"Shippori Mincho",serif;font-size:15px;color:var(--ink)
       <span class="tag">検査診断料 44,000円 無料</span>
     </div>
     <p class="lede" style="margin-top:22px">
-      矯正は治療費そのものは通常どおりですが、はじめる前に必要な
-      矯正検査・診断料 44,000円（レントゲン・口腔内スキャン・治療計画の作成）を無料でご提供します。
+      矯正の治療費そのものは通常どおりです。そのかわり、治療をはじめる前に別途いただいている
+      <strong>矯正検査・診断料 44,000円</strong>（レントゲン・口腔内スキャン・治療計画の作成）を無料でご提供します。
     </p>
 
     <div class="tablewrap">
@@ -367,8 +373,8 @@ footer .name{font-family:"Shippori Mincho",serif;font-size:15px;color:var(--ink)
         <thead>
           <tr>
             <th>プラン</th>
-            <th>通常のお支払い合計</th>
-            <th>ご紹介価格</th>
+            <th>矯正治療費</th>
+            <th>矯正検査・診断料</th>
             <th>お得額</th>
           </tr>
         </thead>
@@ -376,50 +382,50 @@ footer .name{font-family:"Shippori Mincho",serif;font-size:15px;color:var(--ink)
           <tr>
             <td><span class="name">インビザライン コンプリ（枚数無制限）</span>
               <span class="desc">枚数の制限なし。抜歯を伴う症例や大きく動かす症例に</span></td>
-            <td class="n was">924,000</td>
-            <td class="n now">880,000<span class="yen">円</span></td>
+            <td class="n same">880,000<span class="yen">円</span></td>
+            <td class="n free"><s>44,000円</s><b>無料</b></td>
             <td class="n save">−44,000</td>
           </tr>
           <tr>
             <td><span class="name">インビザライン モデレート　両顎</span>
               <span class="desc">アライナー26枚。上下同時に動かす標準的なプラン</span></td>
-            <td class="n was">591,800</td>
-            <td class="n now">547,800<span class="yen">円</span></td>
+            <td class="n same">547,800<span class="yen">円</span></td>
+            <td class="n free"><s>44,000円</s><b>無料</b></td>
             <td class="n save">−44,000</td>
           </tr>
           <tr>
             <td><span class="name">インビザライン モデレート　片顎</span>
               <span class="desc">上下どちらか片方のみ</span></td>
-            <td class="n was">541,800</td>
-            <td class="n now">497,800<span class="yen">円</span></td>
+            <td class="n same">497,800<span class="yen">円</span></td>
+            <td class="n free"><s>44,000円</s><b>無料</b></td>
             <td class="n save">−44,000</td>
           </tr>
           <tr>
             <td><span class="name">インビザライン ライト　両顎</span>
               <span class="desc">アライナー14枚。軽度の乱れを整えるプラン</span></td>
-            <td class="n was">481,800</td>
-            <td class="n now">437,800<span class="yen">円</span></td>
+            <td class="n same">437,800<span class="yen">円</span></td>
+            <td class="n free"><s>44,000円</s><b>無料</b></td>
             <td class="n save">−44,000</td>
           </tr>
           <tr>
             <td><span class="name">インビザライン ライト　片顎</span>
               <span class="desc">上下どちらか片方のみ</span></td>
-            <td class="n was">437,800</td>
-            <td class="n now">393,800<span class="yen">円</span></td>
+            <td class="n same">393,800<span class="yen">円</span></td>
+            <td class="n free"><s>44,000円</s><b>無料</b></td>
             <td class="n save">−44,000</td>
           </tr>
           <tr>
             <td><span class="name">インビザライン エクスプレス　両顎</span>
               <span class="desc">アライナー7枚。ごく軽度の並びを短期間で</span></td>
-            <td class="n was">371,800</td>
-            <td class="n now">327,800<span class="yen">円</span></td>
+            <td class="n same">327,800<span class="yen">円</span></td>
+            <td class="n free"><s>44,000円</s><b>無料</b></td>
             <td class="n save">−44,000</td>
           </tr>
           <tr>
             <td><span class="name">インビザライン エクスプレス　片顎</span>
               <span class="desc">上下どちらか片方のみ</span></td>
-            <td class="n was">342,000</td>
-            <td class="n now">298,000<span class="yen">円</span></td>
+            <td class="n same">298,000<span class="yen">円</span></td>
+            <td class="n free"><s>44,000円</s><b>無料</b></td>
             <td class="n save">−44,000</td>
           </tr>
         </tbody>
@@ -432,8 +438,8 @@ footer .name{font-family:"Shippori Mincho",serif;font-size:15px;color:var(--ink)
         <thead>
           <tr>
             <th>プラン</th>
-            <th>通常のお支払い合計</th>
-            <th>ご紹介価格</th>
+            <th>矯正治療費</th>
+            <th>矯正検査・診断料</th>
             <th>お得額</th>
           </tr>
         </thead>
@@ -441,15 +447,15 @@ footer .name{font-family:"Shippori Mincho",serif;font-size:15px;color:var(--ink)
           <tr>
             <td><span class="name">小児一期治療（インビザライン・ファースト）</span>
               <span class="desc">乳歯と永久歯が混ざっている時期の治療</span></td>
-            <td class="n was">594,000</td>
-            <td class="n now">550,000<span class="yen">円</span></td>
+            <td class="n same">550,000<span class="yen">円</span></td>
+            <td class="n free"><s>44,000円</s><b>無料</b></td>
             <td class="n save">−44,000</td>
           </tr>
           <tr>
             <td><span class="name">小児二期治療（フェーズ2）</span>
               <span class="desc">永久歯が生えそろってからの仕上げの治療</span></td>
-            <td class="n was">484,000</td>
-            <td class="n now">440,000<span class="yen">円</span></td>
+            <td class="n same">440,000<span class="yen">円</span></td>
+            <td class="n free"><s>44,000円</s><b>無料</b></td>
             <td class="n save">−44,000</td>
           </tr>
         </tbody>
@@ -465,6 +471,7 @@ footer .name{font-family:"Shippori Mincho",serif;font-size:15px;color:var(--ink)
       <li>表示価格はすべて<strong>税込</strong>です。1本からご紹介価格が適用され、本数の条件はありません。</li>
       <li><strong>自費診療のみが対象</strong>です。保険診療は制度上、割引の対象にできませんのでご了承ください。</li>
       <li>他の割引・キャンペーン・モニター価格との併用はできません。セラミックの20％OFFは当院の割引の下限で、これ以上のお値引きは承っておりません。</li>
+      <li>矯正は<strong>治療費と検査・診断料が別のご請求</strong>です。ご紹介プランでは治療費は通常どおり、検査・診断料 44,000円のみが無料になります。</li>
       <li>矯正の治療費には、装置代・調整料・リテーナー（保定装置）1セットが含まれます。治療計画を超えるアライナーの追加注文が必要になった場合は、別途費用が発生することがあります。</li>
       <li>前歯を連続してつなげて製作する場合など、症例によっては上表と価格が異なることがあります。正確な費用は診察のうえお見積りいたします。</li>
       <li>適用期間　<span class="fill">開始日〜終了日をご記入ください</span></li>
