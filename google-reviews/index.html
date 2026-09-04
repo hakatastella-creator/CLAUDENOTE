@@ -135,6 +135,7 @@
   @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn-primary{color:#06201C}}
   .btn-primary:hover{background:var(--accent-ink);border-color:var(--accent-ink)}
   .btn-ghost{background:transparent}
+  .btn-warn{background:var(--pending-soft);border-color:var(--pending);color:var(--pending);font-weight:700}
   .btn[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-ink)}
 
   /* --- stats --- */
@@ -256,10 +257,14 @@
   form.entry label span.opt{font-weight:400;color:var(--ink-3);white-space:nowrap}
   form.entry .full{grid-column:1 / -1}
   form.entry input,form.entry select,form.entry textarea{width:100%}
-  .dlg-foot{grid-column:1 / -1;display:flex;gap:8px;justify-content:flex-end;align-items:center;border-top:1px solid var(--line-soft);padding-top:14px;margin-top:2px}
+  .dlg-foot{
+    grid-column:1 / -1;display:flex;gap:8px;justify-content:flex-end;align-items:center;
+    border-top:1px solid var(--line-soft);padding:14px 0 4px;margin-top:2px;
+    position:sticky;bottom:-20px;background:var(--surface);z-index:2;
+  }
   .dlg-foot .del{margin-right:auto;color:var(--pending);border-color:transparent;background:transparent}
   .dlg-foot .del:hover{border-color:var(--pending)}
-  .hint{grid-column:1 / -1;font-size:12px;color:var(--ink-2);background:var(--accent-soft);border-radius:8px;padding:8px 11px;font-weight:400;letter-spacing:0}
+  .hint{grid-column:1 / -1;margin:0;font-size:12px;color:var(--ink-2);background:var(--accent-soft);border-radius:8px;padding:8px 11px;font-weight:400;letter-spacing:0}
 
   .toast{
     position:fixed;left:50%;bottom:26px;transform:translateX(-50%);
@@ -323,6 +328,7 @@
       <button data-filter="pending" aria-pressed="false">未渡しのみ</button>
       <button data-filter="done" aria-pressed="false">渡し済のみ</button>
     </div>
+    <button class="btn" id="saveAllBtn" title="入力は保存を押した時点で自動的に台帳へ送られます。念のため全件を保存し直します。">すべて保存</button>
     <span class="spacer"></span>
     <button class="btn btn-ghost" id="copyBtn">テキストでコピー</button>
     <button class="btn btn-ghost" id="csvBtn" hidden>CSV書き出し</button>
@@ -399,10 +405,12 @@
     <label>備考 <span class="opt">（任意）</span>
       <input type="text" name="note" placeholder="次回来院時に渡す 等" autocomplete="off">
     </label>
+    <p class="hint">保存を押した時点で、全員の台帳に反映されます。あとから編集もできます。</p>
     <div class="dlg-foot">
       <button type="button" class="btn del" id="delBtn" hidden>この口コミを削除</button>
       <button type="button" class="btn" id="cancelBtn">キャンセル</button>
-      <button type="submit" class="btn btn-primary" id="saveBtn">保存</button>
+      <button type="button" class="btn" id="saveAddBtn">保存して続けて入力</button>
+      <button type="submit" class="btn btn-primary" id="saveBtn">保存して閉じる</button>
     </div>
   </form>
 </dialog>
@@ -504,14 +512,26 @@
       return e && e.id && !onServer[e.id] && !seen[e.id];
     });
   }
+  var failed = {};
   function persist(entry){
     if(db){
-      db.collection("reviews").doc(entry.id).set(entry).catch(function(){
-        toast("保存できませんでした。通信を確認してもう一度お試しください");
+      db.collection("reviews").doc(entry.id).set(entry).then(function(){
+        delete failed[entry.id];
+        updateSaveState();
+      }, function(){
+        failed[entry.id] = true;
+        updateSaveState();
+        toast("保存できませんでした。「未保存」ボタンを押すか、通信を確認してください");
       });
     }else{
       saveLocal();
     }
+  }
+  function updateSaveState(){
+    var n = Object.keys(failed).length;
+    var btn = $("#saveAllBtn");
+    btn.classList.toggle("btn-warn", n > 0);
+    btn.textContent = n > 0 ? "未保存 " + n + "件を保存" : "すべて保存";
   }
   function removeStored(id){
     if(db){
@@ -703,8 +723,7 @@
   form.status.addEventListener("change", function(){
     if(form.status.value === "done" && !form.givenDate.value) form.givenDate.value = today();
   });
-  form.addEventListener("submit", function(ev){
-    ev.preventDefault();
+  function commitEntry(keepOpen){
     var base = editingId ? entries.filter(function(x){ return x.id === editingId; })[0] : null;
     var entry = {
       id: base ? base.id : uid(),
@@ -732,8 +751,42 @@
     view.month = entry.month;
     persist(entry);
     render();
-    dlg.close();
-    toast(base ? "更新しました" : "追加しました");
+    if(!keepOpen){
+      dlg.close();
+      toast(base ? "更新しました" : "追加しました");
+      return;
+    }
+    // 続けて次の口コミを入力できるように、内容だけ空にする
+    editingId = null;
+    $("#dlgTitle").textContent = "口コミを追加";
+    $("#delBtn").hidden = true;
+    ["postedAt", "patientNo", "name", "reviewer", "content", "givenDate", "staff", "note"]
+      .forEach(function(k){ form[k].value = ""; });
+    form.stars.value = "5";
+    form.status.value = "pending";
+    syncGiftField();
+    form.patientNo.focus();
+    toast("保存しました。続けて入力できます");
+  }
+  form.addEventListener("submit", function(ev){
+    ev.preventDefault();
+    commitEntry(false);
+  });
+  $("#saveAddBtn").addEventListener("click", function(){
+    if(form.reportValidity()) commitEntry(true);
+  });
+  $("#saveAllBtn").addEventListener("click", function(){
+    if(entries.length === 0){
+      toast("保存する口コミがまだありません");
+      return;
+    }
+    if(db){
+      entries.forEach(persist);
+      toast(entries.length + "件を保存しました");
+    }else{
+      saveLocal();
+      toast("この端末に保存しました。ログインして開き直すと台帳に反映されます");
+    }
   });
   $("#delBtn").addEventListener("click", function(){
     if(!editingId) return;
