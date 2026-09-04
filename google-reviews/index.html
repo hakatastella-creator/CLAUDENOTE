@@ -1,0 +1,811 @@
+<title>口コミプレゼント台帳</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    --ground:#F2F5F3;
+    --surface:#FFFFFF;
+    --surface-2:#E9EEEB;
+    --line:#D5DEDA;
+    --line-soft:#E4EAE7;
+    --ink:#16262A;
+    --ink-2:#4E6167;
+    --ink-3:#7A8C90;
+    --accent:#0E6E62;
+    --accent-ink:#0B564D;
+    --accent-soft:#DCEEE9;
+    --ortho:#3F4FA8;
+    --ortho-soft:#E4E7F8;
+    --goods:#9C540E;
+    --goods-soft:#F7E9D6;
+    --done:#146A45;
+    --done-soft:#DBEEE2;
+    --pending:#AC3B18;
+    --pending-soft:#F8E2D7;
+    --star:#C08D12;
+    --shadow:0 1px 2px rgba(20,45,45,.05), 0 8px 24px -16px rgba(20,45,45,.35);
+    --radius:12px;
+    --font-body:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Yu Gothic",system-ui,sans-serif;
+    --font-display:"Zen Old Mincho","Hiragino Mincho ProN","Yu Mincho",serif;
+    --font-mono:"Roboto Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ground:#101617;
+      --surface:#182120;
+      --surface-2:#1F2A28;
+      --line:#2C3937;
+      --line-soft:#243030;
+      --ink:#E7EEEA;
+      --ink-2:#A3B4AF;
+      --ink-3:#7C8D89;
+      --accent:#4FBFAC;
+      --accent-ink:#7FD6C6;
+      --accent-soft:#14332E;
+      --ortho:#A6B0F2;
+      --ortho-soft:#232945;
+      --goods:#DEA766;
+      --goods-soft:#3A2C1B;
+      --done:#63C795;
+      --done-soft:#153123;
+      --pending:#EE9067;
+      --pending-soft:#3A2118;
+      --star:#E0BB59;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 10px 28px -18px rgba(0,0,0,.8);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#101617;
+    --surface:#182120;
+    --surface-2:#1F2A28;
+    --line:#2C3937;
+    --line-soft:#243030;
+    --ink:#E7EEEA;
+    --ink-2:#A3B4AF;
+    --ink-3:#7C8D89;
+    --accent:#4FBFAC;
+    --accent-ink:#7FD6C6;
+    --accent-soft:#14332E;
+    --ortho:#A6B0F2;
+    --ortho-soft:#232945;
+    --goods:#DEA766;
+    --goods-soft:#3A2C1B;
+    --done:#63C795;
+    --done-soft:#153123;
+    --pending:#EE9067;
+    --pending-soft:#3A2118;
+    --star:#E0BB59;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 10px 28px -18px rgba(0,0,0,.8);
+  }
+
+  *{box-sizing:border-box}
+  [hidden]{display:none !important}
+  body{
+    margin:0;
+    background:var(--ground);
+    color:var(--ink);
+    font-family:var(--font-body);
+    font-size:15px;
+    line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:940px;margin:0 auto;padding:0 20px 72px}
+
+  /* --- header --- */
+  .topbar{
+    position:sticky;top:0;z-index:20;
+    background:var(--ground);
+    background:color-mix(in srgb, var(--ground) 88%, transparent);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .topbar-inner{max-width:940px;margin:0 auto;padding:14px 20px;display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;justify-content:space-between}
+  .brand{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .eyebrow{
+    font-size:11px;letter-spacing:.18em;text-transform:none;
+    color:var(--accent);font-weight:700;
+  }
+  h1{
+    font-family:var(--font-display);
+    font-size:23px;line-height:1.25;margin:0;font-weight:700;letter-spacing:.02em;
+    text-wrap:balance;
+  }
+  .controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+  select,input,textarea{
+    font-family:inherit;font-size:14px;color:var(--ink);
+    background:var(--surface);border:1px solid var(--line);border-radius:9px;
+    padding:7px 10px;line-height:1.5;
+  }
+  textarea{resize:vertical;min-height:96px;line-height:1.7}
+  select:focus-visible,input:focus-visible,textarea:focus-visible,button:focus-visible{
+    outline:2px solid var(--accent);outline-offset:2px;
+  }
+  .month-pick{font-family:var(--font-mono);font-weight:500;letter-spacing:.02em}
+
+  button{font-family:inherit;font-size:14px;cursor:pointer;border-radius:9px;transition:background .15s,border-color .15s,color .15s}
+  .btn{
+    border:1px solid var(--line);background:var(--surface);color:var(--ink);
+    padding:7px 13px;display:inline-flex;align-items:center;gap:6px;
+  }
+  .btn:hover{border-color:var(--ink-3)}
+  .btn-primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+  :root[data-theme="dark"] .btn-primary{color:#06201C}
+  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn-primary{color:#06201C}}
+  .btn-primary:hover{background:var(--accent-ink);border-color:var(--accent-ink)}
+  .btn-ghost{background:transparent}
+  .btn[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-ink)}
+
+  /* --- stats --- */
+  .stats{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:1px;
+    background:var(--line-soft);border:1px solid var(--line);border-radius:var(--radius);
+    overflow:hidden;margin:22px 0 18px;
+  }
+  .stat{background:var(--surface);padding:13px 15px;display:flex;flex-direction:column;gap:2px}
+  .stat dt{font-size:11.5px;color:var(--ink-2);letter-spacing:.04em;margin:0}
+  .stat dd{margin:0;font-family:var(--font-mono);font-size:25px;font-weight:500;line-height:1.15;font-variant-numeric:tabular-nums}
+  .stat dd small{font-family:var(--font-body);font-size:12px;color:var(--ink-2);margin-left:3px;font-weight:400}
+  .stat.is-pending dd{color:var(--pending)}
+  .stat.is-done dd{color:var(--done)}
+
+  /* --- toolbar --- */
+  .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:16px}
+  .filters{display:flex;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:3px}
+  .filters button{border:0;background:transparent;color:var(--ink-2);padding:5px 11px;border-radius:7px;font-size:13px}
+  .filters button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent-ink);font-weight:700}
+  .spacer{flex:1}
+  .sync{
+    font-size:11.5px;color:var(--ink-2);display:inline-flex;align-items:center;gap:6px;
+    border:1px solid var(--line-soft);border-radius:20px;padding:3px 10px;background:var(--surface);
+  }
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--ink-3);flex:none}
+  .sync[data-state="live"] .dot{background:var(--done)}
+  .sync[data-state="local"] .dot{background:var(--star)}
+
+  /* --- cards --- */
+  .list{display:flex;flex-direction:column;gap:12px}
+  .card{
+    position:relative;background:var(--surface);border:1px solid var(--line);
+    border-radius:var(--radius);box-shadow:var(--shadow);
+    padding:15px 17px 13px 21px;overflow:hidden;
+  }
+  .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--pending)}
+  .card[data-status="done"]::before{background:var(--done)}
+  .card.example{opacity:.62;box-shadow:none;border-style:dashed}
+  .card-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 12px}
+  .idx{font-family:var(--font-mono);font-size:12px;color:var(--ink-3);display:none}
+  .pno{
+    font-family:var(--font-mono);font-size:12.5px;font-weight:500;letter-spacing:.03em;
+    background:var(--surface-2);color:var(--ink-2);border-radius:6px;padding:2px 7px;font-variant-numeric:tabular-nums;
+  }
+  .pname{font-size:17px;font-weight:700;margin:0;letter-spacing:.01em}
+  .pname span{font-size:12.5px;font-weight:400;color:var(--ink-2);margin-left:5px}
+  .stars{color:var(--star);letter-spacing:.12em;font-size:13px}
+  .posted{font-family:var(--font-mono);font-size:12px;color:var(--ink-3);margin-left:auto;font-variant-numeric:tabular-nums}
+  .quote{
+    margin:11px 0 13px;padding:11px 14px;background:var(--surface-2);
+    border-radius:9px;font-size:14.5px;line-height:1.85;white-space:pre-wrap;
+    max-width:66ch;
+  }
+  .card-foot{display:flex;flex-wrap:wrap;align-items:center;gap:8px;border-top:1px solid var(--line-soft);padding-top:11px}
+  .pill{
+    font-size:12px;font-weight:700;border-radius:20px;padding:3px 11px;white-space:nowrap;
+    border:1px solid transparent;
+  }
+  .pill.cat-ortho{background:var(--ortho-soft);color:var(--ortho)}
+  .pill.cat-general{background:var(--surface-2);color:var(--ink-2)}
+  .pill.cat-other{background:var(--surface-2);color:var(--ink-2)}
+  .pill.gift{background:var(--goods-soft);color:var(--goods)}
+  .pill.gift.is-ortho{background:var(--ortho-soft);color:var(--ortho)}
+  .arrow{color:var(--ink-3);font-size:12px}
+  .status-btn{
+    border:1px solid var(--pending);background:var(--pending-soft);color:var(--pending);
+    font-weight:700;font-size:12.5px;padding:4px 12px;
+  }
+  .card[data-status="done"] .status-btn{border-color:var(--done);background:var(--done-soft);color:var(--done)}
+  .given{font-family:var(--font-mono);font-size:12px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+  .note{font-size:12.5px;color:var(--ink-2);flex-basis:100%;margin-top:2px}
+  .note b{font-weight:700;color:var(--ink-3);font-size:11px;letter-spacing:.06em;margin-right:5px}
+  .row-actions{margin-left:auto;display:flex;gap:4px}
+  .icon-btn{border:1px solid transparent;background:transparent;color:var(--ink-3);padding:4px 9px;font-size:12.5px}
+  .icon-btn:hover{border-color:var(--line);color:var(--ink)}
+  .badge-example{
+    font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--ink-3);
+    border:1px dashed var(--line);border-radius:5px;padding:1px 7px;
+  }
+
+  .empty{
+    text-align:center;color:var(--ink-2);font-size:13.5px;padding:6px 0 18px;
+  }
+
+  /* --- legend --- */
+  .legend{
+    margin-top:26px;border-top:1px solid var(--line);padding-top:16px;
+    display:flex;flex-wrap:wrap;gap:10px 26px;font-size:12.5px;color:var(--ink-2);
+  }
+  .legend h2{font-family:var(--font-display);font-size:13px;margin:0;color:var(--ink);letter-spacing:.06em;flex-basis:100%}
+  .legend .rule{display:flex;align-items:center;gap:7px}
+
+  /* --- dialog --- */
+  dialog{
+    border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink);
+    padding:0;width:min(620px,calc(100vw - 32px));box-shadow:0 24px 60px -24px rgba(0,0,0,.5);
+  }
+  dialog::backdrop{background:rgba(12,24,26,.55)}
+  .dlg-head{padding:16px 20px 12px;border-bottom:1px solid var(--line-soft);display:flex;justify-content:space-between;align-items:center;gap:12px}
+  .dlg-head h2{font-family:var(--font-display);font-size:17px;margin:0}
+  form.entry{padding:16px 20px 20px;display:grid;grid-template-columns:repeat(2,1fr);gap:12px 14px;align-items:end;max-height:min(72vh,640px);overflow-y:auto}
+  form.entry label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--ink-2);font-weight:700;letter-spacing:.03em}
+  form.entry label span.opt{font-weight:400;color:var(--ink-3);white-space:nowrap}
+  form.entry .full{grid-column:1 / -1}
+  form.entry input,form.entry select,form.entry textarea{width:100%}
+  .dlg-foot{grid-column:1 / -1;display:flex;gap:8px;justify-content:flex-end;align-items:center;border-top:1px solid var(--line-soft);padding-top:14px;margin-top:2px}
+  .dlg-foot .del{margin-right:auto;color:var(--pending);border-color:transparent;background:transparent}
+  .dlg-foot .del:hover{border-color:var(--pending)}
+  .hint{grid-column:1 / -1;font-size:12px;color:var(--ink-2);background:var(--accent-soft);border-radius:8px;padding:8px 11px;font-weight:400;letter-spacing:0}
+
+  .toast{
+    position:fixed;left:50%;bottom:26px;transform:translateX(-50%);
+    background:var(--ink);color:var(--ground);font-size:13px;font-weight:700;
+    padding:9px 18px;border-radius:22px;box-shadow:var(--shadow);
+    opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:60;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(-4px)}
+
+  /* --- 共有モード（ミーティング表示） --- */
+  body.meeting .toolbar,
+  body.meeting .row-actions,
+  body.meeting .legend .btn{display:none}
+  body.meeting .card{padding-top:17px;padding-bottom:15px}
+  body.meeting .idx{display:inline}
+  body.meeting .quote{font-size:17px;line-height:1.95;max-width:none}
+  body.meeting .pname{font-size:20px}
+  body.meeting .status-btn{pointer-events:none}
+  body.meeting .card.example{display:none}
+
+  @media (max-width:720px){
+    .stats{grid-template-columns:repeat(2,1fr)}
+    form.entry{grid-template-columns:1fr}
+    .posted{margin-left:0;flex-basis:100%}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important;animation:none !important}
+  }
+  @media print{
+    .topbar,.toolbar,.row-actions,.legend .btn,.toast{display:none !important}
+    body{background:#fff;color:#000}
+    .card{break-inside:avoid;box-shadow:none}
+    .wrap{padding-top:12px}
+  }
+</style>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="eyebrow">博多ステラ歯科 ／ 月例ミーティング</div>
+      <h1>Google口コミ・プレゼント台帳</h1>
+    </div>
+    <div class="controls">
+      <label class="sr-only" for="month" style="position:absolute;left:-9999px">対象月</label>
+      <select id="month" class="month-pick" aria-label="対象月"></select>
+      <button class="btn" id="meetingBtn" aria-pressed="false">共有モード</button>
+      <button class="btn btn-ghost" id="printBtn">印刷</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <dl class="stats" id="stats"></dl>
+
+  <div class="toolbar">
+    <button class="btn btn-primary" id="addBtn">＋ 口コミを追加</button>
+    <div class="filters" role="group" aria-label="表示の絞り込み">
+      <button data-filter="all" aria-pressed="true">すべて</button>
+      <button data-filter="pending" aria-pressed="false">未渡しのみ</button>
+      <button data-filter="done" aria-pressed="false">渡し済のみ</button>
+    </div>
+    <span class="spacer"></span>
+    <button class="btn btn-ghost" id="copyBtn">テキストでコピー</button>
+    <button class="btn btn-ghost" id="csvBtn" hidden>CSV書き出し</button>
+    <span class="sync" id="sync" data-state="local"><span class="dot"></span><span id="syncLabel">読み込み中…</span></span>
+  </div>
+
+  <div class="list" id="list"></div>
+  <p class="empty" id="empty" hidden></p>
+
+  <section class="legend">
+    <h2>プレゼントの基準</h2>
+    <div class="rule"><span class="pill cat-ortho">矯正中</span><span class="arrow">→</span><span class="pill gift is-ortho">ホワイトニング</span></div>
+    <div class="rule"><span class="pill cat-general">矯正以外</span><span class="arrow">→</span><span class="pill gift">物品 1,000円OFF</span></div>
+    <div class="rule" style="color:var(--ink-3)">区分を選ぶとプレゼント欄が自動で入ります（「その他」を選ぶと自由入力）。</div>
+  </section>
+</div>
+
+<dialog id="dlg">
+  <div class="dlg-head">
+    <h2 id="dlgTitle">口コミを追加</h2>
+    <button class="icon-btn" id="dlgClose" aria-label="閉じる">✕</button>
+  </div>
+  <form class="entry" id="form" method="dialog">
+    <label>対象月
+      <input type="month" name="month" required>
+    </label>
+    <label>投稿日 <span class="opt">（任意）</span>
+      <input type="date" name="postedAt">
+    </label>
+    <label>患者番号
+      <input type="text" name="patientNo" inputmode="numeric" placeholder="12345" autocomplete="off">
+    </label>
+    <label>患者名
+      <input type="text" name="name" placeholder="山田 花子" autocomplete="off">
+    </label>
+    <label>Google上の表示名 <span class="opt">（任意）</span>
+      <input type="text" name="reviewer" placeholder="H.Y" autocomplete="off">
+    </label>
+    <label>評価
+      <select name="stars">
+        <option value="5">★★★★★</option>
+        <option value="4">★★★★</option>
+        <option value="3">★★★</option>
+        <option value="2">★★</option>
+        <option value="1">★</option>
+        <option value="0">評価なし</option>
+      </select>
+    </label>
+    <label class="full">口コミ内容
+      <textarea name="content" placeholder="口コミの本文をそのまま貼り付け"></textarea>
+    </label>
+    <label>区分
+      <select name="category" id="catSel">
+        <option value="ortho">矯正中</option>
+        <option value="general">矯正以外</option>
+        <option value="other">その他</option>
+      </select>
+    </label>
+    <label>プレゼント
+      <input type="text" name="giftLabel" id="giftInput" readonly>
+    </label>
+    <label>状態
+      <select name="status" id="statusSel">
+        <option value="pending">未渡し</option>
+        <option value="done">渡し済</option>
+      </select>
+    </label>
+    <label>渡した日 <span class="opt">（任意）</span>
+      <input type="date" name="givenDate">
+    </label>
+    <label>担当 <span class="opt">（任意）</span>
+      <input type="text" name="staff" placeholder="担当者名" autocomplete="off">
+    </label>
+    <label>備考 <span class="opt">（任意）</span>
+      <input type="text" name="note" placeholder="次回来院時に渡す 等" autocomplete="off">
+    </label>
+    <div class="dlg-foot">
+      <button type="button" class="btn del" id="delBtn" hidden>この口コミを削除</button>
+      <button type="button" class="btn" id="cancelBtn">キャンセル</button>
+      <button type="submit" class="btn btn-primary" id="saveBtn">保存</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  "use strict";
+  var LS_KEY = "stella-review-gifts-v1";
+  var db = null, downloads = null;
+  var entries = [];
+  var view = { month: thisMonth(), filter: "all", meeting: false };
+  var editingId = null, migrated = false;
+
+  var $ = function(s){ return document.querySelector(s); };
+  var listEl = $("#list"), emptyEl = $("#empty"), statsEl = $("#stats");
+  var monthSel = $("#month"), dlg = $("#dlg"), form = $("#form");
+
+  function thisMonth(){
+    var d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0");
+  }
+  function today(){
+    var d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+  }
+  function uid(){
+    return "r" + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+  }
+  function esc(s){
+    return String(s == null ? "" : s).replace(/[&<>"]/g, function(c){
+      return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c];
+    });
+  }
+  function monthLabel(m){
+    var p = String(m || "").split("-");
+    return p.length === 2 ? p[0] + "年" + Number(p[1]) + "月" : String(m || "");
+  }
+  function dateLabel(d){
+    var p = String(d || "").split("-");
+    return p.length === 3 ? Number(p[1]) + "/" + Number(p[2]) : "";
+  }
+  function giftOf(e){
+    if(e.category === "ortho") return "ホワイトニング";
+    if(e.category === "general") return "物品 1,000円OFF";
+    return e.giftLabel || "―";
+  }
+  function catLabel(c){
+    return c === "ortho" ? "矯正中" : c === "general" ? "矯正以外" : "その他";
+  }
+  function toast(msg){
+    var t = $("#toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(toast._t);
+    toast._t = setTimeout(function(){ t.classList.remove("show"); }, 2400);
+  }
+
+  /* ---------- 保存先（全員共有 or この端末のみ） ---------- */
+  function setSync(state, label){
+    var el = $("#sync");
+    el.setAttribute("data-state", state);
+    $("#syncLabel").textContent = label;
+  }
+  function loadLocal(){
+    try{
+      var raw = localStorage.getItem(LS_KEY);
+      entries = raw ? JSON.parse(raw) : [];
+    }catch(err){ entries = []; }
+  }
+  function saveLocal(){
+    try{ localStorage.setItem(LS_KEY, JSON.stringify(entries)); }catch(err){}
+  }
+  function persist(entry){
+    if(db){
+      db.collection("reviews").doc(entry.id).set(entry).catch(function(){
+        toast("保存できませんでした。通信を確認してもう一度お試しください");
+      });
+    }else{
+      saveLocal();
+    }
+  }
+  function removeStored(id){
+    if(db){
+      db.collection("reviews").doc(id).delete().catch(function(){
+        toast("削除できませんでした。もう一度お試しください");
+      });
+    }else{
+      saveLocal();
+    }
+  }
+
+  /* ---------- 描画 ---------- */
+  function monthsOf(){
+    var set = {};
+    entries.forEach(function(e){ if(e.month) set[e.month] = true; });
+    set[thisMonth()] = true;
+    set[view.month] = true;
+    return Object.keys(set).sort().reverse();
+  }
+  function renderMonths(){
+    var ms = monthsOf();
+    if(ms.indexOf(view.month) === -1) view.month = ms[0];
+    monthSel.innerHTML = ms.map(function(m){
+      return '<option value="' + esc(m) + '"' + (m === view.month ? " selected" : "") + ">" + esc(monthLabel(m)) + "</option>";
+    }).join("");
+  }
+  function monthEntries(){
+    return entries.filter(function(e){ return e.month === view.month; })
+      .sort(function(a,b){
+        var ka = (a.postedAt || "9999") + (a.createdAt || "");
+        var kb = (b.postedAt || "9999") + (b.createdAt || "");
+        return ka < kb ? -1 : ka > kb ? 1 : 0;
+      });
+  }
+  function renderStats(){
+    var list = monthEntries();
+    var done = list.filter(function(e){ return e.status === "done"; }).length;
+    var pending = list.length - done;
+    var wh = list.filter(function(e){ return e.category === "ortho"; }).length;
+    var goods = list.filter(function(e){ return e.category === "general"; }).length;
+    statsEl.innerHTML =
+      stat("口コミ件数", list.length, "件", "") +
+      stat("プレゼント未渡し", pending, "件", "is-pending") +
+      stat("渡し済", done, "件", "is-done") +
+      stat("ホワイトニング／物品", wh + " / " + goods, "件", "");
+  }
+  function stat(label, value, unit, cls){
+    return '<div class="stat ' + cls + '"><dt>' + esc(label) + "</dt><dd>" + esc(value) +
+      "<small>" + esc(unit) + "</small></dd></div>";
+  }
+  function starStr(n){
+    n = Number(n);
+    if(!n) return "";
+    return "★★★★★".slice(0, n) + "☆☆☆☆☆".slice(0, 5 - n);
+  }
+  function cardHTML(e, i, isExample){
+    var gift = giftOf(e);
+    var giftCls = e.category === "ortho" ? "pill gift is-ortho" : "pill gift";
+    var given = e.status === "done"
+      ? (dateLabel(e.givenDate) ? dateLabel(e.givenDate) + " 渡し済" : "渡し済") + (e.staff ? " ／ " + e.staff : "")
+      : "";
+    return '<article class="card' + (isExample ? " example" : "") + '" data-status="' + esc(e.status || "pending") + '" data-id="' + esc(e.id) + '">' +
+      '<div class="card-head">' +
+        '<span class="idx">' + String(i + 1).padStart(2, "0") + "</span>" +
+        (isExample ? '<span class="badge-example">記入例</span>' : "") +
+        '<span class="pno">No.' + esc(e.patientNo || "―") + "</span>" +
+        '<h3 class="pname">' + esc(e.name || "（氏名未入力）") +
+          (e.reviewer ? "<span>Google表示名：" + esc(e.reviewer) + "</span>" : "") + "</h3>" +
+        (starStr(e.stars) ? '<span class="stars" aria-label="評価' + esc(e.stars) + '">' + starStr(e.stars) + "</span>" : "") +
+        '<span class="posted">' + esc(dateLabel(e.postedAt) || "") + "</span>" +
+      "</div>" +
+      (e.content ? '<blockquote class="quote">' + esc(e.content) + "</blockquote>" : "") +
+      '<div class="card-foot">' +
+        '<span class="pill cat-' + esc(e.category || "other") + '">' + esc(catLabel(e.category)) + "</span>" +
+        '<span class="arrow">→</span>' +
+        '<span class="' + giftCls + '">' + esc(gift) + "</span>" +
+        '<button class="status-btn" data-act="toggle"' + (isExample ? " disabled" : "") + ">" +
+          (e.status === "done" ? "☑ 渡し済" : "☐ 未渡し") + "</button>" +
+        (given ? '<span class="given">' + esc(given) + "</span>" : "") +
+        (isExample ? "" : '<span class="row-actions">' +
+          '<button class="icon-btn" data-act="edit">編集</button></span>') +
+        (e.note ? '<p class="note"><b>備考</b>' + esc(e.note) + "</p>" : "") +
+      "</div></article>";
+  }
+  function sampleEntries(){
+    return [
+      { id:"sample-1", month:view.month, postedAt:view.month + "-03", patientNo:"10428", name:"（例）佐藤 美咲",
+        reviewer:"M.S", stars:5, content:"矯正の相談から丁寧に説明していただき、不安なく治療を進められています。スタッフの方の対応もいつも気持ちがいいです。",
+        category:"ortho", status:"done", givenDate:view.month + "-12", staff:"中村", note:"" },
+      { id:"sample-2", month:view.month, postedAt:view.month + "-11", patientNo:"09317", name:"（例）田中 健一",
+        reviewer:"けん", stars:5, content:"クリーニングでお世話になりました。院内がとても清潔で、痛みもほとんどありませんでした。",
+        category:"general", status:"pending", givenDate:"", staff:"", note:"次回来院時にお渡し" }
+    ];
+  }
+  function render(){
+    document.body.classList.toggle("meeting", view.meeting);
+    renderMonths();
+    renderStats();
+    var list = monthEntries();
+    var filtered = list.filter(function(e){
+      return view.filter === "all" ? true : (e.status || "pending") === view.filter;
+    });
+    if(list.length === 0){
+      listEl.innerHTML = sampleEntries().map(function(e, i){ return cardHTML(e, i, true); }).join("");
+      emptyEl.hidden = false;
+      emptyEl.textContent = monthLabel(view.month) + "の口コミはまだ登録されていません。上の「＋ 口コミを追加」から登録すると、この記入例は消えます。";
+    }else if(filtered.length === 0){
+      listEl.innerHTML = "";
+      emptyEl.hidden = false;
+      emptyEl.textContent = "この絞り込みに該当する口コミはありません。";
+    }else{
+      listEl.innerHTML = filtered.map(function(e, i){ return cardHTML(e, i, false); }).join("");
+      emptyEl.hidden = true;
+    }
+  }
+
+  /* ---------- 追加・編集 ---------- */
+  function openForm(entry){
+    editingId = entry ? entry.id : null;
+    $("#dlgTitle").textContent = entry ? "口コミを編集" : "口コミを追加";
+    $("#delBtn").hidden = !entry;
+    var e = entry || { month: view.month, category: "ortho", status: "pending", stars: 5 };
+    form.month.value = e.month || view.month;
+    form.postedAt.value = e.postedAt || "";
+    form.patientNo.value = e.patientNo || "";
+    form.name.value = e.name || "";
+    form.reviewer.value = e.reviewer || "";
+    form.stars.value = String(e.stars == null ? 5 : e.stars);
+    form.content.value = e.content || "";
+    form.category.value = e.category || "ortho";
+    form.status.value = e.status || "pending";
+    form.givenDate.value = e.givenDate || "";
+    form.staff.value = e.staff || "";
+    form.note.value = e.note || "";
+    syncGiftField();
+    dlg.showModal();
+    setTimeout(function(){ form.patientNo.focus(); }, 30);
+  }
+  function syncGiftField(){
+    var cat = form.category.value;
+    var input = $("#giftInput");
+    if(cat === "other"){
+      input.readOnly = false;
+      if(input.value === "ホワイトニング" || input.value === "物品 1,000円OFF") input.value = "";
+      input.placeholder = "プレゼント内容を入力";
+    }else{
+      input.readOnly = true;
+      input.placeholder = "";
+      input.value = cat === "ortho" ? "ホワイトニング" : "物品 1,000円OFF";
+    }
+  }
+  form.category.addEventListener("change", syncGiftField);
+  form.status.addEventListener("change", function(){
+    if(form.status.value === "done" && !form.givenDate.value) form.givenDate.value = today();
+  });
+  form.addEventListener("submit", function(ev){
+    ev.preventDefault();
+    var base = editingId ? entries.filter(function(x){ return x.id === editingId; })[0] : null;
+    var entry = {
+      id: base ? base.id : uid(),
+      month: form.month.value || thisMonth(),
+      postedAt: form.postedAt.value || "",
+      patientNo: form.patientNo.value.trim(),
+      name: form.name.value.trim(),
+      reviewer: form.reviewer.value.trim(),
+      stars: Number(form.stars.value),
+      content: form.content.value.trim(),
+      category: form.category.value,
+      giftLabel: form.category.value === "other" ? $("#giftInput").value.trim() : "",
+      status: form.status.value,
+      givenDate: form.status.value === "done" ? (form.givenDate.value || today()) : "",
+      staff: form.staff.value.trim(),
+      note: form.note.value.trim(),
+      createdAt: base ? (base.createdAt || new Date().toISOString()) : new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    if(base){
+      entries = entries.map(function(x){ return x.id === entry.id ? entry : x; });
+    }else{
+      entries = entries.concat([entry]);
+    }
+    view.month = entry.month;
+    persist(entry);
+    render();
+    dlg.close();
+    toast(base ? "更新しました" : "追加しました");
+  });
+  $("#delBtn").addEventListener("click", function(){
+    if(!editingId) return;
+    var target = entries.filter(function(x){ return x.id === editingId; })[0];
+    if(!target) return;
+    if(!confirm("「" + (target.name || "この口コミ") + "」を削除します。よろしいですか？")) return;
+    entries = entries.filter(function(x){ return x.id !== editingId; });
+    removeStored(editingId);
+    render();
+    dlg.close();
+    toast("削除しました");
+  });
+  $("#cancelBtn").addEventListener("click", function(){ dlg.close(); });
+  $("#dlgClose").addEventListener("click", function(){ dlg.close(); });
+  $("#addBtn").addEventListener("click", function(){ openForm(null); });
+
+  listEl.addEventListener("click", function(ev){
+    var btn = ev.target.closest("button[data-act]");
+    if(!btn) return;
+    var card = btn.closest(".card");
+    if(!card || card.classList.contains("example")) return;
+    var id = card.getAttribute("data-id");
+    var entry = entries.filter(function(x){ return x.id === id; })[0];
+    if(!entry) return;
+    if(btn.getAttribute("data-act") === "edit"){
+      openForm(entry);
+    }else if(btn.getAttribute("data-act") === "toggle"){
+      var next = Object.assign({}, entry, {
+        status: entry.status === "done" ? "pending" : "done",
+        updatedAt: new Date().toISOString()
+      });
+      next.givenDate = next.status === "done" ? (entry.givenDate || today()) : "";
+      entries = entries.map(function(x){ return x.id === id ? next : x; });
+      persist(next);
+      render();
+      toast(next.status === "done" ? "渡し済にしました" : "未渡しに戻しました");
+    }
+  });
+
+  /* ---------- 表示切り替え ---------- */
+  monthSel.addEventListener("change", function(){ view.month = monthSel.value; render(); });
+  Array.prototype.forEach.call(document.querySelectorAll(".filters button"), function(b){
+    b.addEventListener("click", function(){
+      view.filter = b.getAttribute("data-filter");
+      Array.prototype.forEach.call(document.querySelectorAll(".filters button"), function(x){
+        x.setAttribute("aria-pressed", String(x === b));
+      });
+      render();
+    });
+  });
+  $("#meetingBtn").addEventListener("click", function(){
+    view.meeting = !view.meeting;
+    $("#meetingBtn").setAttribute("aria-pressed", String(view.meeting));
+    render();
+  });
+  $("#printBtn").addEventListener("click", function(){ window.print(); });
+
+  /* ---------- 共有用の書き出し ---------- */
+  function plainText(){
+    var list = monthEntries();
+    var done = list.filter(function(e){ return e.status === "done"; }).length;
+    var lines = ["【" + monthLabel(view.month) + " Google口コミ】 全" + list.length + "件（渡し済 " + done + "件／未渡し " + (list.length - done) + "件）", ""];
+    list.forEach(function(e, i){
+      lines.push((i + 1) + ". No." + (e.patientNo || "―") + " " + (e.name || "") + " 様" +
+        (starStr(e.stars) ? " " + starStr(e.stars) : ""));
+      lines.push("   " + catLabel(e.category) + " → " + giftOf(e) + "：" +
+        (e.status === "done" ? "渡し済" + (dateLabel(e.givenDate) ? "（" + dateLabel(e.givenDate) + (e.staff ? " " + e.staff : "") + "）" : "") : "未渡し"));
+      if(e.content) lines.push("   「" + e.content.replace(/\n/g, " ") + "」");
+      if(e.note) lines.push("   備考：" + e.note);
+      lines.push("");
+    });
+    return lines.join("\n");
+  }
+  $("#copyBtn").addEventListener("click", function(){
+    var text = plainText();
+    var ok = function(){ toast("コピーしました。LINEやチャットに貼り付けできます"); };
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(ok, function(){ fallbackCopy(text, ok); });
+    }else{
+      fallbackCopy(text, ok);
+    }
+  });
+  function fallbackCopy(text, ok){
+    var ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    var done = false;
+    try{ done = document.execCommand("copy"); }catch(err){ done = false; }
+    document.body.removeChild(ta);
+    done ? ok() : toast("コピーできませんでした。画面から手入力でお願いします");
+  }
+  function csv(){
+    var head = ["対象月","投稿日","患者番号","患者名","Google表示名","評価","区分","プレゼント","状態","渡した日","担当","口コミ内容","備考"];
+    var rows = monthEntries().map(function(e){
+      return [e.month, e.postedAt, e.patientNo, e.name, e.reviewer, e.stars || "",
+        catLabel(e.category), giftOf(e), e.status === "done" ? "渡し済" : "未渡し",
+        e.givenDate, e.staff, e.content, e.note];
+    });
+    return "﻿" + [head].concat(rows).map(function(r){
+      return r.map(function(v){ return '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"'; }).join(",");
+    }).join("\r\n");
+  }
+  $("#csvBtn").addEventListener("click", function(){
+    if(!downloads) return;
+    downloads.save({ filename: "reviews-" + view.month + ".csv", data: csv() }).then(function(){
+      toast("書き出しました");
+    }, function(err){
+      if(err && err.code === "declined") return;
+      toast("書き出せませんでした");
+    });
+  });
+
+  /* ---------- 起動 ---------- */
+  loadLocal();
+  render();
+  setSync("local", "この端末のみに保存");
+
+  if(window.claude && typeof window.claude.use === "function"){
+    window.claude.use("db").then(function(store){
+      if(!store) return;
+      db = store;
+      store.collection("reviews").onSnapshot(function(snap){
+        var next = snap.docs.map(function(d){
+          var data = d.data() || {};
+          data.id = d.id;
+          return data;
+        });
+        if(!migrated){
+          migrated = true;
+          if(next.length === 0 && entries.length > 0){
+            entries.forEach(function(e){ persist(e); });
+            setSync("live", "全員と同期中");
+            render();
+            return;
+          }
+        }
+        entries = next;
+        setSync("live", "全員と同期中");
+        render();
+      }, function(){
+        setSync("local", "同期が切れました（この端末のみ）");
+      });
+    }, function(){});
+
+    window.claude.use("downloads").then(function(d){
+      if(!d) return;
+      downloads = d;
+      $("#csvBtn").hidden = false;
+    }, function(){});
+  }
+})();
+</script>
