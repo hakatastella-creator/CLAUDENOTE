@@ -196,6 +196,78 @@ footer .name{font-family:"Shippori Mincho",serif;font-size:15px;color:var(--ink)
   td.now{font-size:22px}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ---------- print / PDF ---------- */
+@page{ size:A4 portrait; margin:11mm 12mm 9mm; }
+@media print{
+  /* PDF is always the light palette, whatever the reader's OS is set to */
+  :root{
+    --ground:#FFFFFF; --surface:#FFFFFF; --surface-tint:#F6F3ED;
+    --ink:#14181D; --ink-soft:#3C444C; --muted:#5F656B; --faint:#8A9096;
+    --brass:#8A6829; --brass-soft:#F3EADA;
+    --rule:#DCD7CC; --rule-strong:#C2BBAC; --save:#1B5443; --shadow:none;
+  }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  body{ background:#FFFFFF; font-size:10px; line-height:1.5; }
+  .wrap{ max-width:none; padding:0; }
+
+  .masthead{ padding-top:0; }
+  .clinic{ font-size:9px; letter-spacing:.3em; }
+  .rule-brass{ margin:9px 0 14px; }
+  h1{ font-size:23px; line-height:1.2; }
+  h1 .thin{ font-size:.52em; margin-top:5px; }
+  .lede{ font-size:10px; margin-top:11px; max-width:none; line-height:1.6; }
+  .benefits{ margin-top:12px; }
+  .benefit{ padding:11px 14px; }
+  .benefit .cat{ font-size:9px; letter-spacing:.18em; }
+  .benefit .big{ font-size:21px; margin-top:4px; }
+  .benefit p{ font-size:9px; margin-top:4px; line-height:1.5; }
+  .why{ margin-top:10px; padding:9px 12px; font-size:9.5px; line-height:1.6; }
+
+  section{ margin-top:17px; }
+  .sec-head{ padding-bottom:6px; }
+  .sec-head h2{ font-size:15px; }
+  .sec-head .tag{ font-size:9.5px; }
+  .sub-head{ margin-top:12px; font-size:9px; letter-spacing:.16em; }
+  .tablewrap{ overflow:visible; margin-top:4px; }
+  table{ min-width:0; width:100%; }
+  thead{ display:table-header-group; }
+  thead th{ font-size:8px; padding:4px 0; letter-spacing:.1em; }
+  tbody td{ padding:5.5px 0; }
+  .name{ font-size:10.5px; }
+  .desc{ font-size:8.5px; margin-top:0; line-height:1.45; }
+  td.was{ font-size:11px; padding-left:12px; }
+  td.now{ font-size:15.5px; padding-left:12px; }
+  td.same{ font-size:13px; padding-left:12px; }
+  td.free{ padding-left:12px; line-height:1.25; }
+  td.free s{ font-size:9.5px; }
+  td.free b{ font-size:12.5px; }
+  td.save{ font-size:10px; padding-left:10px; }
+
+  .tiles{ margin-top:11px; gap:8px; grid-template-columns:repeat(3,1fr); }
+  .tile{ padding:10px 12px; box-shadow:none; }
+  .tile .t-lab{ font-size:9px; line-height:1.45; }
+  .tile .t-was{ font-size:10.5px; margin-top:5px; }
+  .tile .t-now{ font-size:20px; }
+  .tile .t-save{ font-size:9px; margin-top:2px; }
+
+  .terms{ margin-top:18px; padding:14px 16px; }
+  .terms h3{ font-size:12px; margin-bottom:8px; }
+  .terms ul{ gap:4px; }
+  .terms li{ font-size:9px; line-height:1.55; padding-left:13px; }
+  .terms li::before{ top:6px; width:3.5px; height:3.5px; }
+  .fill{ font-size:9px; padding:0 5px; }
+  footer{ margin-top:14px; padding-top:10px; font-size:8.5px; gap:8px 20px; }
+  footer .name{ font-size:11px; }
+
+  /* keep related things on one page */
+  tr, .tile, .benefit, .why, .terms li{ break-inside:avoid; page-break-inside:avoid; }
+  .sec-head, .sub-head{ break-after:avoid; page-break-after:avoid; }
+  thead th{ break-after:avoid; }
+  .terms{ break-inside:avoid; page-break-inside:avoid; }
+  /* page 1 = セラミック, page 2 = 矯正 + ご利用にあたって */
+  section:nth-of-type(2){ break-before:page; page-break-before:always; margin-top:0; }
+}
 </style>
 
 <div class="wrap">
