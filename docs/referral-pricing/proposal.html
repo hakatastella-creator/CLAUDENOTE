@@ -1,0 +1,513 @@
+<title>紹介料から値引きへ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Barlow+Semi+Condensed:wght@400;500;600&display=swap">
+<style>
+:root{
+  --ground:#FBFAF8;
+  --surface:#FFFFFF;
+  --surface-tint:#F4F1EB;
+  --ink:#14181D;
+  --ink-soft:#3C444C;
+  --muted:#6C7278;
+  --faint:#9AA0A5;
+  --brass:#9A7433;
+  --brass-soft:#EFE4CE;
+  --rule:#E4E0D7;
+  --rule-strong:#CFC9BC;
+  --pos:#1B5443;
+  --alert:#A3341F;
+  --alert-soft:#F7E7E2;
+  --series-1:#2a78d6;
+  --series-2:#1baf7a;
+  --track:#EDEAE3;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0F1317; --surface:#161B21; --surface-tint:#1C2229;
+    --ink:#EAE7E1; --ink-soft:#C3C7CB; --muted:#98A0A7; --faint:#727A81;
+    --brass:#D8B57C; --brass-soft:#2C2519;
+    --rule:#272D34; --rule-strong:#3A424A;
+    --pos:#7FC9AE; --alert:#E89279; --alert-soft:#2E1D18;
+    --series-1:#3987e5; --series-2:#199e70;
+    --track:#232A31;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0F1317; --surface:#161B21; --surface-tint:#1C2229;
+  --ink:#EAE7E1; --ink-soft:#C3C7CB; --muted:#98A0A7; --faint:#727A81;
+  --brass:#D8B57C; --brass-soft:#2C2519;
+  --rule:#272D34; --rule-strong:#3A424A;
+  --pos:#7FC9AE; --alert:#E89279; --alert-soft:#2E1D18;
+  --series-1:#3987e5; --series-2:#199e70;
+  --track:#232A31;
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--ground); color:var(--ink);
+  font-family:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Yu Gothic",system-ui,sans-serif;
+  font-size:15px; line-height:1.8; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:860px;margin:0 auto;padding:0 26px 90px}
+
+/* ---- masthead ---- */
+.masthead{padding:56px 0 0}
+.docmeta{display:flex;flex-wrap:wrap;gap:6px 22px;font-size:11.5px;letter-spacing:.1em;color:var(--muted)}
+.docmeta .to{color:var(--brass);font-weight:700}
+.rule-brass{height:1px;background:var(--brass);opacity:.5;margin:14px 0 26px}
+h1{
+  font-family:"Shippori Mincho",serif;font-weight:600;
+  font-size:clamp(27px,4.6vw,39px);line-height:1.3;letter-spacing:.01em;margin:0;
+  text-wrap:balance;
+}
+h1 .thin{display:block;color:var(--muted);font-size:.48em;margin-top:11px;letter-spacing:.12em;font-weight:500}
+
+/* ---- the recommendation up front ---- */
+.verdict{
+  margin-top:30px;border:1px solid var(--brass);border-top:3px solid var(--brass);
+  background:var(--surface);padding:26px 28px;border-radius:2px;
+}
+.verdict .lab{font-size:11px;letter-spacing:.24em;color:var(--brass);font-weight:700}
+.verdict p{margin:12px 0 0;font-size:16.5px;line-height:1.85;color:var(--ink)}
+.verdict p strong{font-weight:700}
+.verdict .sub{font-size:13.5px;color:var(--ink-soft);margin-top:12px}
+
+.keyfigs{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:1px;background:var(--rule);border:1px solid var(--rule);margin-top:22px;border-radius:2px;overflow:hidden;
+}
+.kf{background:var(--surface);padding:18px 20px}
+.kf .k{font-size:11px;letter-spacing:.14em;color:var(--muted);font-weight:700;line-height:1.5}
+.kf .v{
+  font-family:"Barlow Semi Condensed",sans-serif;font-variant-numeric:tabular-nums;
+  font-size:31px;font-weight:600;line-height:1.15;margin-top:7px;color:var(--ink);
+}
+.kf .v small{font-size:.44em;font-weight:500;color:var(--muted);margin-left:3px;letter-spacing:.02em}
+.kf .n{font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.6}
+
+/* ---- numbered sections (this document is an argument in sequence) ---- */
+section{margin-top:52px}
+.sh{display:flex;align-items:baseline;gap:13px;border-bottom:1px solid var(--rule-strong);padding-bottom:9px}
+.sh .no{
+  font-family:"Barlow Semi Condensed",sans-serif;font-size:15px;font-weight:600;
+  color:var(--brass);letter-spacing:.06em;
+}
+.sh h2{font-family:"Shippori Mincho",serif;font-weight:600;font-size:20px;margin:0;letter-spacing:.03em}
+p{margin:16px 0 0;color:var(--ink-soft)}
+p.tight{margin-top:10px}
+.lead{color:var(--ink);font-size:15.5px}
+strong{color:var(--ink);font-weight:700}
+
+/* ---- tables ---- */
+.tw{overflow-x:auto;margin-top:18px}
+table{width:100%;border-collapse:collapse;min-width:460px;font-size:14px}
+th{
+  font-size:11px;letter-spacing:.1em;color:var(--faint);font-weight:700;text-align:right;
+  padding:7px 10px 7px 0;border-bottom:1px solid var(--rule-strong);white-space:nowrap;
+}
+th:first-child{text-align:left;padding-left:0}
+td{padding:10px 10px 10px 0;border-bottom:1px solid var(--rule);text-align:right;
+   font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--ink-soft)}
+td:first-child{text-align:left;white-space:normal;color:var(--ink);padding-left:0}
+tr.hi td{background:var(--brass-soft)}
+td.pos{color:var(--pos);font-weight:700}
+td.big{font-family:"Barlow Semi Condensed",sans-serif;font-size:17px;font-weight:600;color:var(--ink)}
+.cap{font-size:12px;color:var(--muted);margin-top:9px;line-height:1.7}
+
+/* ---- chart ---- */
+figure{margin:22px 0 0;background:var(--surface);border:1px solid var(--rule);border-radius:2px;padding:22px 24px}
+figcaption{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:3px}
+.fignote{font-size:11.5px;color:var(--muted);line-height:1.6}
+.legend{display:flex;gap:18px;margin:14px 0 16px;font-size:12px;color:var(--ink-soft)}
+.legend span{display:flex;align-items:center;gap:6px}
+.swatch{width:11px;height:11px;border-radius:2px;display:inline-block}
+.chart{display:grid;gap:3px}
+.crow{display:grid;grid-template-columns:minmax(120px,1.35fr) 3fr;gap:12px;align-items:center;padding:3px 0;border-radius:2px}
+.crow:hover{background:var(--surface-tint)}
+.clab{font-size:12px;color:var(--ink);line-height:1.35}
+.bars{display:grid;gap:2px}
+.bar{position:relative;height:13px;background:var(--track);border-radius:2px}
+.bar i{
+  position:absolute;left:0;top:0;bottom:0;border-radius:0 3px 3px 0;display:block;
+}
+.bar b{
+  position:absolute;top:50%;transform:translateY(-50%);
+  font-family:"Barlow Semi Condensed",sans-serif;font-variant-numeric:tabular-nums;
+  font-size:11.5px;font-weight:600;color:var(--ink);
+}
+.axis{display:flex;justify-content:space-between;margin-top:9px;padding-top:6px;border-top:1px solid var(--rule);
+  font-size:10.5px;color:var(--faint);font-variant-numeric:tabular-nums}
+
+/* ---- callouts ---- */
+.note{
+  margin-top:18px;padding:15px 19px;border-left:2px solid var(--brass);
+  background:var(--brass-soft);border-radius:0 2px 2px 0;font-size:13.5px;color:var(--ink-soft);line-height:1.8;
+}
+.warn{
+  margin-top:18px;padding:15px 19px;border-left:2px solid var(--alert);
+  background:var(--alert-soft);border-radius:0 2px 2px 0;font-size:13.5px;color:var(--ink-soft);line-height:1.8;
+}
+.note strong,.warn strong{color:var(--ink)}
+
+/* ---- decision list ---- */
+.decide{margin-top:18px;display:grid;gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:2px;overflow:hidden}
+.d{background:var(--surface);padding:15px 19px;display:grid;grid-template-columns:22px 1fr;gap:13px;align-items:start}
+.box{width:14px;height:14px;border:1.5px solid var(--brass);border-radius:2px;margin-top:5px}
+.d .q{font-size:14px;color:var(--ink);font-weight:700;line-height:1.6}
+.d .a{font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.7}
+
+ul.plain{margin:14px 0 0;padding:0;list-style:none;display:grid;gap:9px}
+ul.plain li{position:relative;padding-left:19px;font-size:14px;color:var(--ink-soft);line-height:1.8}
+ul.plain li::before{content:"";position:absolute;left:2px;top:11px;width:5px;height:5px;background:var(--brass);border-radius:50%}
+
+footer{margin-top:56px;padding-top:22px;border-top:1px solid var(--rule);font-size:12px;color:var(--muted);line-height:1.9}
+
+@media (max-width:640px){
+  .wrap{padding:0 18px 70px}
+  .masthead{padding-top:38px}
+  .crow{grid-template-columns:1fr;gap:4px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ---------- print / PDF ---------- */
+@page{ size:A4 portrait; margin:12mm 13mm 10mm; }
+@media print{
+  :root{
+    --ground:#FFFFFF; --surface:#FFFFFF; --surface-tint:#F6F3ED;
+    --ink:#14181D; --ink-soft:#3C444C; --muted:#5F656B; --faint:#8A9096;
+    --brass:#8A6829; --brass-soft:#F3EADA;
+    --rule:#DCD7CC; --rule-strong:#C2BBAC;
+    --pos:#1B5443; --alert:#8E2C1A; --alert-soft:#F9EDE9;
+    --series-1:#2a78d6; --series-2:#178c62; --track:#E8E4DC;
+  }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  body{ background:#FFF; font-size:10px; line-height:1.65; }
+  .wrap{ max-width:none; padding:0; }
+  .masthead{ padding-top:0; }
+  .docmeta{ font-size:8.5px; }
+  .rule-brass{ margin:9px 0 16px; }
+  h1{ font-size:23px; }
+  h1 .thin{ font-size:.46em; margin-top:6px; }
+  .verdict{ margin-top:13px; padding:13px 16px; }
+  .verdict .lab{ font-size:9px; }
+  .verdict p{ font-size:12px; margin-top:7px; line-height:1.7; }
+  .verdict .sub{ font-size:9.5px; margin-top:7px; }
+  .keyfigs{ margin-top:10px; }
+  .kf{ padding:11px 13px; }
+  .kf .k{ font-size:8.5px; }
+  .kf .v{ font-size:23px; margin-top:4px; }
+  .kf .n{ font-size:8.5px; margin-top:2px; }
+
+  section{ margin-top:15px; }
+  .sh{ padding-bottom:5px; }
+  .sh .no{ font-size:12px; }
+  .sh h2{ font-size:14.5px; }
+  p{ margin-top:7px; font-size:10px; }
+  .lead{ font-size:10.5px; }
+  .tw{ overflow:visible; margin-top:8px; }
+  table{ min-width:0; font-size:9.5px; }
+  th{ font-size:8.5px; padding:4px 7px 4px 0; }
+  td{ padding:4.5px 7px 4.5px 0; }
+  td.big{ font-size:12px; }
+  .cap{ font-size:8.5px; margin-top:5px; }
+
+  figure{ margin-top:10px; padding:12px 14px; }
+  figcaption{ font-size:10.5px; }
+  .fignote{ font-size:8.5px; }
+  .legend{ margin:8px 0 9px; font-size:9px; gap:14px; }
+  .chart{ gap:1px; }
+  .crow{ padding:1px 0; gap:9px; }
+  .clab{ font-size:9px; }
+  .bar{ height:9.5px; }
+  .bar b{ font-size:8.5px; }
+  .axis{ font-size:8px; margin-top:6px; padding-top:4px; }
+
+  .note,.warn{ margin-top:9px; padding:8px 11px; font-size:9.5px; line-height:1.65; }
+  .decide{ margin-top:8px; }
+  .d{ padding:6px 12px; gap:9px; grid-template-columns:18px 1fr; }
+  .box{ width:11px; height:11px; margin-top:3px; }
+  .d .q{ font-size:10px; }
+  .d .a{ font-size:9px; margin-top:1px; }
+  ul.plain{ margin-top:7px; gap:4px; }
+  ul.plain li{ font-size:9.5px; padding-left:15px; line-height:1.6; }
+  ul.plain li::before{ top:7px; width:4px; height:4px; }
+  footer{ margin-top:13px; padding-top:9px; font-size:8.5px; line-height:1.75; }
+
+  section, figure, .verdict, .note, .warn, .d, tr, .keyfigs, .crow{
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .sh{ break-after:avoid; page-break-after:avoid; }
+}
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <div class="docmeta">
+    <span class="to">院長 決裁用</span>
+    <span>自費診療 価格設計のご提案</span>
+    <span>2026年9月</span>
+  </div>
+  <div class="rule-brass"></div>
+  <h1>ロイさんへの紹介料を、<br>紹介患者さんへの値引きに切り替える
+    <span class="thin">固定費をやめて、来院があった時だけ払う形へ</span>
+  </h1>
+
+  <div class="verdict">
+    <div class="lab">ご提案</div>
+    <p>ロイさんへ毎月お支払いしている<strong>紹介料の定額払いを終了</strong>し、かわりに
+      <strong>ロイさんのご紹介で来院された方に値引き</strong>を適用する形に変えることをご提案します。
+      ロイさんご本人からのご要望でもあります。</p>
+    <p class="sub">値引きの中身は、補綴＝一律20%OFF（当院の値引き下限をそのまま適用）、
+      矯正＝治療費は据え置きで矯正検査診断料 44,000円のみ無料。いずれも新しい値引きを作るのではなく、
+      <strong>すでにある割引ルールの範囲内</strong>で組んでいます。</p>
+  </div>
+
+  <div class="keyfigs">
+    <div class="kf">
+      <div class="k">補綴 20%OFF時の粗利率</div>
+      <div class="v">65.9<small>〜87.2%</small></div>
+      <div class="n">全9品目で原価割れなし</div>
+    </div>
+    <div class="kf">
+      <div class="k">矯正 治療費の粗利率</div>
+      <div class="v">64.0<small>〜76.2%</small></div>
+      <div class="n">値引かないので現状と同じ</div>
+    </div>
+    <div class="kf">
+      <div class="k">紹介ゼロの月の負担</div>
+      <div class="v">0<small>円</small></div>
+      <div class="n">従来は月額をまるごと支払い</div>
+    </div>
+  </div>
+</header>
+
+<!-- 1 -->
+<section>
+  <div class="sh"><span class="no">1</span><h2>いま何が問題か</h2></div>
+  <p class="lead">現在の月額固定の紹介料には、金額の多寡とは別に、構造上の問題が二つあります。</p>
+  <ul class="plain">
+    <li><strong>実績と支払いが連動しない。</strong>ご紹介が1人も来なかった月も、満額をお支払いしています。医院から見れば純粋な固定費で、費用対効果を測る手立てがありません。</li>
+    <li><strong>ロイさんご本人からのご要望。</strong>定額でお支払いするより、ご紹介した方本人が安くなるほうがよい、というお話をいただいています。ロイさんのお店から見れば福利厚生として使えるためです。</li>
+  </ul>
+  <p>値引きに切り替えると、支払いが<strong>固定費から変動費に変わります</strong>。来院がなければ負担はゼロ、負担が発生するのは必ず売上が立ったときだけ、という形になります。</p>
+</section>
+
+<!-- 2 -->
+<section>
+  <div class="sh"><span class="no">2</span><h2>ご提案する条件</h2></div>
+  <div class="tw">
+    <table>
+      <thead>
+        <tr><th>区分</th><th>ご紹介の方への条件</th><th>考え方</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>補綴</strong><br><span style="font-size:12px;color:var(--muted)">セラミック治療</span></td>
+          <td style="text-align:left;white-space:normal"><strong>全品目 一律20%OFF</strong><br>1本から適用、本数の条件なし</td>
+          <td style="text-align:left;white-space:normal">既存の「10本以上まとめ治療」の下限価格を、最初から適用するもの</td>
+        </tr>
+        <tr>
+          <td><strong>矯正</strong><br><span style="font-size:12px;color:var(--muted)">インビザライン</span></td>
+          <td style="text-align:left;white-space:normal"><strong>治療費は据え置き</strong><br>矯正検査診断料 44,000円のみ無料</td>
+          <td style="text-align:left;white-space:normal">検査診断料はアラインへの支払いがゼロ＝丸ごと利益。持ち出しを出さずにお得感を出せる</td>
+        </tr>
+        <tr class="hi">
+          <td><strong>対象</strong></td>
+          <td style="text-align:left;white-space:normal"><strong>ロイさんのご紹介であれば、どなたでも</strong></td>
+          <td style="text-align:left;white-space:normal">お店の在籍スタッフに限定しない。ロイさんの人脈全体が対象になる</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note">
+    補綴の20%OFFは<strong>新設の割引ではありません</strong>。現行ルールでも10本以上まとめて治療される方には
+    20%OFFをご案内しており、その下限価格をご紹介の方に最初から適用するという設計です。
+    値引きの下限を動かさないので新しい前例を作らず、「これが当院の最大割引です」という交渉の止め線も最初から立ちます。
+  </div>
+</section>
+
+<!-- 3 -->
+<section>
+  <div class="sh"><span class="no">3</span><h2>利益率はどうなるか</h2></div>
+  <p class="lead">補綴を20%引いても、<strong>全品目で粗利率65%以上を確保でき、原価割れは起きません。</strong>
+    定価との差は4〜7ポイントです。</p>
+
+  <figure>
+    <figcaption>補綴9品目の粗利率　定価時とロイさんご紹介価格時の比較</figcaption>
+    <div class="fignote">粗利率＝（価格−技工料）÷ 価格。技工料は臼歯 一律10,136円、前歯はティーラボの品目別。</div>
+    <div class="legend">
+      <span><i class="swatch" style="background:var(--series-1)"></i>定価のとき</span>
+      <span><i class="swatch" style="background:var(--series-2)"></i>ロイさんご紹介価格（20%OFF）のとき</span>
+    </div>
+    <div class="chart" id="chart"></div>
+    <div class="axis"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div>
+  </figure>
+
+  <p>いちばん粗利率が下がるのは<strong>スーパーエナメル（72.7% → 65.9%）</strong>です。それでも約66%が残ります。
+    前歯を連続してつなげて作る連冠の症例は技工料が1歯あたり2,000円上がるため、6本連冠だと63.4%まで下がります。
+    そこが実質的な下限になります。</p>
+
+  <p><strong>矯正の利益率は一切変わりません。</strong>治療費を値引かないためです。減るのは、
+    別建てでいただいている矯正検査診断料 44,000円が1件ごとになくなる分だけです。
+    これはアラインへの支払いがない、丸ごと利益の項目です。</p>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th>矯正プラン（抜粋）</th><th>治療費</th><th>原価合計</th><th>粗利</th><th>粗利率</th></tr></thead>
+      <tbody>
+        <tr><td>インビザライン コンプリ オプション2</td><td>880,000</td><td>209,200</td><td class="big">670,800</td><td class="pos">76.2%</td></tr>
+        <tr><td>インビザライン モデレート 両顎</td><td>547,800</td><td>170,200</td><td class="big">377,600</td><td class="pos">68.9%</td></tr>
+        <tr><td>インビザライン ライト 両顎</td><td>437,800</td><td>143,680</td><td class="big">294,120</td><td class="pos">67.2%</td></tr>
+        <tr><td>小児一期 ファースト オプション2</td><td>550,000</td><td>162,400</td><td class="big">387,600</td><td class="pos">70.5%</td></tr>
+        <tr><td>小児二期治療（フェーズ2）</td><td>440,000</td><td>158,500</td><td class="big">281,500</td><td class="pos">64.0%</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cap">この粗利率は値引きの有無にかかわらず同じです。全12プランの一覧は添付のExcelをご覧ください。</div>
+</section>
+
+<!-- 4 -->
+<section>
+  <div class="sh"><span class="no">4</span><h2>医院が実際に負担する額</h2></div>
+  <p class="lead">ここがこの提案でいちばん重要な点です。<strong>患者さんから見た「お得額」と、医院が新たに失う額は一致しません。</strong>
+    ご紹介がなくても、本数に応じた割引はもともとお出ししているからです。</p>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th>治療の規模</th><th>従来お出ししていた割引</th><th>ロイさんご紹介</th><th>医院の実質負担</th></tr></thead>
+      <tbody>
+        <tr><td>1〜5本</td><td>10%OFF</td><td>20%OFF</td><td class="big">定価の10%</td></tr>
+        <tr><td>6〜9本</td><td>15%OFF</td><td>20%OFF</td><td class="big">定価の5%</td></tr>
+        <tr class="hi"><td><strong>10本以上</strong></td><td>20%OFF</td><td>20%OFF</td><td class="big pos">0円</td></tr>
+        <tr><td>矯正 1件</td><td>値引きなし</td><td>検査診断料 無料</td><td class="big">44,000円</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note">
+    <strong>大きい症例ほど医院の負担は減り、10本以上ならゼロになります。</strong>
+    負担が出るのはむしろ1〜2本の小さな症例のほうです。たとえば上の前歯6本をS級で治療した場合、
+    患者さんのお得額は171,600円ですが、従来も15%OFFはお出ししていたので、
+    医院が新たに負担するのは差額の42,900円だけです。
+  </div>
+</section>
+
+<!-- 5 -->
+<section>
+  <div class="sh"><span class="no">5</span><h2>従来の紹介料と、どちらが安いか</h2></div>
+  <p class="lead">月に何件のご紹介が来たら、従来の月額紹介料と同じコストになるかを示したものです。
+    実際にお支払いしていた月額の行をご覧ください。</p>
+
+  <div class="tw">
+    <table>
+      <thead>
+        <tr><th>従来の月額紹介料</th><th>臼歯クラウン1本<br><span style="font-weight:400">負担 9,900円/件</span></th>
+        <th>前歯S級6本<br><span style="font-weight:400">負担 42,900円/件</span></th>
+        <th>矯正1件<br><span style="font-weight:400">負担 44,000円/件</span></th></tr>
+      </thead>
+      <tbody>
+        <tr><td>月 30,000円</td><td class="big">3.0件</td><td class="big">0.7件</td><td class="big">0.7件</td></tr>
+        <tr><td>月 50,000円</td><td class="big">5.1件</td><td class="big">1.2件</td><td class="big">1.1件</td></tr>
+        <tr><td>月 80,000円</td><td class="big">8.1件</td><td class="big">1.9件</td><td class="big">1.8件</td></tr>
+        <tr><td>月 100,000円</td><td class="big">10.1件</td><td class="big">2.3件</td><td class="big">2.3件</td></tr>
+        <tr><td>月 150,000円</td><td class="big">15.2件</td><td class="big">3.5件</td><td class="big">3.4件</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cap">この件数を超えた月は従来より支出が増えますが、その分だけ売上も増えています。
+    添付Excelの「損益分岐シミュレーション」シートに実額を入れると、症例別に自動で計算されます。</div>
+
+  <p>ただし件数の比較以上に大きいのは、<strong>支払いの性質が変わること</strong>です。
+    従来は紹介がゼロでも満額の固定費でした。新しい形では、負担が出るのは必ず売上が立ったときだけで、
+    しかもその症例には粗利率65%以上が残っています。</p>
+</section>
+
+<!-- 6 -->
+<section>
+  <div class="sh"><span class="no">6</span><h2>リスクと、かけておくべき歯止め</h2></div>
+  <p class="lead">対象を「ロイさんのご紹介の方」とする以上、お店の在籍スタッフに限定した場合より
+    <strong>対象範囲は広くなります。</strong>ロイさんの人脈全体が対象になり、紹介の連鎖も起こりえます。
+    そのため、次の歯止めを制度と一緒に決めておく必要があります。</p>
+
+  <div class="warn">
+    <strong>上限を決めないと値引き総額が青天井になります。</strong>
+    月額固定なら支出の上限は最初から決まっていましたが、値引き方式にはその天井がありません。
+    月間の値引き総額の上限（例：月20万円分まで）と有効期限（例：まず6か月、以降は実績を見て更新）を
+    必ずセットで決めてください。
+  </div>
+
+  <ul class="plain">
+    <li><strong>紹介の確認方法を決める。</strong>紹介カードをお渡しする、またはロイさんからのLINEを見せていただく等。口頭申告だけでは後から検証できず、集計もできません。</li>
+    <li><strong>保険診療は必ず対象外にする。</strong>保険診療の一部負担金は法令上、値引き・免除ができません。自費診療のみを対象としてください。</li>
+    <li><strong>ロイさんご本人には現金が入らなくなります。</strong>ここが合意できないと制度が続きません。事前に正面から確認しておく必要があります。</li>
+    <li><strong>会計処理が変わります。</strong>紹介料（費用計上）から売上値引（売上の減額）になるため、税理士の先生に共有してください。</li>
+    <li><strong>法務の確認。</strong>患者紹介の対価として金銭を継続的にお支払いする形は、自費診療であっても論点になりうると言われています。値引きへの切り替えはその点でも整理しやすくなりますが、最終的な判断は顧問の先生にご確認ください。</li>
+  </ul>
+</section>
+
+<!-- 7 -->
+<section>
+  <div class="sh"><span class="no">7</span><h2>ご決裁いただきたい事項</h2></div>
+  <div class="decide">
+    <div class="d"><div class="box"></div><div>
+      <div class="q">補綴の割引率を 20%OFF とすることの可否</div>
+      <div class="a">当院の値引き下限をそのまま適用する案。より浅く（15%等）することも可能です。</div></div></div>
+    <div class="d"><div class="box"></div><div>
+      <div class="q">矯正は「治療費据え置き＋検査診断料 44,000円 無料」でよいか</div>
+      <div class="a">治療費を値引く案（下限10%OFF）もありますが、粗利率が低いため推奨しません。</div></div></div>
+    <div class="d"><div class="box"></div><div>
+      <div class="q">対象を「ロイさんのご紹介であれば、どなたでも」とすることの可否</div>
+      <div class="a">お店の在籍スタッフ本人に限定する案と比べ、範囲が広くなります。</div></div></div>
+    <div class="d"><div class="box"></div><div>
+      <div class="q">月間の値引き総額の上限をいくらにするか</div>
+      <div class="a">上限に達した場合は翌月へ繰り越す運用にすると、医院側の読みが立ちます。</div></div></div>
+    <div class="d"><div class="box"></div><div>
+      <div class="q">有効期限をいつまでにするか</div>
+      <div class="a">無期限にすると、ご紹介が止まっても価格だけが残り続けます。</div></div></div>
+    <div class="d"><div class="box"></div><div>
+      <div class="q">ロイさんへの月額のお支払いを完全に停止するか、併用するか</div>
+      <div class="a">併用すると値引きの効果が見えなくなるため、切り替えを推奨します。</div></div></div>
+  </div>
+
+  <p>ご決裁いただければ、ロイさんにお渡しする価格表（PDF・2ページ）はすでに用意してあります。
+    適用期間とご連絡先を記入すればそのままお送りできます。</p>
+</section>
+
+<footer>
+  博多ステラ歯科　自費診療 価格設計のご提案<br>
+  数値の出典：自費補綴 粗利表／矯正（インビザライン）粗利表（アライン価格表 204968 Rev S 準拠）。
+  粗利は「価格 −（技工料・アラインへの支払い）」の簡易計算で、消費税の納税分・材料費・チェアタイムは含んでいません。<br>
+  添付：ロイ様ご紹介プラン 価格表（Excel・4シート）／ロイ様ご紹介プラン 特別価格表（PDF・配布用）
+</footer>
+
+</div>
+
+<script>
+const ITEMS = [
+  ["ジルコニアセラミック S級", 81.1, 76.4],
+  ["ジルコニアセラミック ノーマル", 82.7, 78.4],
+  ["ラミネートベニア", 85.5, 81.8],
+  ["スーパーエナメル", 72.7, 65.9],
+  ["e-maxクラウン（前歯）", 80.8, 76.0],
+  ["フルジルコニアクラウン（臼歯）", 89.8, 87.2],
+  ["e-maxクラウン（臼歯）", 89.8, 87.2],
+  ["フルジルコニアインレー", 81.6, 77.0],
+  ["e-maxインレー", 81.6, 77.0],
+];
+const root = document.getElementById("chart");
+root.innerHTML = ITEMS.map(([name, before, after]) => `
+  <div class="crow">
+    <div class="clab">${name}</div>
+    <div class="bars">
+      <div class="bar" title="${name}　定価のとき ${before.toFixed(1)}%">
+        <i style="width:${before}%;background:var(--series-1)"></i>
+        <b style="left:calc(${before}% + 7px)">${before.toFixed(1)}%</b>
+      </div>
+      <div class="bar" title="${name}　ロイさんご紹介価格 ${after.toFixed(1)}%">
+        <i style="width:${after}%;background:var(--series-2)"></i>
+        <b style="left:calc(${after}% + 7px)">${after.toFixed(1)}%</b>
+      </div>
+    </div>
+  </div>`).join("");
+</script>
