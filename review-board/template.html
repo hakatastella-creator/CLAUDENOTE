@@ -1,0 +1,689 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>口コミ御礼台帳</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Shippori+Mincho:wght@500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+:root{
+  color-scheme: light;
+  --ground:#F1F4F9;
+  --surface:#FFFFFF;
+  --surface-2:#F7F9FC;
+  --line:#DCE2EC;
+  --line-strong:#C4CDDD;
+  --ink:#141A2B;
+  --muted:#5E6780;
+  --accent:#28457E;
+  --accent-soft:#E3EAF7;
+  --on-accent:#FFFFFF;
+  --star:#B8851F;
+  --star-off:#CBD2DF;
+  --ok:#0F6B54; --ok-soft:#DCF0E8; --ok-line:#A6D6C4;
+  --pending:#9A5215; --pending-soft:#FAE8D6; --pending-line:#EFC8A2;
+  --wht:#544399; --wht-soft:#EAE6F8;
+  --goods:#14606A; --goods-soft:#DBEDEF;
+  --sample:#6B6274; --sample-soft:#ECE9F0;
+  --shadow:0 1px 2px rgba(20,26,43,.06), 0 10px 26px -18px rgba(20,26,43,.45);
+  --radius:12px;
+  --sans:"Zen Kaku Gothic New","Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic Medium",Meiryo,sans-serif;
+  --mincho:"Shippori Mincho","Hiragino Mincho ProN","Yu Mincho",serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --ground:#101420;
+    --surface:#181D2A;
+    --surface-2:#1E2433;
+    --line:#2C3344;
+    --line-strong:#3B4457;
+    --ink:#E9ECF4;
+    --muted:#9CA4B9;
+    --accent:#9BB4EC;
+    --accent-soft:#22304E;
+  --on-accent:#0E1320;
+    --on-accent:#0E1320;
+    --star:#DFB24A;
+    --star-off:#3B4356;
+    --ok:#6FD5B0; --ok-soft:#123529; --ok-line:#1E5946;
+    --pending:#EBA96B; --pending-soft:#3A2617; --pending-line:#6A4626;
+    --wht:#B6A8F1; --wht-soft:#282253;
+    --goods:#7BCDD3; --goods-soft:#113439;
+    --sample:#AFA7BC; --sample-soft:#2A2634;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 12px 28px -20px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --ground:#101420;
+  --surface:#181D2A;
+  --surface-2:#1E2433;
+  --line:#2C3344;
+  --line-strong:#3B4457;
+  --ink:#E9ECF4;
+  --muted:#9CA4B9;
+  --accent:#9BB4EC;
+  --accent-soft:#22304E;
+  --star:#DFB24A;
+  --star-off:#3B4356;
+  --ok:#6FD5B0; --ok-soft:#123529; --ok-line:#1E5946;
+  --pending:#EBA96B; --pending-soft:#3A2617; --pending-line:#6A4626;
+  --wht:#B6A8F1; --wht-soft:#282253;
+  --goods:#7BCDD3; --goods-soft:#113439;
+  --sample:#AFA7BC; --sample-soft:#2A2634;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 12px 28px -20px rgba(0,0,0,.9);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:var(--ground);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:15px;
+  line-height:1.75;
+  font-feature-settings:"palt" 1;
+}
+img{max-width:100%}
+[hidden]{display:none !important}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+
+.wrap{max-width:1060px;margin:0 auto;padding:0 20px 80px}
+
+/* header */
+.masthead{padding:34px 0 20px;display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end;justify-content:space-between}
+.eyebrow{font-size:11.5px;letter-spacing:.22em;color:var(--muted);margin:0 0 6px;font-weight:500}
+h1{font-family:var(--mincho);font-weight:600;font-size:31px;line-height:1.3;margin:0;letter-spacing:.02em;text-wrap:balance}
+.lede{margin:8px 0 0;color:var(--muted);font-size:13.5px;max-width:44em}
+.savebadge{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);border:1px solid var(--line);background:var(--surface);padding:6px 12px;border-radius:999px;white-space:nowrap}
+.savebadge .dot{width:7px;height:7px;border-radius:50%;background:var(--ok);flex:none}
+.savebadge[data-mode="local"] .dot{background:var(--pending)}
+.savebadge[data-mode="busy"] .dot{background:var(--accent);animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.25}}
+@media (prefers-reduced-motion: reduce){.savebadge[data-mode="busy"] .dot{animation:none}}
+
+.notice{display:flex;gap:12px;align-items:center;background:var(--accent-soft);border:1px solid var(--line);color:var(--ink);border-radius:var(--radius);padding:11px 14px;font-size:13px;margin-bottom:16px}
+.notice.warn{background:var(--pending-soft);border-color:var(--pending-line);color:var(--pending)}
+.notice strong{font-weight:700}
+.notice button{margin-left:auto;flex:none}
+
+/* toolbar */
+.toolbar{position:sticky;top:0;z-index:20;background:color-mix(in srgb, var(--ground) 88%, transparent);backdrop-filter:blur(8px);padding:12px 0;margin-bottom:14px;border-bottom:1px solid var(--line)}
+.toolbar-inner{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.field{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:0 10px;height:38px}
+.field label{font-size:11.5px;color:var(--muted);letter-spacing:.06em}
+.field select,.field input{border:0;background:transparent;height:36px;min-width:0}
+.field select:focus,.field input:focus{outline:none}
+.field input[type="search"]{width:190px}
+.spacer{flex:1 1 auto}
+
+.btn{display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 14px;border-radius:9px;border:1px solid var(--line-strong);background:var(--surface);cursor:pointer;font-size:13.5px;font-weight:500;transition:background .12s ease,border-color .12s ease}
+.btn:hover{background:var(--surface-2);border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.ghost{border-color:transparent;background:transparent}
+.btn.ghost:hover{background:var(--surface)}
+.btn.sm{height:30px;padding:0 10px;font-size:12.5px;border-radius:8px}
+.btn[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+
+/* stats */
+.stats{display:flex;flex-wrap:wrap;gap:0;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);overflow:hidden;margin-bottom:18px}
+.stat{flex:1 1 150px;padding:12px 16px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:2px}
+.stat:last-child{border-right:0}
+.stat .k{font-size:11.5px;color:var(--muted);letter-spacing:.05em}
+.stat .v{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.2}
+.stat .v .u{font-size:12px;font-weight:500;color:var(--muted);margin-left:3px}
+.stat.is-pending .v{color:var(--pending)}
+
+/* list */
+.monthhead{font-family:var(--mincho);font-size:15px;font-weight:600;color:var(--muted);letter-spacing:.06em;margin:26px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.monthhead:first-child{margin-top:0}
+.rows{display:flex;flex-direction:column;gap:10px}
+.row{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);display:grid;grid-template-columns:1fr 232px;overflow:hidden}
+.row.is-done{border-color:var(--ok-line)}
+.row-main{padding:15px 18px;min-width:0}
+.idline{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-bottom:6px}
+.chart{font-family:var(--mono);font-size:12.5px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:1px 7px;color:var(--muted);letter-spacing:.02em}
+.pname{font-size:16.5px;font-weight:700;letter-spacing:.01em}
+.pname .san{font-size:12px;font-weight:400;color:var(--muted);margin-left:2px}
+.stars{color:var(--star);letter-spacing:.12em;font-size:13.5px}
+.stars .off{color:var(--star-off)}
+.posted{font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.tag-sample{font-size:11px;color:var(--sample);background:var(--sample-soft);border-radius:5px;padding:1px 6px}
+.quote{font-family:var(--mincho);font-size:14.5px;line-height:1.95;margin:0;padding-left:13px;border-left:2px solid var(--line-strong);color:var(--ink);white-space:pre-wrap;overflow-wrap:anywhere;max-width:60em}
+.memo{margin:9px 0 0;font-size:12.5px;color:var(--muted);white-space:pre-wrap;overflow-wrap:anywhere}
+.memo b{font-weight:500;letter-spacing:.06em}
+.row-side{border-left:1px solid var(--line);background:var(--surface-2);padding:14px 15px;display:flex;flex-direction:column;gap:9px;align-items:flex-start}
+.gift{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:500;border-radius:999px;padding:4px 11px}
+.gift.whitening{background:var(--wht-soft);color:var(--wht)}
+.gift.goods{background:var(--goods-soft);color:var(--goods)}
+.gift .why{font-size:11px;font-weight:400;opacity:.62;margin-left:1px;padding-left:7px;border-left:1px solid currentColor}
+.toggle{width:100%;justify-content:center;height:36px;border-radius:9px;font-weight:700}
+.toggle[data-done="false"]{background:var(--pending-soft);border-color:var(--pending-line);color:var(--pending)}
+.toggle[data-done="true"]{background:var(--ok-soft);border-color:var(--ok-line);color:var(--ok)}
+.rowtools{display:flex;gap:4px;margin-top:auto}
+.empty{text-align:center;padding:56px 20px;border:1px dashed var(--line-strong);border-radius:var(--radius);color:var(--muted);background:var(--surface)}
+.empty p{margin:0 0 14px}
+
+/* dialog */
+dialog{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:14px;padding:0;width:min(620px,calc(100vw - 32px));box-shadow:0 24px 60px -20px rgba(0,0,0,.5)}
+dialog::backdrop{background:rgba(12,16,26,.55)}
+.dlg-head{padding:18px 22px 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.dlg-head h2{font-family:var(--mincho);font-size:19px;font-weight:600;margin:0}
+.dlg-body{padding:18px 22px;display:flex;flex-direction:column;gap:14px;max-height:min(66vh,560px);overflow-y:auto}
+.dlg-foot{padding:14px 22px 18px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end;align-items:center}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
+.f{display:flex;flex-direction:column;gap:5px}
+.f > label,.f > .flabel{font-size:12px;color:var(--muted);letter-spacing:.06em;font-weight:500}
+.f input[type="text"],.f input[type="date"],.f select,.f textarea{background:var(--surface-2);border:1px solid var(--line);border-radius:9px;padding:9px 11px;width:100%;font-size:14px}
+.f textarea{resize:vertical;min-height:112px;line-height:1.8}
+.f .hint{font-size:11.5px;color:var(--muted)}
+.segs{display:flex;gap:8px;flex-wrap:wrap}
+.seg{flex:1 1 140px}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg span{display:block;text-align:center;border:1px solid var(--line);background:var(--surface-2);border-radius:9px;padding:9px 8px;cursor:pointer;font-size:13.5px}
+.seg input:checked + span{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:700}
+.seg input:focus-visible + span{outline:2px solid var(--accent);outline-offset:2px}
+.giftpreview{display:flex;align-items:center;gap:9px;background:var(--surface-2);border:1px dashed var(--line-strong);border-radius:9px;padding:10px 12px;font-size:13px}
+.starpick{display:flex;gap:2px}
+.starpick button{border:0;background:transparent;cursor:pointer;font-size:22px;line-height:1;color:var(--star-off);padding:2px}
+.starpick button[aria-checked="true"],.starpick button.on{color:var(--star)}
+#copytext{width:100%;min-height:300px;font-family:var(--mono);font-size:12.5px;line-height:1.8;background:var(--surface-2);border:1px solid var(--line);border-radius:9px;padding:12px;white-space:pre;overflow:auto}
+.danger{color:var(--pending)}
+
+/* toast */
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--ink);color:var(--ground);padding:10px 18px;border-radius:999px;font-size:13px;box-shadow:0 10px 30px -12px rgba(0,0,0,.6);z-index:60}
+
+footer.foot{margin-top:34px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:12px;display:flex;flex-wrap:wrap;gap:6px 18px}
+
+@media (max-width:720px){
+  .row{grid-template-columns:1fr}
+  .row-side{border-left:0;border-top:1px solid var(--line);flex-direction:row;flex-wrap:wrap;align-items:center}
+  .toggle{width:auto;flex:1 1 160px}
+  .rowtools{margin-top:0;margin-left:auto}
+  h1{font-size:26px}
+}
+@media print{
+  :root{--ground:#fff;--surface:#fff;--surface-2:#fff;--shadow:none}
+  body{background:#fff;color:#000;font-size:11pt}
+  .toolbar,.rowtools,.savebadge,.notice,.toast,dialog,.no-print{display:none !important}
+  .row{break-inside:avoid;box-shadow:none;border-color:#999}
+  .wrap{max-width:none;padding:0}
+  .stats{border-color:#999}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div>
+      <p class="eyebrow">博多ステラ歯科</p>
+      <h1>口コミ御礼台帳</h1>
+      <p class="lede">Google口コミを書いてくださった患者さんと、お渡しするプレゼントの管理表です。矯正中の方はホワイトニング、矯正をされていない方は物品1,000円OFF。ミーティングではこの画面をそのまま共有してください。</p>
+    </div>
+    <div class="savebadge" id="savebadge" data-mode="shared"><span class="dot"></span><span id="savetext">全員に共有・自動保存</span></div>
+  </header>
+
+  <div class="notice" id="samplenotice" hidden>
+    <span><strong>見本データが入っています。</strong>実際の口コミを登録したら、見本は削除してください。</span>
+    <button class="btn sm" id="dropsamples">見本を削除</button>
+  </div>
+  <div class="notice warn" id="localnotice" hidden>
+    <span><strong>閲覧のみの権限です。</strong>チェックや追加はこの端末にだけ保存され、他の人には反映されません。</span>
+  </div>
+
+  <div class="toolbar">
+    <div class="toolbar-inner">
+      <div class="field">
+        <label for="monthsel">対象月</label>
+        <select id="monthsel"></select>
+      </div>
+      <div class="field">
+        <input type="search" id="q" placeholder="番号・氏名・本文で検索" aria-label="検索">
+      </div>
+      <button class="btn" id="pendingonly" aria-pressed="false">未お渡しだけ</button>
+      <div class="spacer"></div>
+      <button class="btn" id="copybtn">コピー用テキスト</button>
+      <button class="btn" id="printbtn">印刷</button>
+      <button class="btn primary" id="addbtn">＋ 口コミを追加</button>
+    </div>
+  </div>
+
+  <div class="stats" id="stats"></div>
+
+  <main id="list"></main>
+
+  <footer class="foot">
+    <span>矯正中 → ホワイトニング</span>
+    <span>矯正なし → 物品1,000円OFF</span>
+    <span id="updated"></span>
+  </footer>
+</div>
+
+<dialog id="editdlg">
+  <form method="dialog" id="editform">
+    <div class="dlg-head"><h2 id="dlgtitle">口コミを追加</h2><button type="button" class="btn ghost sm" data-close>閉じる</button></div>
+    <div class="dlg-body">
+      <div class="grid2">
+        <div class="f">
+          <label for="f-date">投稿日</label>
+          <input type="date" id="f-date" required>
+        </div>
+        <div class="f">
+          <span class="flabel">星の数</span>
+          <div class="starpick" id="f-stars" role="radiogroup" aria-label="星の数"></div>
+        </div>
+        <div class="f">
+          <label for="f-chart">患者番号</label>
+          <input type="text" id="f-chart" inputmode="numeric" placeholder="12345" autocomplete="off">
+        </div>
+        <div class="f">
+          <label for="f-name">氏名</label>
+          <input type="text" id="f-name" placeholder="山田 太郎" autocomplete="off" required>
+        </div>
+      </div>
+      <div class="f">
+        <label for="f-text">口コミ内容</label>
+        <textarea id="f-text" placeholder="Googleに投稿された文章を貼り付けてください"></textarea>
+      </div>
+      <div class="f">
+        <span class="flabel">矯正治療</span>
+        <div class="segs">
+          <label class="seg"><input type="radio" name="ortho" value="yes" id="f-ortho-yes"><span>矯正中</span></label>
+          <label class="seg"><input type="radio" name="ortho" value="no" id="f-ortho-no" checked><span>矯正なし</span></label>
+        </div>
+        <div class="giftpreview"><span>お渡しするもの</span><span id="f-giftchip"></span></div>
+      </div>
+      <div class="f">
+        <label for="f-memo">備考メモ</label>
+        <textarea id="f-memo" style="min-height:70px" placeholder="次回来院予定、声かけ内容など"></textarea>
+      </div>
+    </div>
+    <div class="dlg-foot">
+      <button type="button" class="btn ghost danger" id="delbtn" hidden>削除</button>
+      <div class="spacer"></div>
+      <button type="button" class="btn" data-close>キャンセル</button>
+      <button type="submit" class="btn primary" id="savebtn">保存</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="copydlg">
+  <div class="dlg-head"><h2>コピー用テキスト</h2><button type="button" class="btn ghost sm" data-close>閉じる</button></div>
+  <div class="dlg-body">
+    <p class="hint" style="margin:0;color:var(--muted);font-size:12.5px">LINEやチャットワークにそのまま貼り付けられます。</p>
+    <textarea id="copytext" readonly></textarea>
+  </div>
+  <div class="dlg-foot">
+    <button type="button" class="btn" data-close>閉じる</button>
+    <button type="button" class="btn primary" id="docopy">コピーする</button>
+  </div>
+</dialog>
+
+<script id="app-state" type="application/json">%%STATE%%</script>
+<script id="page-source" type="text/plain">%%SELF%%</script>
+<script>
+(function(){
+  "use strict";
+
+  var LS_KEY = "stella-review-board-v1";
+  var srcEl = document.getElementById("page-source");
+  var RAW_TPL = srcEl ? srcEl.textContent.replace(/<\\\/script/g, "<" + "/script") : null;
+
+  var state = readEmbedded();
+  var mode = "shared";           // shared | local
+  var artifactApi = null;
+  var pending = { month: "", q: "", pendingOnly: false };
+  var editingId = null;
+
+  function readEmbedded(){
+    var raw = document.getElementById("app-state").textContent;
+    var st;
+    try { st = JSON.parse(raw); } catch(e){ st = null; }
+    if(!st || !Array.isArray(st.entries)) st = { version:1, savedAt:"", entries:[] };
+    var local = null;
+    try { local = JSON.parse(localStorage.getItem(LS_KEY) || "null"); } catch(e){}
+    if(local && Array.isArray(local.entries) && (local.savedAt || "") > (st.savedAt || "")) return local;
+    return st;
+  }
+
+  /* ---------- helpers ---------- */
+  function esc(s){ return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+    return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c];
+  }); }
+  function uid(){ return "r" + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+  function today(){ var d = new Date(); return d.getFullYear() + "-" + pad(d.getMonth()+1) + "-" + pad(d.getDate()); }
+  function pad(n){ return (n<10?"0":"") + n; }
+  function monthOf(e){ return (e.date || "").slice(0,7); }
+  function monthLabel(m){ if(!m) return "日付なし"; var p = m.split("-"); return p[0] + "年" + Number(p[1]) + "月"; }
+  function dayLabel(d){ if(!d) return "—"; var p = d.split("-"); return Number(p[1]) + "/" + Number(p[2]); }
+  function giftOf(e){ return e.ortho ? "whitening" : "goods"; }
+  function giftName(g){ return g === "whitening" ? "ホワイトニング" : "物品 1,000円OFF"; }
+  function starStr(n){ n = Number(n) || 0; var s = ""; for(var i=1;i<=5;i++) s += (i<=n ? "★" : "☆"); return s; }
+  function toast(msg){
+    var t = document.createElement("div");
+    t.className = "toast"; t.textContent = msg; t.setAttribute("role","status");
+    document.body.appendChild(t);
+    setTimeout(function(){ t.remove(); }, 2600);
+  }
+
+  /* ---------- persistence ---------- */
+  function buildDoc(st){
+    var json = JSON.stringify(st).replace(/</g, "\\u003c");
+    var selfCopy = RAW_TPL.replace(new RegExp("<" + "/script", "g"), "<\\/script");
+    var SLOT_STATE = "%" + "%STATE%" + "%", SLOT_SELF = "%" + "%SELF%" + "%";
+    return RAW_TPL.replace(SLOT_STATE, function(){ return json; })
+                  .replace(SLOT_SELF, function(){ return selfCopy; });
+  }
+  function saveLocal(){
+    try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch(e){}
+  }
+  function goLocal(){
+    mode = "local";
+    document.getElementById("localnotice").hidden = false;
+    badge("local", "この端末にのみ保存");
+    saveLocal();
+  }
+  function badge(m, text){
+    var b = document.getElementById("savebadge");
+    b.setAttribute("data-mode", m);
+    document.getElementById("savetext").textContent = text;
+  }
+  function save(flash){
+    state.savedAt = new Date().toISOString();
+    render();
+    if(mode === "local" || !artifactApi || !RAW_TPL){ saveLocal(); toast(flash || "保存しました（この端末）"); return; }
+    badge("busy", "保存中…");
+    try { sessionStorage.setItem("stella-flash", flash || "保存しました"); } catch(e){}
+    artifactApi.publish(buildDoc(state)).catch(function(err){
+      try { sessionStorage.removeItem("stella-flash"); } catch(e){}
+      var code = err && err.code;
+      if(code === "conflict"){
+        toast("他の人の更新が先に保存されました。最新の内容を読み込みます");
+      } else if(code === "not_writer" || code === "not_granted" || code === "not_declared" ||
+                code === "capability_disabled" || code === "capability_removed" || code === "consent_required"){
+        goLocal();
+        toast("閲覧のみの権限のため、この端末に保存しました");
+      } else if(code === "rate_limited"){
+        badge("shared","全員に共有・自動保存");
+        toast("保存が混み合っています。数秒おいてもう一度お試しください");
+      } else {
+        badge("shared","全員に共有・自動保存");
+        saveLocal();
+        toast("保存できませんでした。通信状況をご確認ください");
+      }
+    });
+  }
+
+  /* ---------- rendering ---------- */
+  function visible(){
+    var q = pending.q.trim().toLowerCase();
+    return state.entries.filter(function(e){
+      if(pending.month && monthOf(e) !== pending.month) return false;
+      if(pending.pendingOnly && e.done) return false;
+      if(q){
+        var hay = [e.chartNo, e.name, e.text, e.memo].join(" ").toLowerCase();
+        if(hay.indexOf(q) === -1) return false;
+      }
+      return true;
+    }).sort(function(a,b){ return (b.date || "").localeCompare(a.date || ""); });
+  }
+
+  function renderMonths(){
+    var sel = document.getElementById("monthsel");
+    var months = {};
+    state.entries.forEach(function(e){ if(monthOf(e)) months[monthOf(e)] = 1; });
+    months[today().slice(0,7)] = 1;
+    var keys = Object.keys(months).sort().reverse();
+    if(pending.month === "" && keys.length) pending.month = keys[0];
+    if(pending.month && keys.indexOf(pending.month) === -1) pending.month = keys[0] || "";
+    sel.innerHTML = '<option value="">すべての月</option>' + keys.map(function(m){
+      return '<option value="' + m + '">' + monthLabel(m) + '</option>';
+    }).join("");
+    sel.value = pending.month;
+  }
+
+  function renderStats(rows){
+    var pendingCount = rows.filter(function(e){ return !e.done; }).length;
+    var wht = rows.filter(function(e){ return giftOf(e) === "whitening"; }).length;
+    var goods = rows.length - wht;
+    var scope = pending.month ? monthLabel(pending.month) : "全期間";
+    document.getElementById("stats").innerHTML = [
+      tile(scope + "の口コミ", rows.length, "件", ""),
+      tile("未お渡し", pendingCount, "件", pendingCount ? " is-pending" : ""),
+      tile("ホワイトニング", wht, "件", ""),
+      tile("物品1,000円OFF", goods, "件", "")
+    ].join("");
+  }
+  function tile(k, v, u, cls){
+    return '<div class="stat' + cls + '"><span class="k">' + esc(k) + '</span>' +
+           '<span class="v">' + v + '<span class="u">' + u + '</span></span></div>';
+  }
+
+  function rowHtml(e){
+    var g = giftOf(e);
+    return '<article class="row' + (e.done ? " is-done" : "") + '" data-id="' + esc(e.id) + '">' +
+      '<div class="row-main">' +
+        '<div class="idline">' +
+          '<span class="chart">No.' + esc(e.chartNo || "—") + '</span>' +
+          '<span class="pname">' + esc(e.name || "（氏名未入力）") + '<span class="san"> 様</span></span>' +
+          '<span class="stars" aria-label="星' + (Number(e.stars)||0) + '">' + starStr(e.stars).split("").map(function(c){
+            return c === "★" ? "★" : '<span class="off">☆</span>';
+          }).join("") + '</span>' +
+          '<span class="posted">' + esc(dayLabel(e.date)) + ' 投稿</span>' +
+          (e.sample ? '<span class="tag-sample">見本</span>' : "") +
+        '</div>' +
+        (e.text ? '<p class="quote">' + esc(e.text) + '</p>' : '<p class="quote" style="color:var(--muted)">（本文未入力）</p>') +
+        (e.memo ? '<p class="memo"><b>メモ</b>　' + esc(e.memo) + '</p>' : "") +
+      '</div>' +
+      '<div class="row-side">' +
+        '<span class="gift ' + g + '">' + giftName(g) + '<span class="why">' + (e.ortho ? "矯正中" : "矯正なし") + '</span></span>' +
+        '<button class="btn toggle" data-act="toggle" data-done="' + (e.done ? "true" : "false") + '">' +
+          (e.done ? "お渡し済み" : "未お渡し") + '</button>' +
+        '<div class="rowtools no-print">' +
+          '<button class="btn ghost sm" data-act="edit">編集</button>' +
+        '</div>' +
+      '</div>' +
+    '</article>';
+  }
+
+  function render(){
+    renderMonths();
+    var rows = visible();
+    renderStats(rows);
+    var list = document.getElementById("list");
+
+    if(!rows.length){
+      list.innerHTML = '<div class="empty"><p>' +
+        (state.entries.length ? "条件に合う口コミがありません。" : "まだ口コミが登録されていません。") +
+        '</p><button class="btn primary" data-act="add">＋ 口コミを追加</button></div>';
+    } else if(pending.month){
+      list.innerHTML = '<div class="rows">' + rows.map(rowHtml).join("") + '</div>';
+    } else {
+      var groups = [], seen = {};
+      rows.forEach(function(e){
+        var m = monthOf(e);
+        if(!seen[m]){ seen[m] = []; groups.push(m); }
+        seen[m].push(e);
+      });
+      list.innerHTML = groups.map(function(m){
+        return '<h2 class="monthhead">' + esc(monthLabel(m)) + '（' + seen[m].length + '件）</h2>' +
+               '<div class="rows">' + seen[m].map(rowHtml).join("") + '</div>';
+      }).join("");
+    }
+
+    document.getElementById("samplenotice").hidden = !state.entries.some(function(e){ return e.sample; });
+    document.getElementById("updated").textContent = state.savedAt
+      ? "最終更新 " + new Date(state.savedAt).toLocaleString("ja-JP", { year:"numeric", month:"numeric", day:"numeric", hour:"2-digit", minute:"2-digit" })
+      : "";
+  }
+
+  /* ---------- form ---------- */
+  var dlg = document.getElementById("editdlg");
+  var starWrap = document.getElementById("f-stars");
+  var formStars = 5;
+
+  function paintStars(){
+    starWrap.innerHTML = [1,2,3,4,5].map(function(i){
+      return '<button type="button" role="radio" aria-checked="' + (i === formStars) + '" aria-label="星' + i + '" data-v="' + i + '" class="' + (i <= formStars ? "on" : "") + '">★</button>';
+    }).join("");
+  }
+  starWrap.addEventListener("click", function(ev){
+    if(!ev.target || !ev.target.closest) return;
+    var b = ev.target.closest("button[data-v]");
+    if(!b) return;
+    formStars = Number(b.getAttribute("data-v"));
+    paintStars();
+  });
+
+  function paintGift(){
+    var ortho = document.getElementById("f-ortho-yes").checked;
+    var g = ortho ? "whitening" : "goods";
+    document.getElementById("f-giftchip").outerHTML =
+      '<span id="f-giftchip" class="gift ' + g + '">' + giftName(g) + '</span>';
+  }
+  dlg.addEventListener("change", function(ev){ if(ev.target.name === "ortho") paintGift(); });
+
+  function openForm(entry){
+    editingId = entry ? entry.id : null;
+    document.getElementById("dlgtitle").textContent = entry ? "口コミを編集" : "口コミを追加";
+    document.getElementById("f-date").value = entry ? (entry.date || today()) : today();
+    document.getElementById("f-chart").value = entry ? (entry.chartNo || "") : "";
+    document.getElementById("f-name").value = entry ? (entry.name || "") : "";
+    document.getElementById("f-text").value = entry ? (entry.text || "") : "";
+    document.getElementById("f-memo").value = entry ? (entry.memo || "") : "";
+    document.getElementById("f-ortho-yes").checked = !!(entry && entry.ortho);
+    document.getElementById("f-ortho-no").checked = !(entry && entry.ortho);
+    formStars = entry ? (Number(entry.stars) || 5) : 5;
+    paintStars(); paintGift();
+    document.getElementById("delbtn").hidden = !entry;
+    dlg.showModal();
+    setTimeout(function(){ document.getElementById(entry ? "f-name" : "f-chart").focus(); }, 30);
+  }
+
+  document.getElementById("editform").addEventListener("submit", function(ev){
+    ev.preventDefault();
+    var data = {
+      date: document.getElementById("f-date").value || today(),
+      chartNo: document.getElementById("f-chart").value.trim(),
+      name: document.getElementById("f-name").value.trim(),
+      text: document.getElementById("f-text").value.trim(),
+      memo: document.getElementById("f-memo").value.trim(),
+      ortho: document.getElementById("f-ortho-yes").checked,
+      stars: formStars
+    };
+    if(editingId){
+      state.entries.forEach(function(e){
+        if(e.id === editingId){
+          for(var k in data) e[k] = data[k];
+          delete e.sample;
+        }
+      });
+    } else {
+      data.id = uid();
+      data.done = false;
+      state.entries.push(data);
+      pending.month = data.date.slice(0,7);
+    }
+    dlg.close();
+    save(editingId ? "更新しました" : "追加しました");
+  });
+
+  document.getElementById("delbtn").addEventListener("click", function(){
+    if(!editingId) return;
+    if(!confirm("この口コミを削除します。よろしいですか？")) return;
+    state.entries = state.entries.filter(function(e){ return e.id !== editingId; });
+    dlg.close();
+    save("削除しました");
+  });
+
+  document.addEventListener("click", function(ev){
+    if(!ev.target || !ev.target.closest) return;
+    var close = ev.target.closest("[data-close]");
+    if(close){ close.closest("dialog").close(); return; }
+    var act = ev.target.closest("[data-act]");
+    if(!act) return;
+    var kind = act.getAttribute("data-act");
+    if(kind === "add"){ openForm(null); return; }
+    var row = act.closest(".row");
+    if(!row) return;
+    var id = row.getAttribute("data-id");
+    var entry = state.entries.filter(function(e){ return e.id === id; })[0];
+    if(!entry) return;
+    if(kind === "edit"){ openForm(entry); }
+    else if(kind === "toggle"){
+      entry.done = !entry.done;
+      save(entry.done ? "お渡し済みにしました" : "未お渡しに戻しました");
+    }
+  });
+
+  /* ---------- toolbar ---------- */
+  document.getElementById("addbtn").addEventListener("click", function(){ openForm(null); });
+  document.getElementById("printbtn").addEventListener("click", function(){ window.print(); });
+  document.getElementById("monthsel").addEventListener("change", function(ev){ pending.month = ev.target.value; render(); });
+  document.getElementById("q").addEventListener("input", function(ev){ pending.q = ev.target.value; render(); });
+  document.getElementById("pendingonly").addEventListener("click", function(ev){
+    pending.pendingOnly = !pending.pendingOnly;
+    ev.currentTarget.setAttribute("aria-pressed", String(pending.pendingOnly));
+    render();
+  });
+  document.getElementById("dropsamples").addEventListener("click", function(){
+    state.entries = state.entries.filter(function(e){ return !e.sample; });
+    save("見本を削除しました");
+  });
+
+  /* ---------- copy text ---------- */
+  function copyText(){
+    var rows = visible();
+    var head = "【Google口コミ／お渡しリスト】" + (pending.month ? monthLabel(pending.month) : "全期間");
+    var lines = [head, "口コミ " + rows.length + "件／未お渡し " + rows.filter(function(e){ return !e.done; }).length + "件", ""];
+    rows.forEach(function(e, i){
+      lines.push((i+1) + ". No." + (e.chartNo || "—") + "　" + (e.name || "（氏名未入力）") + " 様　" + starStr(e.stars) + "　" + dayLabel(e.date) + "投稿");
+      if(e.text) lines.push("　「" + e.text.replace(/\n+/g, " ") + "」");
+      lines.push("　→ " + giftName(giftOf(e)) + "（" + (e.ortho ? "矯正中" : "矯正なし") + "）　" + (e.done ? "お渡し済み" : "未お渡し"));
+      if(e.memo) lines.push("　メモ：" + e.memo.replace(/\n+/g, " "));
+      lines.push("");
+    });
+    return lines.join("\n");
+  }
+  document.getElementById("copybtn").addEventListener("click", function(){
+    document.getElementById("copytext").value = copyText();
+    document.getElementById("copydlg").showModal();
+  });
+  document.getElementById("docopy").addEventListener("click", function(){
+    var ta = document.getElementById("copytext");
+    ta.focus(); ta.select();
+    var done = function(){ toast("コピーしました"); };
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(ta.value).then(done, function(){ toast("Ctrl+C（⌘+C）でコピーしてください"); });
+    } else {
+      toast("Ctrl+C（⌘+C）でコピーしてください");
+    }
+  });
+
+  /* ---------- boot ---------- */
+  render();
+  try {
+    var f = sessionStorage.getItem("stella-flash");
+    if(f){ sessionStorage.removeItem("stella-flash"); toast(f); }
+  } catch(e){}
+
+  if(!RAW_TPL){ goLocal(); }
+  else if(window.claude && window.claude.use){
+    window.claude.use("artifact").then(function(api){
+      if(api){ artifactApi = api; badge("shared", "全員に共有・自動保存"); }
+      else { goLocal(); }
+    }, function(){ goLocal(); });
+  } else {
+    goLocal();
+  }
+})();
+</script>
+</body>
+</html>
