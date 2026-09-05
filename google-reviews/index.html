@@ -2,6 +2,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap">
+
+<script id="ledger-data" type="application/json">{"updatedAt":0,"entries":[{"category":"other","content":"最初は矯正のカウンセリングで何件か歯科医院を回っていた中で、こちらに伺いました。\n\nカウンセリングの際、他院では指摘されなかった虫歯や歯周病のリスクについても丁寧に説明していただき、「ここなら歯のことを安心してお任せできそう」と感じたことが決め手となり、その後の治療もこちらでお願いすることにしました。\n\n院長先生をはじめ、スタッフの皆さんがいつも丁寧に説明してくださり、こちらの些細な質問にも一つひとつ分かりやすく答えてくださるので、疑問や不安を残すことなく安心して施術を受けることができます。\n受付のスタッフさんもいつも素敵な笑顔で迎えてくださり、気持ちよく通院できています。\n\n親知らずや矯正のための抜歯もお願いしましたが、どの抜歯も驚くほどスムーズで、抜歯後の腫れもほとんど気になりませんでした。\n院長先生に抜歯をお願いして本当に良かったと思っています。\n\nまた、今月からホワイトニングも始めました。\n担当してくださっているスタッフさんも、歯が白くなってきたことを一緒に喜んでくださり、とても嬉しかったです。\n日頃の歯磨きについても、きちんと磨けていると褒めていただけるので、毎日のケアも頑張ろうと思えます。\n\nこれからも月に一度、クリーニングとホワイトニングで通う予定です。\n\n治療や抜歯、予防、ホワイトニングまで、歯のことを安心してお任せできる歯科医院に出会えて本当に良かったです。\n\n書きたいことがたくさんあり、長文になってしまいましたが、それくらい安心して通うことができ、素敵な歯科医院だと感じています。\nこれからもよろしくお願いします。","createdAt":"2026-09-04T02:49:38.275Z","giftLabel":"ホワイトニング3000円オフ","givenDate":"","id":"rmtmcvhlv9zf10","month":"2026-09","name":"久冨千聖","note":"","patientNo":"2717","postedAt":"","reviewer":"","staff":"","stars":5,"status":"pending","updatedAt":"2026-09-04T02:49:38.275Z"},{"category":"ortho","content":"今回、親知らずの抜歯と虫歯の治療でお世話になりました。横向きになっている親知らずの抜歯で不安でしたが、治療について丁寧に説明していただき、不安も解消されました。また、治療時間も短く、痛みもなく、とても良かったです。\n今後も利用させていただきたいと思います！","createdAt":"2026-09-04T03:29:24.380Z","giftLabel":"","givenDate":"","id":"rmtmeamqjk3ufn","month":"2026-09","name":"田代大次郎","note":"","patientNo":"2712","postedAt":"","reviewer":"ああ","staff":"","stars":5,"status":"pending","updatedAt":"2026-09-04T03:29:58.499Z"},{"category":"ortho","content":"友達の紹介で通い始めました！施術も説明もとても丁寧でとても安心できます💡\n受付のスタッフさんにいつも癒されています！ありがとうございます🙂‍↕️","createdAt":"2026-09-04T03:33:24.040Z","giftLabel":"","givenDate":"","id":"rmtmefrnsth70r","month":"2026-09","name":"川口栞菜","note":"","patientNo":"2851","postedAt":"","reviewer":"かんな","staff":"","stars":5,"status":"pending","updatedAt":"2026-09-04T03:33:24.040Z"}],"deleted":[]}</script>
 <style>
   :root{
     --ground:#F2F5F3;
@@ -162,8 +164,11 @@
     border:1px solid var(--line-soft);border-radius:20px;padding:3px 10px;background:var(--surface);
   }
   .dot{width:7px;height:7px;border-radius:50%;background:var(--ink-3);flex:none}
-  .sync[data-state="live"] .dot{background:var(--done)}
+  .sync[data-state="saved"] .dot{background:var(--done)}
+  .sync[data-state="saving"] .dot{background:var(--ink-3);animation:pulse 1.1s ease-in-out infinite}
   .sync[data-state="local"] .dot{background:var(--star)}
+  .sync[data-state="error"] .dot{background:var(--pending)}
+  @keyframes pulse{50%{opacity:.25}}
 
   /* --- cards --- */
   .list{display:flex;flex-direction:column;gap:12px}
@@ -333,12 +338,12 @@
       <button data-filter="pending" aria-pressed="false">未渡しのみ</button>
       <button data-filter="done" aria-pressed="false">渡し済のみ</button>
     </div>
-    <button class="btn" id="saveAllBtn" title="入力は保存を押した時点で自動的に台帳へ送られます。念のため全件を保存し直します。">すべて保存</button>
+    <button class="btn" id="saveAllBtn" title="入力すると自動で保存されます。すぐに保存したいときに押してください。">今すぐ保存</button>
     <span class="spacer"></span>
     <button class="btn btn-ghost" id="backupBtn">バックアップ</button>
     <button class="btn btn-ghost" id="copyBtn">テキストでコピー</button>
     <button class="btn btn-ghost" id="csvBtn" hidden>CSV書き出し</button>
-    <span class="sync" id="sync" data-state="local"><span class="dot"></span><span id="syncLabel">読み込み中…</span></span>
+    <span class="sync" id="sync" data-state="saving"><span class="dot"></span><span id="syncLabel">確認中…</span></span>
   </div>
 
   <div class="list" id="list"></div>
@@ -441,15 +446,14 @@
 <script>
 (function(){
   "use strict";
-  var LS_KEY = "stella-review-gifts-v1";
-  var SEEN_KEY = "stella-review-synced-v1";
-  var db = null, downloads = null;
-  var entries = [];
+  var LS_STATE = "stella-review-gifts/state/v1";
+  var TOMBSTONE_MS = 90 * 24 * 60 * 60 * 1000;
+  var downloads = null;
+  var entries = [], deleted = [];
   var view = { month: thisMonth(), filter: "all", meeting: false };
-  var editingId = null, migrated = false;
-  var storage = "loading";   // loading / db / local
-  var canStore = storageWorks();   // このブラウザに保存が残るか（開き方によっては残らない）
-  var hasHost = !!(window.claude && typeof window.claude.use === "function");
+  var editingId = null;
+  var api = null, apiPromise = null;
+  var canSave = true, readOnly = false, saving = false, dirty = false, saveTimer = null;
 
   var $ = function(s){ return document.querySelector(s); };
   var listEl = $("#list"), emptyEl = $("#empty"), statsEl = $("#stats");
@@ -495,83 +499,150 @@
     toast._t = setTimeout(function(){ t.classList.remove("show"); }, 2400);
   }
 
-  /* ---------- 保存先（全員共有 or この端末のみ） ---------- */
-  function setSync(state, label){
-    var el = $("#sync");
-    el.setAttribute("data-state", state);
+  /* ---------- 保存（このページ自身に書き込む） ---------- */
+  function lsGet(key){
+    try{ var v = localStorage.getItem(key); return v ? JSON.parse(v) : null; }catch(err){ return null; }
+  }
+  function lsSet(key, val){
+    try{ localStorage.setItem(key, JSON.stringify(val)); }catch(err){}
+  }
+  function ms(v){
+    var t = Date.parse(v || "");
+    return isNaN(t) ? 0 : t;
+  }
+  function setStatus(kind, label){
+    $("#sync").setAttribute("data-state", kind);
     $("#syncLabel").textContent = label;
   }
-  function storageWorks(){
-    try{
-      var k = "__stella_probe__";
-      localStorage.setItem(k, "1");
-      var ok = localStorage.getItem(k) === "1";
-      localStorage.removeItem(k);
-      return ok;
-    }catch(err){ return false; }
+  function normalize(raw){
+    var s = { entries: [], deleted: [] };
+    if(!raw || typeof raw !== "object") return s;
+    if(Array.isArray(raw.entries)){
+      raw.entries.forEach(function(e){ if(e && e.id) s.entries.push(e); });
+    }
+    if(Array.isArray(raw.deleted)){
+      raw.deleted.forEach(function(d){ if(d && d.id) s.deleted.push({ id: String(d.id), at: Number(d.at) || 0 }); });
+    }
+    return s;
   }
-  function loadLocal(){
-    try{
-      var raw = localStorage.getItem(LS_KEY);
-      entries = raw ? JSON.parse(raw) : [];
-    }catch(err){ entries = []; }
+  // ページに保存されている内容と、この端末に残っている控えを突き合わせる。
+  // 新しいほうを残すので、別々の端末で入力しても消えない。
+  function merge(a, b){
+    a = normalize(a);
+    b = normalize(b);
+    var byId = {};
+    a.entries.concat(b.entries).forEach(function(e){
+      var prev = byId[e.id];
+      if(!prev || ms(e.updatedAt) >= ms(prev.updatedAt)) byId[e.id] = e;
+    });
+    var tomb = {};
+    a.deleted.concat(b.deleted).forEach(function(d){
+      if(!tomb[d.id] || d.at > tomb[d.id].at) tomb[d.id] = d;
+    });
+    var kept = [];
+    Object.keys(byId).forEach(function(id){
+      // 削除のほうが新しければ、控えに残っていても復活させない
+      if(tomb[id] && tomb[id].at >= ms(byId[id].updatedAt)) return;
+      kept.push(byId[id]);
+    });
+    kept.sort(function(x, y){ return ms(x.createdAt) - ms(y.createdAt); });
+    var cutoff = Date.now() - TOMBSTONE_MS;
+    var living = [];
+    Object.keys(tomb).forEach(function(id){ if(tomb[id].at >= cutoff) living.push(tomb[id]); });
+    return { entries: kept, deleted: living };
   }
-  function saveLocal(){
-    try{ localStorage.setItem(LS_KEY, JSON.stringify(entries)); }catch(err){}
+  function fingerprint(list){
+    return list.map(function(e){ return e.id + ":" + (e.updatedAt || ""); }).sort().join("|");
   }
-  function clearLocal(){
-    try{ localStorage.removeItem(LS_KEY); }catch(err){}
+  function getApi(){
+    if(apiPromise) return apiPromise;
+    if(!window.claude || typeof window.claude.use !== "function"){
+      apiPromise = Promise.resolve(null);
+      return apiPromise;
+    }
+    apiPromise = window.claude.use("artifact").then(
+      function(ns){ api = ns || null; return api; },
+      function(){ return null; }
+    );
+    return apiPromise;
   }
-  function loadSeen(){
-    try{
-      var raw = localStorage.getItem(SEEN_KEY);
-      return raw ? JSON.parse(raw) : {};
-    }catch(err){ return {}; }
+  function stateJson(){
+    return JSON.stringify({ updatedAt: Date.now(), entries: entries, deleted: deleted })
+      .replace(/</g, "\\u003c");
   }
-  function rememberSeen(list){
-    var seen = loadSeen();
-    list.forEach(function(e){ if(e && e.id) seen[e.id] = 1; });
-    try{ localStorage.setItem(SEEN_KEY, JSON.stringify(seen)); }catch(err){}
+  function scheduleSave(){
+    dirty = true;
+    lsSet(LS_STATE, { updatedAt: Date.now(), entries: entries, deleted: deleted });
+    if(!canSave){
+      setStatus("local", readOnly ? "閲覧のみ" : "この端末のみ");
+      return;
+    }
+    setStatus("saving", "保存中…");
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(save, 1200);
   }
-  function pendingLocal(serverList){
-    // サーバーに一度も存在しなかった＝この端末でだけ入力され、まだ台帳に届いていないもの。
-    // 一度サーバーにあったものは削除済みとみなし、復活させない。
-    var onServer = {};
-    serverList.forEach(function(e){ if(e && e.id) onServer[e.id] = 1; });
-    var seen = loadSeen();
-    return entries.filter(function(e){
-      return e && e.id && !onServer[e.id] && !seen[e.id];
+  function persist(){ scheduleSave(); }
+  function removeStored(id){
+    deleted.push({ id: id, at: Date.now() });
+    scheduleSave();
+  }
+  // このページの元のソースを読み、データ部分だけ差し替えて新しい版として保存する
+  function save(){
+    if(saving || !dirty) return;
+    getApi().then(function(ns){
+      if(!ns){
+        canSave = false;
+        setStatus("local", "この端末のみ");
+        renderNotice();
+        return;
+      }
+      saving = true;
+      dirty = false;
+      var OPEN = "<" + 'script id="ledger-data" type="application/json">';
+      var CLOSE = "<" + "/script>";
+      fetch(location.pathname, { cache: "no-store" })
+        .then(function(r){ return r.text(); })
+        .then(function(src){
+          var i = src.indexOf(OPEN);
+          var j = i < 0 ? -1 : src.indexOf(CLOSE, i);
+          if(i < 0 || j < 0) throw { code: "page_unreadable" };
+          return ns.publish(src.slice(0, i + OPEN.length) + stateJson() + src.slice(j));
+        })
+        .then(function(){
+          saving = false;
+          setStatus("saved", "保存済み");
+          renderNotice();
+          if(dirty) scheduleSave();
+        }, function(err){
+          saving = false;
+          dirty = true;
+          onSaveError(err);
+        });
     });
   }
-  var failed = {};
-  function persist(entry){
-    if(db){
-      db.collection("reviews").doc(entry.id).set(entry).then(function(){
-        delete failed[entry.id];
-        updateSaveState();
-      }, function(){
-        failed[entry.id] = true;
-        updateSaveState();
-        toast("保存できませんでした。「未保存」ボタンを押すか、通信を確認してください");
-      });
-    }else{
-      saveLocal();
+  function onSaveError(err){
+    var code = (err && err.code) || "error";
+    if(code === "conflict"){
+      // 他の人が先に保存した。各画面はその内容に更新される
+      setStatus("saving", "更新中…");
+      return;
     }
-  }
-  function updateSaveState(){
-    var n = Object.keys(failed).length;
-    var btn = $("#saveAllBtn");
-    btn.classList.toggle("btn-warn", n > 0);
-    btn.textContent = n > 0 ? "未保存 " + n + "件を保存" : "すべて保存";
-  }
-  function removeStored(id){
-    if(db){
-      db.collection("reviews").doc(id).delete().catch(function(){
-        toast("削除できませんでした。もう一度お試しください");
-      });
-    }else{
-      saveLocal();
+    if(code === "not_writer" || code === "not_granted" ||
+       code === "consent_required" || code === "not_declared"){
+      canSave = false;
+      readOnly = true;
+      setStatus("local", "閲覧のみ");
+      render();
+      return;
     }
+    if(code === "rate_limited"){
+      setStatus("saving", "保存中…");
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(save, 5000);
+      return;
+    }
+    setStatus("error", "保存できません");
+    renderNotice();
   }
 
   /* ---------- 描画 ---------- */
@@ -668,29 +739,20 @@
   }
   function renderNotice(){
     var el = $("#notice");
-    if(storage === "db" || storage === "loading"){
+    if(canSave){
       el.hidden = true;
       return;
     }
     el.hidden = false;
-    if(hasHost && !canStore){
-      // サーバーにもブラウザにも保存できない開き方。入力しても残らない。
-      el.className = "notice stop";
-      el.innerHTML = "<span>\u26d4</span><span><b>\u3053\u306e\u753b\u9762\u3067\u306f\u5165\u529b\u304c\u4fdd\u5b58\u3055\u308c\u307e\u305b\u3093</b>" +
-        "\u53f0\u5e33\u306f <code>claude.ai/code/artifacts</code> \u306e\u4e00\u89a7\u304b\u3089\u958b\u3044\u3066\u304f\u3060\u3055\u3044\uff08Claude\u306e\u30a2\u30d7\u30ea\u5185\u304b\u3089\u958b\u304f\u3068\u4fdd\u5b58\u5148\u306b\u3064\u306a\u304c\u308a\u307e\u3059\uff09\u3002" +
-        "\u3053\u306e\u307e\u307e\u5165\u529b\u3057\u305f\u5834\u5408\u306f\u3001\u9589\u3058\u308b\u524d\u306b\u300c\u30d0\u30c3\u30af\u30a2\u30c3\u30d7\u300d\u304b\u3089\u5185\u5bb9\u3092\u63a7\u3048\u3066\u304f\u3060\u3055\u3044\u3002</span>";
-    }else if(hasHost){
-      el.className = "notice";
-      el.innerHTML = "<span>\u26a0\ufe0f</span><span><b>\u4fdd\u5b58\u6e08\u307f\u306e\u53f0\u5e33\u3092\u8aad\u307f\u8fbc\u3081\u3066\u3044\u307e\u305b\u3093</b>" +
-        "claude.ai \u306b\u30ed\u30b0\u30a4\u30f3\u3057\u305f\u72b6\u614b\u3067\u3001<code>claude.ai/code/artifacts</code> \u306e\u4e00\u89a7\u304b\u3089\u3053\u306e\u53f0\u5e33\u3092\u958b\u304f\u3068\u3001\u4fdd\u5b58\u6e08\u307f\u306e\u53e3\u30b3\u30df\u304c\u8868\u793a\u3055\u308c\u307e\u3059\u3002" +
-        "\u3053\u3053\u3067\u5165\u529b\u3057\u305f\u5185\u5bb9\u306f\u3053\u306e\u30d6\u30e9\u30a6\u30b6\u306b\u4e00\u6642\u4fdd\u5b58\u3055\u308c\u3001\u6b21\u306b\u53f0\u5e33\u3092\u958b\u3044\u305f\u3068\u304d\u306b\u53cd\u6620\u3055\u308c\u307e\u3059\u3002</span>";
+    if(readOnly){
+      el.className = "notice info";
+      el.innerHTML = "<span>\ud83d\udc41\ufe0f</span><span><b>\u95b2\u89a7\u306e\u307f\u3067\u3059</b>" +
+        "\u53f0\u5e33\u306e\u5185\u5bb9\u306f\u898b\u3089\u308c\u307e\u3059\u304c\u3001\u3053\u306e\u30a2\u30ab\u30a6\u30f3\u30c8\u306b\u306f\u7de8\u96c6\u306e\u6a29\u9650\u304c\u3042\u308a\u307e\u305b\u3093\u3002</span>";
     }else{
-      el.className = canStore ? "notice info" : "notice stop";
-      el.innerHTML = canStore
-        ? "<span>\ud83d\udcbe</span><span><b>\u3053\u306e\u7aef\u672b\u5185\u306b\u4fdd\u5b58\u3055\u308c\u307e\u3059</b>" +
-          "\u5168\u54e1\u3067\u5171\u6709\u3059\u308b\u306b\u306f\u3001Claude \u3067\u516c\u958b\u3055\u308c\u305f\u53f0\u5e33\u3092\u958b\u3044\u3066\u304f\u3060\u3055\u3044\u3002</span>"
-        : "<span>\u26d4</span><span><b>\u3053\u306e\u753b\u9762\u3067\u306f\u5165\u529b\u304c\u4fdd\u5b58\u3055\u308c\u307e\u305b\u3093</b>" +
-          "\u5165\u529b\u3059\u308b\u524d\u306b\u3001\u53f0\u5e33\u3092\u6b63\u3057\u3044\u5834\u6240\u304b\u3089\u958b\u304d\u76f4\u3057\u3066\u304f\u3060\u3055\u3044\u3002</span>";
+      el.className = "notice";
+      el.innerHTML = "<span>\u26a0\ufe0f</span><span><b>\u3053\u306e\u753b\u9762\u3067\u306f\u4fdd\u5b58\u3067\u304d\u307e\u305b\u3093</b>" +
+        "\u8868\u793a\u3055\u308c\u3066\u3044\u308b\u306e\u306f\u3001\u6700\u5f8c\u306b\u4fdd\u5b58\u3055\u308c\u305f\u53f0\u5e33\u306e\u5185\u5bb9\u3067\u3059\u3002" +
+        "\u3053\u3053\u3067\u306e\u5909\u66f4\u306f\u3053\u306e\u7aef\u672b\u306b\u6b8b\u308a\u3001\u4fdd\u5b58\u3067\u304d\u308b\u72b6\u614b\u3067\u958b\u3044\u305f\u3068\u304d\u306b\u53cd\u6620\u3055\u308c\u307e\u3059\u3002</span>";
     }
   }
   function render(){
@@ -698,11 +760,6 @@
     renderMonths();
     renderStats();
     renderNotice();
-    if(storage === "loading" && entries.length === 0){
-      listEl.innerHTML = '<p class="loading">\u53f0\u5e33\u3092\u8aad\u307f\u8fbc\u3093\u3067\u3044\u307e\u3059\u2026</p>';
-      emptyEl.hidden = true;
-      return;
-    }
     var list = monthEntries();
     var filtered = list.filter(function(e){
       return view.filter === "all" ? true : (e.status || "pending") === view.filter;
@@ -816,19 +873,16 @@
     if(form.reportValidity()) commitEntry(true);
   });
   $("#saveAllBtn").addEventListener("click", function(){
-    if(entries.length === 0){
-      toast("保存する口コミがまだありません");
+    if(!canSave){
+      toast(readOnly
+        ? "この台帳を編集する権限がありません"
+        : "この画面では保存できません。「バックアップ」から内容を控えてください");
       return;
     }
-    if(db){
-      entries.forEach(persist);
-      toast(entries.length + "件を保存しました");
-    }else{
-      saveLocal();
-      toast(canStore
-        ? "この端末に保存しました。台帳を開き直すと反映されます"
-        : "この画面では保存できません。「バックアップ」から内容を控えてください");
-    }
+    dirty = true;
+    clearTimeout(saveTimer);
+    setStatus("saving", "保存中…");
+    save();
   });
   $("#delBtn").addEventListener("click", function(){
     if(!editingId) return;
@@ -983,7 +1037,7 @@
       persist(e);
     });
     entries = Object.keys(byId).map(function(k){ return byId[k]; });
-    if(!db) saveLocal();
+    scheduleSave();
     render();
     bkDlg.close();
     toast(added > 0 ? added + "件を取り込みました" : "内容を更新しました");
@@ -991,66 +1045,35 @@
 
   // 保存できない画面で入力したまま閉じようとしたら引き止める
   window.addEventListener("beforeunload", function(ev){
-    if(storage !== "db" && !canStore && entries.length > 0){
+    if(dirty && !canSave){
       ev.preventDefault();
       ev.returnValue = "";
     }
   });
 
   /* ---------- 起動 ---------- */
-  loadLocal();
-  storage = hasHost ? "loading" : "local";
-  setSync(storage === "loading" ? "loading" : "local", storage === "loading" ? "台帳を読み込み中…" : "この端末のみに保存");
+  var embedded = null;
+  try{
+    embedded = JSON.parse(document.getElementById("ledger-data").textContent);
+  }catch(err){}
+  var merged = merge(embedded, lsGet(LS_STATE));
+  entries = merged.entries;
+  deleted = merged.deleted;
   render();
 
-  if(hasHost){
-    setTimeout(function(){
-      if(storage === "loading"){
-        storage = "local";
-        setSync("local", "この端末のみに保存");
-        render();
-      }
-    }, 12000);
-    window.claude.use("db").then(function(store){
-      if(!store){
-        storage = "local";
-        setSync("local", "この端末のみに保存");
-        render();
-        return;
-      }
-      db = store;
-      store.collection("reviews").onSnapshot(function(snap){
-        var next = snap.docs.map(function(d){
-          var data = d.data() || {};
-          data.id = d.id;
-          return data;
-        });
-        storage = "db";
-        rememberSeen(next);
-        if(!migrated){
-          migrated = true;
-          var pending = pendingLocal(next);
-          if(pending.length > 0){
-            pending.forEach(function(e){ persist(e); });
-            next = next.concat(pending);
-            toast("この端末に残っていた" + pending.length + "件を台帳に反映しました");
-          }
-          clearLocal();
-        }
-        entries = next;
-        setSync("live", "全員と同期中");
-        render();
-      }, function(){
-        storage = "local";
-        setSync("local", "同期が切れました（この端末のみ）");
-        render();
-      });
-    }, function(){
-      storage = "local";
-      setSync("local", "この端末のみに保存");
-      render();
-    });
+  getApi().then(function(ns){
+    if(!ns){
+      canSave = false;
+      setStatus("local", "この端末のみ");
+    }else{
+      setStatus("saved", "保存済み");
+      // 端末に残っていた変更がページの内容と違えば、その場で保存して追いつかせる
+      if(fingerprint(entries) !== fingerprint(normalize(embedded).entries)) scheduleSave();
+    }
+    renderNotice();
+  });
 
+  if(window.claude && typeof window.claude.use === "function"){
     window.claude.use("downloads").then(function(d){
       if(!d) return;
       downloads = d;
