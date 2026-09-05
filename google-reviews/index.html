@@ -364,7 +364,7 @@
   </div>
   <form class="entry" id="form" method="dialog">
     <label>対象月
-      <input type="month" name="month" required>
+      <select name="month" id="monthField" required></select>
     </label>
     <label>投稿日 <span class="opt">（任意）</span>
       <input type="date" name="postedAt">
@@ -475,9 +475,21 @@
       return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c];
     });
   }
+  // 台帳は令和8年9月分から。月は「R8.9月」の形で表示する
+  var START_MONTH = "2026-09";
+  function eraOf(year){ return Number(year) - 2018; }   // 令和1年 = 2019年
   function monthLabel(m){
     var p = String(m || "").split("-");
-    return p.length === 2 ? p[0] + "年" + Number(p[1]) + "月" : String(m || "");
+    return p.length === 2 ? "R" + eraOf(p[0]) + "." + Number(p[1]) + "月" : String(m || "");
+  }
+  function monthLabelLong(m){
+    var p = String(m || "").split("-");
+    return p.length === 2 ? "令和" + eraOf(p[0]) + "年" + Number(p[1]) + "月" : String(m || "");
+  }
+  function addMonths(m, n){
+    var p = String(m).split("-");
+    var t = (Number(p[0]) * 12 + Number(p[1]) - 1) + n;
+    return Math.floor(t / 12) + "-" + String(t % 12 + 1).padStart(2, "0");
   }
   function dateLabel(d){
     var p = String(d || "").split("-");
@@ -649,16 +661,23 @@
   function monthsOf(){
     var set = {};
     entries.forEach(function(e){ if(e.month) set[e.month] = true; });
-    set[thisMonth()] = true;
     set[view.month] = true;
+    // R8.9から今月の2か月先まで。先の月にも登録できるようにしておく
+    var last = addMonths(thisMonth(), 2);
+    Object.keys(set).forEach(function(m){ if(m > last) last = m; });
+    for(var m = START_MONTH; m <= last; m = addMonths(m, 1)) set[m] = true;
     return Object.keys(set).sort().reverse();
+  }
+  function fillMonthOptions(sel, selected){
+    sel.innerHTML = monthsOf().map(function(m){
+      return '<option value="' + esc(m) + '"' + (m === selected ? " selected" : "") + ">" +
+        esc(monthLabel(m)) + "</option>";
+    }).join("");
   }
   function renderMonths(){
     var ms = monthsOf();
     if(ms.indexOf(view.month) === -1) view.month = ms[0];
-    monthSel.innerHTML = ms.map(function(m){
-      return '<option value="' + esc(m) + '"' + (m === view.month ? " selected" : "") + ">" + esc(monthLabel(m)) + "</option>";
-    }).join("");
+    fillMonthOptions(monthSel, view.month);
   }
   function monthEntries(){
     return entries.filter(function(e){ return e.month === view.month; })
@@ -787,7 +806,7 @@
     $("#dlgTitle").textContent = entry ? "口コミを編集" : "口コミを追加";
     $("#delBtn").hidden = !entry;
     var e = entry || { month: view.month, category: "ortho", status: "pending", stars: 5 };
-    form.month.value = e.month || view.month;
+    fillMonthOptions(form.month, e.month || view.month);
     form.postedAt.value = e.postedAt || "";
     form.patientNo.value = e.patientNo || "";
     form.name.value = e.name || "";
@@ -859,6 +878,7 @@
     $("#delBtn").hidden = true;
     ["postedAt", "patientNo", "name", "reviewer", "content", "givenDate", "staff", "note"]
       .forEach(function(k){ form[k].value = ""; });
+    fillMonthOptions(form.month, entry.month);
     form.stars.value = "5";
     form.status.value = "pending";
     syncGiftField();
@@ -944,7 +964,7 @@
   function plainText(){
     var list = monthEntries();
     var done = list.filter(function(e){ return e.status === "done"; }).length;
-    var lines = ["【" + monthLabel(view.month) + " Google口コミ】 全" + list.length + "件（渡し済 " + done + "件／未渡し " + (list.length - done) + "件）", ""];
+    var lines = ["【" + monthLabelLong(view.month) + " Google口コミ】 全" + list.length + "件（渡し済 " + done + "件／未渡し " + (list.length - done) + "件）", ""];
     list.forEach(function(e, i){
       lines.push((i + 1) + ". No." + (e.patientNo || "―") + " " + (e.name || "") + " 様" +
         (starStr(e.stars) ? " " + starStr(e.stars) : ""));
