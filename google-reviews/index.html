@@ -475,8 +475,9 @@
       return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c];
     });
   }
-  // 台帳は令和8年9月分から。月は「R8.9月」の形で表示する
+  // 台帳は令和8年9月分から令和8年12月分まで。月は「R8.9月」の形で表示する
   var START_MONTH = "2026-09";
+  var END_MONTH = "2026-12";
   function eraOf(year){ return Number(year) - 2018; }   // 令和1年 = 2019年
   function monthLabel(m){
     var p = String(m || "").split("-");
@@ -662,8 +663,10 @@
     var set = {};
     entries.forEach(function(e){ if(e.month) set[e.month] = true; });
     set[view.month] = true;
-    // R8.9から今月の2か月先まで。先の月にも登録できるようにしておく
-    var last = addMonths(thisMonth(), 2);
+    // R8.9からR8.12まで。年をまたいでも翌月を選べるように、必要なら先へ伸ばす
+    var last = END_MONTH;
+    var ahead = addMonths(thisMonth(), 1);
+    if(ahead > last) last = ahead;
     Object.keys(set).forEach(function(m){ if(m > last) last = m; });
     for(var m = START_MONTH; m <= last; m = addMonths(m, 1)) set[m] = true;
     return Object.keys(set).sort().reverse();
