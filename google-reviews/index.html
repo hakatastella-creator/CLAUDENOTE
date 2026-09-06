@@ -591,7 +591,7 @@
     }
     setStatus("saving", "保存中…");
     clearTimeout(saveTimer);
-    saveTimer = setTimeout(save, 1200);
+    saveTimer = setTimeout(save, 600);
   }
   function persist(){ scheduleSave(); }
   function removeStored(id){
@@ -1084,12 +1084,24 @@
     toast(added > 0 ? added + "件を取り込みました" : "内容を更新しました");
   });
 
-  // 保存できない画面で入力したまま閉じようとしたら引き止める
-  window.addEventListener("beforeunload", function(ev){
-    if(dirty && !canSave){
-      ev.preventDefault();
-      ev.returnValue = "";
+  // タブを閉じる・別の画面に切り替えるときは、待たずにその場で保存する
+  function flush(){
+    if(dirty && canSave){
+      clearTimeout(saveTimer);
+      save();
     }
+  }
+  document.addEventListener("visibilitychange", function(){
+    if(document.visibilityState === "hidden") flush();
+  });
+  window.addEventListener("pagehide", flush);
+
+  // まだ保存が終わっていないまま閉じようとしたら引き止める
+  window.addEventListener("beforeunload", function(ev){
+    if(!dirty) return;
+    flush();
+    ev.preventDefault();
+    ev.returnValue = "";
   });
 
   /* ---------- 起動 ---------- */
