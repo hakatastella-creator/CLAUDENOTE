@@ -619,6 +619,14 @@
           var i = src.indexOf(OPEN);
           var j = i < 0 ? -1 : src.indexOf(CLOSE, i);
           if(i < 0 || j < 0) throw { code: "page_unreadable" };
+          // 保存の直前に最新版と突き合わせる。
+          // 別のパソコンがその間に入力していても、上書きして消してしまわない。
+          var latest = null;
+          try{ latest = JSON.parse(src.slice(i + OPEN.length, j)); }catch(err){}
+          var m = merge(latest, { entries: entries, deleted: deleted });
+          entries = m.entries;
+          deleted = m.deleted;
+          render();
           return ns.publish(src.slice(0, i + OPEN.length) + stateJson() + src.slice(j));
         })
         .then(function(){
