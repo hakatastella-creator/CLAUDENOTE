@@ -131,23 +131,28 @@ def build_month_sheet(ws, month, entries):
 
 
 def build_reading_sheet(ws):
-    """ミーティングで読み上げるための表示用シート。
+    """ミーティングで読むための表示用シート。
 
     入力は月別シートのまま。ここは対象月を選ぶと、その月の口コミを
-    1件ずつ読みやすい形（見出し＋本文）で並べるだけの画面。
+    「見出しの帯 ＋ 本文」の2行組で並べるだけの画面。
     """
-    ws.column_dimensions["A"].width = 104
-    ws.column_dimensions["B"].width = 18
+    BLOCKS = 20                       # 1か月あたりに用意する表示枠
+    HEAD_FILL_OK = PatternFill("solid", fgColor="E4F1E9")
+    HEAD_FILL_YET = PatternFill("solid", fgColor="FBE6DA")
 
-    ws["A1"] = "ミーティング用の表示"
-    ws["A1"].font = Font(name=FONT, bold=True, size=14, color=ACCENT)
-    ws["A2"] = "対象月 →"
-    ws["A2"].font = Font(name=FONT, bold=True, size=11, color=INK)
-    ws["A2"].alignment = Alignment(horizontal="right")
+    ws.column_dimensions["A"].width = 3     # 左の余白
+    ws.column_dimensions["B"].width = 88    # 本文。1行が長くなりすぎない幅にする
+    ws.sheet_view.showGridLines = False
+
+    ws["B1"] = "ミーティング用"
+    ws["B1"].font = Font(name=FONT, bold=True, size=16, color=ACCENT)
+    ws.row_dimensions[1].height = 28
+
     ws["B2"] = era_month(MONTHS[0])
-    ws["B2"].font = Font(name=FONT, bold=True, size=12, color=INK)
+    ws["B2"].font = Font(name=FONT, bold=True, size=13, color=INK)
     ws["B2"].fill = PatternFill("solid", fgColor="DCEEE9")
-    ws["B2"].alignment = Alignment(horizontal="center")
+    ws["B2"].alignment = Alignment(horizontal="left", vertical="center", indent=1)
+    ws.row_dimensions[2].height = 24
     dv = DataValidation(type="list",
                         formula1='"' + ",".join(era_month(m) for m in MONTHS) + '"',
                         allow_blank=False)
@@ -155,34 +160,56 @@ def build_reading_sheet(ws):
     dv.add("B2")
 
     name_col = get_column_letter(NAME_COL)
-    ws["C2"] = (f'=COUNTA(INDIRECT("\'"&$B$2&"\'!{name_col}2:{name_col}{LAST_ROW}"))'
-                f'&"件（未渡し "&COUNTIF(INDIRECT("\'"&$B$2&"\'!'
-                f'{get_column_letter(STATUS_COL)}2:{get_column_letter(STATUS_COL)}{LAST_ROW}"),"未渡し")&"件）"')
-    ws["C2"].font = Font(name=FONT, size=11, color=INK)
+    status_col = get_column_letter(STATUS_COL)
+    ws["B3"] = (f'="この月の口コミ "&COUNTA(INDIRECT("\'"&$B$2&"\'!{name_col}2:{name_col}{LAST_ROW}"))'
+                f'&" 件　／　プレゼント未渡し "'
+                f'&COUNTIF(INDIRECT("\'"&$B$2&"\'!{status_col}2:{status_col}{LAST_ROW}"),"未渡し")&" 件"')
+    ws["B3"].font = Font(name=FONT, size=11, color="5A6B67")
+    ws.row_dimensions[3].height = 22
 
-    def ref(col, offset=2):
+    def ref(col, row_expr):
         letter = get_column_letter(col)
-        return f'INDIRECT("\'"&$B$2&"\'!{letter}"&ROW()-{offset})'
+        return f'INDIRECT("\'"&$B$2&"\'!{letter}"&{row_expr})'
 
-    for i in range(LAST_ROW - 1):
-        r = 4 + i
-        ws.cell(row=r, column=1, value=(
-            f'=IF({ref(NAME_COL, 2)}="","",'
-            f'"No."&{ref(1, 2)}&"　"&{ref(NAME_COL, 2)}&" 様　"&'
-            f'REPT("★",{ref(STARS_COL, 2)})&"　［"&{ref(CAT_COL, 2)}&" → "&{ref(GIFT_COL, 2)}&"］　"&'
-            f'{ref(STATUS_COL, 2)}&CHAR(10)&{ref(12, 2)}&CHAR(10))'
+    first = 5
+    for i in range(BLOCKS):
+        head_row = first + i * 3
+        body_row = head_row + 1
+        gap_row = head_row + 2
+        src = str(i + 2)              # 月別シートの2行目から順に見る
+
+        # 見出しの帯：患者番号・氏名・評価・区分→プレゼント・渡したかどうか
+        ws.cell(row=head_row, column=2, value=(
+            f'=IF({ref(NAME_COL, src)}="","",'
+            f'"No."&{ref(1, src)}&"　"&{ref(NAME_COL, src)}&" 様　　"&'
+            f'REPT("★",{ref(STARS_COL, src)})&"　　"&{ref(CAT_COL, src)}&" → "&{ref(GIFT_COL, src)}&'
+            f'"　　"&{ref(STATUS_COL, src)})'
         ))
-        cell = ws.cell(row=r, column=1)
-        cell.font = Font(name=FONT, size=12, color=INK)
-        cell.alignment = Alignment(vertical="top", wrap_text=True)
+        head = ws.cell(row=head_row, column=2)
+        head.font = Font(name=FONT, bold=True, size=12, color=INK)
+        head.alignment = Alignment(vertical="center", indent=1)
+        ws.row_dimensions[head_row].height = 26
 
-    # 1件ごとに薄く色を変えて区切りを分かりやすくする（空の行には色を付けない）
-    last = 3 + LAST_ROW - 1
+        # 本文：折り返して全文を出す
+        ws.cell(row=body_row, column=2, value=f'=IF({ref(NAME_COL, src)}="","",{ref(12, src)})')
+        body = ws.cell(row=body_row, column=2)
+        body.font = Font(name=FONT, size=11, color="223330")
+        body.alignment = Alignment(vertical="top", wrap_text=True, indent=1)
+
+        ws.row_dimensions[gap_row].height = 10   # 1件ごとの余白
+
+    last = first + BLOCKS * 3
+    # 未渡しはオレンジ、渡し済は緑の帯にする（帯の行だけが色付く）
     ws.conditional_formatting.add(
-        f"A4:A{last}",
-        FormulaRule(formula=['AND($A4<>"",MOD(ROW(),2)=1)'],
-                    fill=PatternFill("solid", fgColor="F1F6F4"), stopIfTrue=False))
+        f"B{first}:B{last}",
+        FormulaRule(formula=[f'ISNUMBER(SEARCH("様",$B{first}))*ISNUMBER(SEARCH("未渡し",$B{first}))'],
+                    fill=HEAD_FILL_YET, stopIfTrue=True))
+    ws.conditional_formatting.add(
+        f"B{first}:B{last}",
+        FormulaRule(formula=[f'ISNUMBER(SEARCH("様",$B{first}))*ISNUMBER(SEARCH("渡し済",$B{first}))'],
+                    fill=HEAD_FILL_OK, stopIfTrue=True))
 
+    ws.print_area = f"A1:B{last}"
     ws.page_setup.orientation = "portrait"
     ws.page_setup.fitToWidth = 1
     ws.page_setup.fitToHeight = 0
