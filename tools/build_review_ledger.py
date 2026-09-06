@@ -130,6 +130,65 @@ def build_month_sheet(ws, month, entries):
     ws.print_title_rows = "1:1"
 
 
+def build_reading_sheet(ws):
+    """ミーティングで読み上げるための表示用シート。
+
+    入力は月別シートのまま。ここは対象月を選ぶと、その月の口コミを
+    1件ずつ読みやすい形（見出し＋本文）で並べるだけの画面。
+    """
+    ws.column_dimensions["A"].width = 104
+    ws.column_dimensions["B"].width = 18
+
+    ws["A1"] = "ミーティング用の表示"
+    ws["A1"].font = Font(name=FONT, bold=True, size=14, color=ACCENT)
+    ws["A2"] = "対象月 →"
+    ws["A2"].font = Font(name=FONT, bold=True, size=11, color=INK)
+    ws["A2"].alignment = Alignment(horizontal="right")
+    ws["B2"] = era_month(MONTHS[0])
+    ws["B2"].font = Font(name=FONT, bold=True, size=12, color=INK)
+    ws["B2"].fill = PatternFill("solid", fgColor="DCEEE9")
+    ws["B2"].alignment = Alignment(horizontal="center")
+    dv = DataValidation(type="list",
+                        formula1='"' + ",".join(era_month(m) for m in MONTHS) + '"',
+                        allow_blank=False)
+    ws.add_data_validation(dv)
+    dv.add("B2")
+
+    name_col = get_column_letter(NAME_COL)
+    ws["C2"] = (f'=COUNTA(INDIRECT("\'"&$B$2&"\'!{name_col}2:{name_col}{LAST_ROW}"))'
+                f'&"件（未渡し "&COUNTIF(INDIRECT("\'"&$B$2&"\'!'
+                f'{get_column_letter(STATUS_COL)}2:{get_column_letter(STATUS_COL)}{LAST_ROW}"),"未渡し")&"件）"')
+    ws["C2"].font = Font(name=FONT, size=11, color=INK)
+
+    def ref(col, offset=2):
+        letter = get_column_letter(col)
+        return f'INDIRECT("\'"&$B$2&"\'!{letter}"&ROW()-{offset})'
+
+    for i in range(LAST_ROW - 1):
+        r = 4 + i
+        ws.cell(row=r, column=1, value=(
+            f'=IF({ref(NAME_COL, 2)}="","",'
+            f'"No."&{ref(1, 2)}&"　"&{ref(NAME_COL, 2)}&" 様　"&'
+            f'REPT("★",{ref(STARS_COL, 2)})&"　［"&{ref(CAT_COL, 2)}&" → "&{ref(GIFT_COL, 2)}&"］　"&'
+            f'{ref(STATUS_COL, 2)}&CHAR(10)&{ref(12, 2)}&CHAR(10))'
+        ))
+        cell = ws.cell(row=r, column=1)
+        cell.font = Font(name=FONT, size=12, color=INK)
+        cell.alignment = Alignment(vertical="top", wrap_text=True)
+
+    # 1件ごとに薄く色を変えて区切りを分かりやすくする（空の行には色を付けない）
+    last = 3 + LAST_ROW - 1
+    ws.conditional_formatting.add(
+        f"A4:A{last}",
+        FormulaRule(formula=['AND($A4<>"",MOD(ROW(),2)=1)'],
+                    fill=PatternFill("solid", fgColor="F1F6F4"), stopIfTrue=False))
+
+    ws.page_setup.orientation = "portrait"
+    ws.page_setup.fitToWidth = 1
+    ws.page_setup.fitToHeight = 0
+    ws.sheet_properties.pageSetUpPr = PageSetupProperties(fitToPage=True)
+
+
 def build_summary(ws):
     heads = ["対象月", "口コミ件数", "未渡し", "渡し済", "ホワイトニング", "物品1,000円OFF"]
     ws["A1"] = "月別の集計（各月のシートに入力すると自動で更新されます）"
@@ -184,7 +243,8 @@ def build_guide(ws):
         ("", "区分が「その他」のときは、プレゼント欄に直接入力してください（自動の数式は消えます）。"),
         ("渡したかどうか", "状態の欄で「未渡し」「渡し済」を選びます。未渡しはオレンジ、渡し済は緑になります。"),
         ("", "渡し済にしたら、渡した日と担当も入れておくと後から確認できます。"),
-        ("月例ミーティング", "その月のシートを開き、見出しの▼から状態で「未渡し」だけを表示すると、その場で確認できます。"),
+        ("月例ミーティング", "「ミーティング用」シートを開き、上の対象月を選ぶと、その月の口コミが本文つきで読みやすく並びます。"),
+        ("", "入力は各月のシートで行い、読むときだけこのシートを使ってください（自動で連動します）。"),
         ("集計", "「集計」シートに、月ごとの件数・未渡し・渡し済が自動で出ます。"),
         ("口コミ本文の読み方", "本文は右端のL列にあります。1行に収めているので、全文はセルをクリックして上の入力バーで読めます。"),
         ("", "全文を表で表示したいときは、L列を選んで［表示形式］→［折り返し］をオンにしてください。"),
@@ -220,6 +280,7 @@ def main():
     for month in MONTHS:
         ws = wb.create_sheet(era_month(month))
         build_month_sheet(ws, month, [e for e in entries if e.get("month") == month])
+    build_reading_sheet(wb.create_sheet("ミーティング用"))
     build_summary(wb.create_sheet("集計"))
     build_guide(wb.create_sheet("使い方"))
     wb.save(out)
