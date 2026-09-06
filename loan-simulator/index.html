@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>デンタルローン早見表</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Zen+Old+Mincho:wght@600;700&display=swap">
+<style>
+  :root{
+    --ground:#eef3f4;
+    --surface:#ffffff;
+    --surface-2:#e3ecee;
+    --line:#cddadd;
+    --line-soft:#e2eaec;
+    --ink:#122029;
+    --ink-2:#4a626d;
+    --ink-3:#7e939c;
+    --accent:#0d6b73;
+    --accent-hi:#0a555c;
+    --accent-ink:#ffffff;
+    --accent-soft:#d8ebeb;
+    --brass:#9a6b28;
+    --brass-soft:#f0e3cd;
+    --shadow:0 1px 2px rgba(18,32,41,.06), 0 8px 24px -16px rgba(18,32,41,.35);
+    --sans:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Yu Gothic",system-ui,sans-serif;
+    --mincho:"Zen Old Mincho","Hiragino Mincho ProN","Yu Mincho",serif;
+    --num:"Barlow","Zen Kaku Gothic New",system-ui,sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ground:#0e161a;
+      --surface:#17232a;
+      --surface-2:#1e2e36;
+      --line:#2d414b;
+      --line-soft:#243540;
+      --ink:#e9f1f3;
+      --ink-2:#a6bcc4;
+      --ink-3:#7a939d;
+      --accent:#54b8bc;
+      --accent-hi:#6fcfd2;
+      --accent-ink:#07272a;
+      --accent-soft:#123c40;
+      --brass:#d7a862;
+      --brass-soft:#3b2e1a;
+      --shadow:0 1px 2px rgba(0,0,0,.35), 0 10px 28px -18px rgba(0,0,0,.9);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#0e161a;
+    --surface:#17232a;
+    --surface-2:#1e2e36;
+    --line:#2d414b;
+    --line-soft:#243540;
+    --ink:#e9f1f3;
+    --ink-2:#a6bcc4;
+    --ink-3:#7a939d;
+    --accent:#54b8bc;
+    --accent-hi:#6fcfd2;
+    --accent-ink:#07272a;
+    --accent-soft:#123c40;
+    --brass:#d7a862;
+    --brass-soft:#3b2e1a;
+    --shadow:0 1px 2px rgba(0,0,0,.35), 0 10px 28px -18px rgba(0,0,0,.9);
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    background:var(--ground);
+    color:var(--ink);
+    font-family:var(--sans);
+    font-size:15px;
+    line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+  }
+  .page{max-width:1180px;margin:0 auto;padding:28px 20px 56px}
+
+  /* ---------- header ---------- */
+  .masthead{
+    display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;
+    gap:16px 24px;padding-bottom:18px;border-bottom:2px solid var(--ink);
+  }
+  .clinic{
+    font-size:12px;letter-spacing:.22em;color:var(--ink-2);
+    font-weight:500;margin:0 0 6px;
+  }
+  h1{
+    font-family:var(--mincho);font-weight:600;font-size:clamp(26px,3.4vw,36px);
+    line-height:1.25;margin:0;letter-spacing:.02em;text-wrap:balance;
+  }
+  .rate-badge{
+    display:flex;align-items:baseline;gap:10px;
+    background:var(--accent);color:var(--accent-ink);
+    padding:9px 16px;border-radius:2px;
+  }
+  .rate-badge .who{font-size:12px;letter-spacing:.14em;font-weight:700;opacity:.85}
+  .rate-badge .val{font-family:var(--num);font-size:24px;font-weight:700;letter-spacing:.01em}
+  .rate-badge .val small{font-size:13px;font-weight:600;margin-left:2px}
+
+  /* ---------- section headings ---------- */
+  .eyebrow{
+    font-size:11px;letter-spacing:.2em;font-weight:700;color:var(--ink-3);
+    margin:0 0 10px;display:flex;align-items:center;gap:10px;
+  }
+  .eyebrow::after{content:"";flex:1;height:1px;background:var(--line-soft)}
+
+  /* ---------- controls ---------- */
+  .controls{
+    margin-top:26px;background:var(--surface);border:1px solid var(--line);
+    border-radius:3px;padding:20px 22px 18px;box-shadow:var(--shadow);
+    display:grid;gap:22px;
+    grid-template-columns:minmax(0,1.35fr) minmax(0,1fr) minmax(0,.7fr);
+  }
+  @media (max-width:820px){.controls{grid-template-columns:1fr}}
+  .field label{
+    display:block;font-size:12px;font-weight:700;letter-spacing:.1em;
+    color:var(--ink-2);margin-bottom:7px;
+  }
+  .money-input{
+    display:flex;align-items:baseline;gap:6px;
+    border-bottom:2px solid var(--line);padding-bottom:4px;
+  }
+  .money-input:focus-within{border-bottom-color:var(--accent)}
+  .money-input input{
+    flex:1;min-width:0;width:100%;
+    font-family:var(--num);font-variant-numeric:tabular-nums;
+    font-size:30px;font-weight:600;letter-spacing:.01em;
+    background:transparent;border:0;color:var(--ink);padding:0;
+    text-align:right;
+  }
+  .money-input input:focus{outline:none}
+  .money-input .unit{font-size:15px;font-weight:500;color:var(--ink-2);flex:none}
+  .field.small .money-input input{font-size:22px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+  .chip{
+    font-family:var(--sans);font-size:12px;font-weight:500;
+    padding:4px 10px;border-radius:2px;cursor:pointer;
+    border:1px solid var(--line);background:var(--surface-2);color:var(--ink-2);
+  }
+  .chip:hover{border-color:var(--accent);color:var(--accent)}
+  .warn{
+    grid-column:1/-1;margin:0;font-size:13px;color:var(--brass);font-weight:500;
+  }
+
+  /* ---------- layout ---------- */
+  .board{
+    margin-top:30px;display:grid;gap:26px;
+    grid-template-columns:minmax(0,1.7fr) minmax(300px,1fr);
+    align-items:start;
+  }
+  @media (max-width:940px){.board{grid-template-columns:1fr}}
+
+  /* ---------- 早見表 ---------- */
+  .terms{display:grid;grid-template-columns:repeat(auto-fill,minmax(142px,1fr));gap:8px}
+  .term{
+    position:relative;text-align:left;cursor:pointer;font-family:var(--sans);
+    background:var(--surface);border:1px solid var(--line);border-radius:3px;
+    padding:11px 12px 10px;color:var(--ink);
+    transition:border-color .12s ease, transform .12s ease;
+  }
+  .term:hover{border-color:var(--accent);transform:translateY(-1px)}
+  .term:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .term .n{
+    font-family:var(--num);font-size:13px;font-weight:600;letter-spacing:.04em;
+    color:var(--ink-2);
+  }
+  .term .m{
+    font-family:var(--num);font-variant-numeric:tabular-nums;
+    font-size:22px;font-weight:700;line-height:1.15;margin-top:2px;display:block;
+    white-space:nowrap;
+  }
+  .term .m small{font-size:13px;font-weight:600;margin-left:1px}
+  .term .f{
+    font-size:11px;color:var(--ink-3);margin-top:3px;
+    font-variant-numeric:tabular-nums;white-space:nowrap;
+  }
+  .term[aria-pressed="true"]{
+    background:var(--accent);border-color:var(--accent);color:var(--accent-ink);
+  }
+  .term[aria-pressed="true"] .n,
+  .term[aria-pressed="true"] .f{color:var(--accent-ink);opacity:.82}
+  @media (prefers-reduced-motion: reduce){
+    .term{transition:none}
+    .term:hover{transform:none}
+  }
+
+  /* ---------- 内訳 ---------- */
+  .detail{
+    background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--accent);
+    border-radius:3px;padding:20px 22px 22px;box-shadow:var(--shadow);
+  }
+  .detail .plan-n{
+    font-family:var(--mincho);font-size:20px;font-weight:600;margin:0;
+  }
+  .headline{margin:14px 0 2px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+  .headline .big{
+    font-family:var(--num);font-variant-numeric:tabular-nums;
+    font-size:clamp(38px,6vw,50px);font-weight:700;line-height:1;color:var(--accent);
+    letter-spacing:-.01em;
+  }
+  .headline .big small{font-size:20px;font-weight:600;margin-left:2px}
+  .headline .cap{font-size:12px;font-weight:700;letter-spacing:.1em;color:var(--ink-3)}
+  .firstpay{font-size:13px;color:var(--ink-2);margin:8px 0 0}
+  .firstpay b{font-family:var(--num);font-variant-numeric:tabular-nums;font-weight:700;color:var(--ink)}
+
+  .bar{display:flex;height:12px;border-radius:2px;overflow:hidden;margin:20px 0 9px;background:var(--surface-2)}
+  .bar .p{background:var(--accent)}
+  .bar .f{background:var(--brass)}
+  .legend{display:flex;gap:16px;font-size:11.5px;color:var(--ink-2);flex-wrap:wrap}
+  .legend span{display:flex;align-items:center;gap:5px}
+  .swatch{width:9px;height:9px;border-radius:1px;flex:none}
+  .swatch.p{background:var(--accent)}
+  .swatch.f{background:var(--brass)}
+
+  .rows{margin:18px 0 0;border-top:1px solid var(--line-soft)}
+  .row{
+    display:flex;justify-content:space-between;align-items:baseline;gap:14px;
+    padding:9px 0;border-bottom:1px solid var(--line-soft);font-size:13.5px;
+  }
+  .row dt{color:var(--ink-2);margin:0}
+  .row dd{
+    margin:0;font-family:var(--num);font-variant-numeric:tabular-nums;
+    font-weight:600;font-size:16px;white-space:nowrap;
+  }
+  .row dd small{font-size:12px;font-weight:500;margin-left:1px;color:var(--ink-2)}
+  .row.fee dd{color:var(--brass)}
+  .row.total{border-bottom:0;padding-top:12px}
+  .row.total dt{color:var(--ink);font-weight:700}
+  .row.total dd{font-size:21px;font-weight:700}
+
+  /* ---------- 逆算 ---------- */
+  .reverse{
+    margin-top:30px;background:var(--surface-2);border:1px solid var(--line-soft);
+    border-radius:3px;padding:18px 22px 20px;
+  }
+  .reverse-head{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px 28px}
+  .reverse-head .field{min-width:190px}
+  .reverse-head p{margin:0 0 4px;font-size:13px;color:var(--ink-2);max-width:34em}
+  .budget-grid{
+    margin-top:16px;display:grid;gap:8px;
+    grid-template-columns:repeat(auto-fill,minmax(118px,1fr));
+  }
+  .budget{
+    background:var(--surface);border:1px solid var(--line);border-radius:3px;
+    padding:9px 11px;
+  }
+  .budget .n{font-family:var(--num);font-size:12px;font-weight:600;color:var(--ink-2);letter-spacing:.04em}
+  .budget .v{
+    font-family:var(--num);font-variant-numeric:tabular-nums;
+    font-size:19px;font-weight:700;line-height:1.25;
+  }
+  .budget .v small{font-size:12px;font-weight:600;margin-left:1px}
+
+  /* ---------- footnote ---------- */
+  .note{
+    margin-top:28px;font-size:12px;line-height:1.85;color:var(--ink-3);
+    border-top:1px solid var(--line);padding-top:14px;max-width:70em;
+  }
+  .note b{color:var(--ink-2);font-weight:700}
+
+  @media print{
+    body{background:#fff}
+    .page{padding:0;max-width:none}
+    .controls,.detail,.term,.budget{box-shadow:none}
+    .chips,.reverse{display:none}
+    .board{grid-template-columns:1.6fr 1fr}
+    .detail{break-inside:avoid}
+  }
+</style>
+
+</head>
+<body>
+<div class="page">
+  <header class="masthead">
+    <div>
+      <p class="clinic">博多ステラ歯科</p>
+      <h1>デンタルローン お支払い早見表</h1>
+    </div>
+    <div class="rate-badge">
+      <span class="who">アプラス</span>
+      <span class="val">実質年率 <span id="badgeRate">5.8</span><small>%</small></span>
+    </div>
+  </header>
+
+  <section class="controls" aria-label="お支払い条件">
+    <div class="field">
+      <label for="amount">治療費（税込）</label>
+      <div class="money-input">
+        <input id="amount" type="text" inputmode="numeric" autocomplete="off" value="500,000">
+        <span class="unit">円</span>
+      </div>
+      <div class="chips" id="amountChips"></div>
+    </div>
+
+    <div class="field small">
+      <label for="down">頭金</label>
+      <div class="money-input">
+        <input id="down" type="text" inputmode="numeric" autocomplete="off" value="0">
+        <span class="unit">円</span>
+      </div>
+      <div class="chips" id="downChips"></div>
+    </div>
+
+    <div class="field small">
+      <label for="rate">実質年率</label>
+      <div class="money-input">
+        <input id="rate" type="text" inputmode="decimal" autocomplete="off" value="5.8">
+        <span class="unit">％</span>
+      </div>
+      <div class="chips"><button class="chip" type="button" data-rate="5.8">アプラス 5.8%</button></div>
+    </div>
+
+    <p class="warn" id="warn" hidden></p>
+  </section>
+
+  <div class="board">
+    <section aria-labelledby="tableHead">
+      <p class="eyebrow" id="tableHead">回数ごとの 月々のお支払い</p>
+      <div class="terms" id="terms"></div>
+    </section>
+
+    <section class="detail" aria-live="polite">
+      <p class="eyebrow">お支払いプラン</p>
+      <p class="plan-n" id="planN">24回払い</p>
+
+      <div class="headline">
+        <span class="big" id="monthly">0<small>円</small></span>
+        <span class="cap">／ 月</span>
+      </div>
+      <p class="firstpay" id="firstPay"></p>
+
+      <div class="bar" aria-hidden="true">
+        <div class="p" id="barP" style="width:90%"></div>
+        <div class="f" id="barF" style="width:10%"></div>
+      </div>
+      <div class="legend">
+        <span><i class="swatch p"></i>治療費（元金）</span>
+        <span><i class="swatch f"></i>分割払手数料</span>
+      </div>
+
+      <dl class="rows" id="rows"></dl>
+    </section>
+  </div>
+
+  <section class="reverse" aria-labelledby="revHead">
+    <p class="eyebrow" id="revHead">月々のご予算から逆算する</p>
+    <div class="reverse-head">
+      <div class="field small">
+        <label for="budget">月々のお支払い希望額</label>
+        <div class="money-input">
+          <input id="budget" type="text" inputmode="numeric" autocomplete="off" value="10,000">
+          <span class="unit">円</span>
+        </div>
+      </div>
+      <p id="revNote">月々 10,000円 でお支払いいただく場合の、治療費の目安です。</p>
+    </div>
+    <div class="budget-grid" id="budgetGrid"></div>
+  </section>
+
+  <p class="note">
+    <b>ご注意</b>　本表は元利均等方式による概算です。実際のお支払い回数・金額・手数料は、株式会社アプラスの審査結果およびご契約内容により決定されます。
+    金額は円単位で計算し、端数は初回のお支払いで調整しています。ボーナス併用払いには対応していません。実質年率・取扱回数は変更となる場合がありますので、最新の条件をご確認ください。
+  </p>
+</div>
+
+<script>
+  var TERMS = [3,6,10,12,18,24,30,36,42,48,60,72,84,96,120];
+  var REV_TERMS = [12,24,36,48,60,84,120];
+  var STORE = "stella-dental-loan";
+
+  var el = {
+    amount: document.getElementById("amount"),
+    down: document.getElementById("down"),
+    rate: document.getElementById("rate"),
+    budget: document.getElementById("budget"),
+    badgeRate: document.getElementById("badgeRate"),
+    terms: document.getElementById("terms"),
+    planN: document.getElementById("planN"),
+    monthly: document.getElementById("monthly"),
+    firstPay: document.getElementById("firstPay"),
+    barP: document.getElementById("barP"),
+    barF: document.getElementById("barF"),
+    rows: document.getElementById("rows"),
+    warn: document.getElementById("warn"),
+    budgetGrid: document.getElementById("budgetGrid"),
+    revNote: document.getElementById("revNote"),
+    amountChips: document.getElementById("amountChips"),
+    downChips: document.getElementById("downChips")
+  };
+
+  var selected = 24;
+
+  try {
+    var saved = JSON.parse(localStorage.getItem(STORE) || "{}");
+    if (saved.rate) el.rate.value = saved.rate;
+    if (saved.term && TERMS.indexOf(saved.term) > -1) selected = saved.term;
+  } catch (e) {}
+
+  function save() {
+    try {
+      localStorage.setItem(STORE, JSON.stringify({ rate: el.rate.value, term: selected }));
+    } catch (e) {}
+  }
+
+  function yen(v) { return Math.round(v).toLocaleString("ja-JP"); }
+  function digits(s) { return (s || "").replace(/[^0-9]/g, ""); }
+  function num(input) { var d = digits(input.value); return d ? parseInt(d, 10) : 0; }
+
+  /* 元利均等方式：毎月の支払額 */
+  function annuity(P, r, n) {
+    if (P <= 0 || n <= 0) return 0;
+    if (r === 0) return P / n;
+    return P * r / (1 - Math.pow(1 + r, -n));
+  }
+
+  function plan(P, annualPct, n) {
+    var r = annualPct / 100 / 12;
+    var total = Math.round(annuity(P, r, n) * n);
+    if (P <= 0) total = 0;
+    var rest = n > 0 ? Math.floor(total / n) : 0;
+    var first = total - rest * (n - 1);
+    return { principal: P, n: n, total: total, fee: total - P, rest: rest, first: first };
+  }
+
+  /* 逆算：月々M円で組める分割対象額 */
+  function affordable(M, annualPct, n) {
+    var r = annualPct / 100 / 12;
+    if (M <= 0 || n <= 0) return 0;
+    if (r === 0) return M * n;
+    return M * (1 - Math.pow(1 + r, -n)) / r;
+  }
+
+  function duration(n) {
+    var y = Math.floor(n / 12), m = n % 12;
+    return (y ? y + "年" : "") + (m ? m + "ヶ月" : "");
+  }
+
+  function buildChips(container, values, target) {
+    container.innerHTML = values.map(function (v) {
+      return '<button class="chip" type="button" data-v="' + v + '">' +
+        (v === 0 ? "なし" : (v / 10000) + "万") + '</button>';
+    }).join("");
+    container.addEventListener("click", function (ev) {
+      var b = ev.target.closest(".chip");
+      if (!b) return;
+      target.value = parseInt(b.dataset.v, 10).toLocaleString("ja-JP");
+      render();
+    });
+  }
+
+  function formatOnInput(input) {
+    input.addEventListener("input", function () {
+      var before = input.value.slice(0, input.selectionStart || 0);
+      var kept = digits(before).length;
+      var d = digits(input.value);
+      var out = d ? parseInt(d, 10).toLocaleString("ja-JP") : "";
+      input.value = out;
+      var pos = out.length, seen = 0;
+      for (var i = 0; i < out.length; i++) {
+        if (/[0-9]/.test(out[i])) seen++;
+        if (seen === kept) { pos = i + 1; break; }
+      }
+      if (kept === 0) pos = 0;
+      try { input.setSelectionRange(pos, pos); } catch (e) {}
+      render();
+    });
+  }
+
+  function render() {
+    var gross = num(el.amount);
+    var down = num(el.down);
+    var rate = parseFloat((el.rate.value || "").replace(/[^0-9.]/g, ""));
+    if (!isFinite(rate) || rate < 0) rate = 0;
+
+    var over = down > gross;
+    if (over) down = gross;
+    el.warn.hidden = !over;
+    if (over) el.warn.textContent = "頭金が治療費を超えています。頭金は治療費と同額として計算しました。";
+
+    var P = Math.max(0, gross - down);
+    el.badgeRate.textContent = rate.toString();
+
+    /* 早見表 */
+    el.terms.innerHTML = TERMS.map(function (n) {
+      var p = plan(P, rate, n);
+      return '<button class="term" type="button" data-n="' + n + '" aria-pressed="' +
+        (n === selected) + '">' +
+        '<span class="n">' + n + '回</span>' +
+        '<span class="m">' + yen(p.rest) + '<small>円</small></span>' +
+        '<span class="f">手数料 ' + yen(p.fee) + '円</span>' +
+        '</button>';
+    }).join("");
+
+    /* 内訳 */
+    var p = plan(P, rate, selected);
+    el.planN.textContent = selected + "回払い（" + duration(selected) + "）";
+    el.monthly.innerHTML = yen(p.rest) + "<small>円</small>";
+    el.firstPay.innerHTML = p.first === p.rest
+      ? "毎月 同額のお支払いです。"
+      : "初回のみ <b>" + yen(p.first) + "円</b>、2回目以降は毎月 <b>" + yen(p.rest) + "円</b> です。";
+
+    var pct = p.total > 0 ? (p.principal / p.total) * 100 : 100;
+    el.barP.style.width = pct.toFixed(2) + "%";
+    el.barF.style.width = (100 - pct).toFixed(2) + "%";
+
+    var rows = [
+      ["治療費（税込）", gross, ""],
+      down > 0 ? ["頭金", -down, ""] : null,
+      down > 0 ? ["分割対象額", P, ""] : null,
+      ["分割払手数料", p.fee, "fee"],
+      ["総お支払い額", p.total + down, "total"]
+    ].filter(Boolean);
+
+    el.rows.innerHTML = rows.map(function (r) {
+      var v = r[1];
+      var text = (v < 0 ? "−" : "") + yen(Math.abs(v)) + "<small>円</small>";
+      return '<div class="row ' + r[2] + '"><dt>' + r[0] + '</dt><dd>' + text + '</dd></div>';
+    }).join("");
+
+    /* 逆算 */
+    var M = num(el.budget);
+    el.budgetGrid.innerHTML = REV_TERMS.map(function (n) {
+      var max = affordable(M, rate, n) + down;
+      max = Math.floor(max / 1000) * 1000;
+      return '<div class="budget"><div class="n">' + n + '回</div>' +
+        '<div class="v">' + yen(max) + '<small>円</small></div></div>';
+    }).join("");
+    el.revNote.textContent = "月々 " + yen(M) + "円 でお支払いいただく場合の、治療費の目安です。" +
+      (down > 0 ? "（頭金 " + yen(down) + "円 を含みます）" : "");
+
+    save();
+  }
+
+  el.terms.addEventListener("click", function (ev) {
+    var b = ev.target.closest(".term");
+    if (!b) return;
+    selected = parseInt(b.dataset.n, 10);
+    render();
+  });
+
+  document.querySelector('[data-rate]').addEventListener("click", function () {
+    el.rate.value = "5.8";
+    render();
+  });
+
+  buildChips(el.amountChips, [200000, 300000, 500000, 800000, 1000000, 1500000], el.amount);
+  buildChips(el.downChips, [0, 30000, 50000, 100000, 200000], el.down);
+  [el.amount, el.down, el.budget].forEach(formatOnInput);
+  el.rate.addEventListener("input", render);
+
+  render();
+</script>
+</body>
+</html>
