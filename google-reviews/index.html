@@ -219,6 +219,7 @@
   .row-actions{margin-left:auto;display:flex;gap:4px}
   .icon-btn{border:1px solid transparent;background:transparent;color:var(--ink-3);padding:4px 9px;font-size:12.5px}
   .icon-btn:hover{border-color:var(--line);color:var(--ink)}
+  .icon-btn.armed{color:var(--pending);border-color:var(--pending);font-weight:700}
   .badge-example{
     font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--ink-3);
     border:1px dashed var(--line);border-radius:5px;padding:1px 7px;
@@ -753,7 +754,8 @@
           ? '<span class="updated" title="最後に更新した日時">更新 ' + esc(stampLabel(e.updatedAt)) + "</span>"
           : "") +
         (isExample ? "" : '<span class="row-actions">' +
-          '<button class="icon-btn" data-act="edit">編集</button></span>') +
+          '<button class="icon-btn" data-act="edit">編集</button>' +
+          '<button class="icon-btn" data-act="del">削除</button></span>') +
         (e.note ? '<p class="note"><b>備考</b>' + esc(e.note) + "</p>" : "") +
       "</div></article>";
   }
@@ -816,6 +818,7 @@
     editingId = entry ? entry.id : null;
     $("#dlgTitle").textContent = entry ? "口コミを編集" : "口コミを追加";
     $("#delBtn").hidden = !entry;
+    resetDelBtn();
     var e = entry || { month: view.month, category: "ortho", status: "pending", stars: 5 };
     fillMonthOptions(form.month, e.month || view.month);
     form.postedAt.value = e.postedAt || "";
@@ -915,11 +918,25 @@
     setStatus("saving", "保存中…");
     save();
   });
+  var delArmed = null;
+  function resetDelBtn(){
+    clearTimeout(delArmed);
+    var b = $("#delBtn");
+    b.classList.remove("btn-warn");
+    b.textContent = "この口コミを削除";
+  }
   $("#delBtn").addEventListener("click", function(){
     if(!editingId) return;
     var target = entries.filter(function(x){ return x.id === editingId; })[0];
     if(!target) return;
-    if(!confirm("「" + (target.name || "この口コミ") + "」を削除します。よろしいですか？")) return;
+    var b = $("#delBtn");
+    if(!b.classList.contains("btn-warn")){
+      b.classList.add("btn-warn");
+      b.textContent = "もう一度押すと削除します";
+      delArmed = setTimeout(resetDelBtn, 4000);
+      return;
+    }
+    resetDelBtn();
     entries = entries.filter(function(x){ return x.id !== editingId; });
     removeStored(editingId);
     render();
@@ -938,9 +955,25 @@
     var id = card.getAttribute("data-id");
     var entry = entries.filter(function(x){ return x.id === id; })[0];
     if(!entry) return;
-    if(btn.getAttribute("data-act") === "edit"){
+    var act = btn.getAttribute("data-act");
+    if(act === "edit"){
       openForm(entry);
-    }else if(btn.getAttribute("data-act") === "toggle"){
+    }else if(act === "del"){
+      if(btn.classList.contains("armed")){
+        entries = entries.filter(function(x){ return x.id !== id; });
+        removeStored(id);
+        render();
+        toast("削除しました");
+        return;
+      }
+      btn.classList.add("armed");
+      btn.textContent = "もう一度で削除";
+      setTimeout(function(){
+        if(!btn.isConnected) return;
+        btn.classList.remove("armed");
+        btn.textContent = "削除";
+      }, 4000);
+    }else if(act === "toggle"){
       var next = Object.assign({}, entry, {
         status: entry.status === "done" ? "pending" : "done",
         updatedAt: new Date().toISOString()
