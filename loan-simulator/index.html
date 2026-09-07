@@ -23,6 +23,8 @@
     --accent-soft:#d8ebeb;
     --brass:#9a6b28;
     --brass-soft:#f0e3cd;
+    --chart-a:#0096a3;
+    --chart-b:#a2650f;
     --shadow:0 1px 2px rgba(18,32,41,.06), 0 8px 24px -16px rgba(18,32,41,.35);
     --sans:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Yu Gothic",system-ui,sans-serif;
     --mincho:"Zen Old Mincho","Hiragino Mincho ProN","Yu Mincho",serif;
@@ -44,6 +46,8 @@
       --accent-soft:#123c40;
       --brass:#d7a862;
       --brass-soft:#3b2e1a;
+      --chart-a:#2ea7b0;
+      --chart-b:#b8863c;
       --shadow:0 1px 2px rgba(0,0,0,.35), 0 10px 28px -18px rgba(0,0,0,.9);
     }
   }
@@ -62,6 +66,8 @@
     --accent-soft:#123c40;
     --brass:#d7a862;
     --brass-soft:#3b2e1a;
+    --chart-a:#2ea7b0;
+    --chart-b:#b8863c;
     --shadow:0 1px 2px rgba(0,0,0,.35), 0 10px 28px -18px rgba(0,0,0,.9);
   }
 
@@ -206,13 +212,13 @@
   .firstpay b{font-family:var(--num);font-variant-numeric:tabular-nums;font-weight:700;color:var(--ink)}
 
   .bar{display:flex;height:12px;border-radius:2px;overflow:hidden;margin:20px 0 9px;background:var(--surface-2)}
-  .bar .p{background:var(--accent)}
-  .bar .f{background:var(--brass)}
+  .bar .p{background:var(--chart-a)}
+  .bar .f{background:var(--chart-b);margin-left:2px}
   .legend{display:flex;gap:16px;font-size:11.5px;color:var(--ink-2);flex-wrap:wrap}
   .legend span{display:flex;align-items:center;gap:5px}
   .swatch{width:9px;height:9px;border-radius:1px;flex:none}
-  .swatch.p{background:var(--accent)}
-  .swatch.f{background:var(--brass)}
+  .swatch.p{background:var(--chart-a)}
+  .swatch.f{background:var(--chart-b)}
 
   .rows{margin:18px 0 0;border-top:1px solid var(--line-soft)}
   .row{
@@ -225,10 +231,87 @@
     font-weight:600;font-size:16px;white-space:nowrap;
   }
   .row dd small{font-size:12px;font-weight:500;margin-left:1px;color:var(--ink-2)}
-  .row.fee dd{color:var(--brass)}
+  .row.fee dt{display:flex;align-items:center;gap:6px}
+  .row.fee dt::before{
+    content:"";width:9px;height:9px;border-radius:1px;background:var(--chart-b);flex:none;
+  }
   .row.total{border-bottom:0;padding-top:12px}
   .row.total dt{color:var(--ink);font-weight:700}
   .row.total dd{font-size:21px;font-weight:700}
+
+
+  /* ---------- 他社比較 ---------- */
+  .compare{
+    margin-top:30px;background:var(--surface);border:1px solid var(--line);
+    border-radius:3px;padding:20px 22px 20px;box-shadow:var(--shadow);
+  }
+  .cmp-lede{
+    margin:0 0 18px;font-size:14.5px;line-height:1.85;color:var(--ink-2);max-width:62em;
+  }
+  .cmp-lede b{
+    color:var(--ink);font-weight:700;
+    font-variant-numeric:tabular-nums;
+  }
+  .cmp-lede .gap{
+    font-family:var(--num);font-variant-numeric:tabular-nums;
+    font-weight:700;font-size:1.12em;color:var(--ink);
+    border-bottom:2px solid var(--chart-b);padding-bottom:1px;
+  }
+  .cmp-rows{display:grid;gap:6px}
+  .cmp-row{
+    display:grid;align-items:center;gap:8px 14px;
+    grid-template-columns:minmax(160px,1.3fr) 84px 116px minmax(150px,2fr) 104px;
+    padding:9px 12px 9px 10px;border-left:3px solid transparent;border-radius:2px;
+  }
+  .cmp-row:nth-child(odd){background:var(--surface-2)}
+  .cmp-row.base{border-left-color:var(--chart-a);background:var(--accent-soft)}
+  .cmp-name{min-width:0}
+  .cmp-name b{display:block;font-size:14px;font-weight:700;line-height:1.4}
+  .cmp-name span{display:block;font-size:11px;color:var(--ink-3);line-height:1.5}
+  .cmp-name .tag{
+    display:inline-block;font-size:10px;font-weight:700;letter-spacing:.08em;
+    background:var(--chart-a);color:#fff;padding:1px 6px;border-radius:2px;margin-bottom:3px;
+  }
+  .cmp-rate{display:flex;align-items:baseline;gap:2px;justify-content:flex-end}
+  .cmp-rate input{
+    width:44px;text-align:right;background:transparent;color:var(--ink);
+    border:0;border-bottom:1px dashed var(--line);padding:0 1px 1px;
+    font-family:var(--num);font-variant-numeric:tabular-nums;font-size:16px;font-weight:600;
+  }
+  .cmp-rate input:focus{outline:none;border-bottom:1px solid var(--accent)}
+  .cmp-rate .fixed{
+    font-family:var(--num);font-variant-numeric:tabular-nums;font-size:16px;font-weight:700;
+  }
+  .cmp-rate .pc{font-size:12px;color:var(--ink-2)}
+  .cmp-monthly{
+    text-align:right;font-family:var(--num);font-variant-numeric:tabular-nums;
+    font-size:17px;font-weight:600;white-space:nowrap;
+  }
+  .cmp-monthly small{font-size:11px;font-weight:500;color:var(--ink-2);margin-left:1px}
+  .cmp-bar{min-width:0}
+  .cmp-track{height:14px;background:var(--line-soft);border-radius:2px;overflow:hidden}
+  .cmp-fill{height:100%;border-radius:0 4px 4px 0;background:var(--chart-b)}
+  .cmp-row.base .cmp-fill{background:var(--chart-a)}
+  .cmp-vals{
+    display:flex;gap:10px;align-items:baseline;margin-top:4px;
+    font-family:var(--num);font-variant-numeric:tabular-nums;white-space:nowrap;
+  }
+  .cmp-vals .fee{font-size:15px;font-weight:700}
+  .cmp-vals .tot{font-size:11px;color:var(--ink-3);font-weight:500}
+  .cmp-diff{text-align:right}
+  .cmp-diff .pill{
+    display:inline-block;font-family:var(--num);font-variant-numeric:tabular-nums;
+    font-size:13.5px;font-weight:700;padding:3px 9px;border-radius:2px;white-space:nowrap;
+    background:var(--brass-soft);color:var(--ink);
+  }
+  .cmp-diff .pill.zero{background:transparent;color:var(--ink-3);font-weight:600;padding-left:0}
+  .cmp-diff .pill.less{background:var(--accent-soft)}
+  .cmp-note{margin:16px 0 0;font-size:11.5px;line-height:1.8;color:var(--ink-3);max-width:70em}
+  @media (max-width:780px){
+    .cmp-row{grid-template-columns:1fr 84px 116px;grid-template-areas:"name rate monthly" "bar bar bar" "diff diff diff"}
+    .cmp-name{grid-area:name}.cmp-rate{grid-area:rate}.cmp-monthly{grid-area:monthly}
+    .cmp-bar{grid-area:bar}.cmp-diff{grid-area:diff;text-align:left}
+  }
 
   /* ---------- 逆算 ---------- */
   .reverse{
@@ -344,6 +427,17 @@
     </section>
   </div>
 
+
+  <section class="compare" aria-labelledby="cmpHead">
+    <p class="eyebrow" id="cmpHead">他社とくらべると</p>
+    <p class="cmp-lede" id="cmpLede"></p>
+    <div class="cmp-rows" id="cmpRows"></div>
+    <p class="cmp-note">
+      比較に用いた年率は、国内で一般的とされる水準の目安であり、特定の金融機関・商品の条件を示すものではありません。
+      実際の年率および手数料は、各社の商品内容とお客様の審査結果により異なります。年率の数値は画面上で変更できます。
+    </p>
+  </section>
+
   <section class="reverse" aria-labelledby="revHead">
     <p class="eyebrow" id="revHead">月々のご予算から逆算する</p>
     <div class="reverse-head">
@@ -361,13 +455,21 @@
 
   <p class="note">
     <b>ご注意</b>　本表は元利均等方式による概算です。実際のお支払い回数・金額・手数料は、株式会社アプラスの審査結果およびご契約内容により決定されます。
-    金額は円単位で計算し、端数は初回のお支払いで調整しています。ボーナス併用払いには対応していません。実質年率・取扱回数は変更となる場合がありますので、最新の条件をご確認ください。
+    金額は円単位で計算し、端数は初回のお支払いで調整しています。ボーナス併用払いには対応していません。実質年率・取扱回数は変更となる場合がありますので、最新の条件をご確認ください。他社との比較にお示しした年率は一般的な水準の目安です。
   </p>
 </div>
 
 <script>
   var TERMS = [3,6,10,12,18,24,30,36,42,48,60,72,84,96,120];
   var REV_TERMS = [12,24,36,48,60,84,120];
+  /* 比較用の年率は「一般的とされる水準の目安」。画面上で変更できる */
+  var COMPARE = [
+    { key:"aplus", base:true, name:"アプラス",                     desc:"当院ご提携のデンタルローン" },
+    { key:"other", rate:8.0,  name:"他社のデンタルローン・医療ローン", desc:"5〜10%程度が一般的" },
+    { key:"bank",  rate:10.0, name:"銀行のフリーローン・多目的ローン", desc:"5〜14%程度が一般的" },
+    { key:"card",  rate:15.0, name:"クレジットカードの分割払い",       desc:"12〜15%程度が一般的" },
+    { key:"loan",  rate:18.0, name:"カードローン・キャッシング",       desc:"14〜18%程度が一般的" }
+  ];
   var STORE = "stella-dental-loan";
 
   var el = {
@@ -386,6 +488,8 @@
     warn: document.getElementById("warn"),
     budgetGrid: document.getElementById("budgetGrid"),
     revNote: document.getElementById("revNote"),
+    cmpRows: document.getElementById("cmpRows"),
+    cmpLede: document.getElementById("cmpLede"),
     amountChips: document.getElementById("amountChips"),
     downChips: document.getElementById("downChips")
   };
@@ -396,11 +500,16 @@
     var saved = JSON.parse(localStorage.getItem(STORE) || "{}");
     if (saved.rate) el.rate.value = saved.rate;
     if (saved.term && TERMS.indexOf(saved.term) > -1) selected = saved.term;
+    if (saved.cmp) COMPARE.forEach(function (c) {
+      if (!c.base && typeof saved.cmp[c.key] === "number") c.rate = saved.cmp[c.key];
+    });
   } catch (e) {}
 
   function save() {
     try {
-      localStorage.setItem(STORE, JSON.stringify({ rate: el.rate.value, term: selected }));
+      var cmp = {};
+      COMPARE.forEach(function (c) { if (!c.base) cmp[c.key] = c.rate; });
+      localStorage.setItem(STORE, JSON.stringify({ rate: el.rate.value, term: selected, cmp: cmp }));
     } catch (e) {}
   }
 
@@ -468,6 +577,98 @@
     });
   }
 
+
+  /* ---------- 他社比較 ---------- */
+  var cmpRefs = [];
+
+  function buildCompare() {
+    el.cmpRows.innerHTML = COMPARE.map(function (c) {
+      var rateCell = c.base
+        ? '<span class="fixed" data-fixed></span><span class="pc">%</span>'
+        : '<input type="text" inputmode="decimal" autocomplete="off" data-key="' + c.key +
+          '" value="' + c.rate.toFixed(1) + '" aria-label="' + c.name + ' の実質年率"><span class="pc">%</span>';
+      return '<div class="cmp-row' + (c.base ? ' base' : '') + '">' +
+        '<div class="cmp-name">' + (c.base ? '<span class="tag">当院ご提携</span>' : '') +
+          '<b>' + c.name + '</b><span>' + c.desc + '</span></div>' +
+        '<div class="cmp-rate">' + rateCell + '</div>' +
+        '<div class="cmp-monthly" data-monthly></div>' +
+        '<div class="cmp-bar"><div class="cmp-track"><div class="cmp-fill" data-fill style="width:0"></div></div>' +
+          '<div class="cmp-vals"><span class="fee" data-fee></span><span class="tot" data-tot></span></div></div>' +
+        '<div class="cmp-diff" data-diff></div>' +
+      '</div>';
+    }).join("");
+
+    cmpRefs = Array.prototype.map.call(el.cmpRows.children, function (row) {
+      return {
+        row: row,
+        fixed: row.querySelector("[data-fixed]"),
+        monthly: row.querySelector("[data-monthly]"),
+        fill: row.querySelector("[data-fill]"),
+        fee: row.querySelector("[data-fee]"),
+        tot: row.querySelector("[data-tot]"),
+        diff: row.querySelector("[data-diff]")
+      };
+    });
+
+    el.cmpRows.addEventListener("input", function (ev) {
+      var input = ev.target.closest("input[data-key]");
+      if (!input) return;
+      var c = COMPARE.filter(function (x) { return x.key === input.dataset.key; })[0];
+      var v = parseFloat((input.value || "").replace(/[^0-9.]/g, ""));
+      c.rate = isFinite(v) && v >= 0 ? v : 0;
+      render();
+    });
+  }
+
+  function updateCompare(gross, down, P, rate) {
+    var results = COMPARE.map(function (c) {
+      var r = c.base ? rate : c.rate;
+      var pl = plan(P, r, selected);
+      return { c: c, r: r, pl: pl };
+    });
+
+    var maxFee = Math.max.apply(null, results.map(function (x) { return x.pl.fee; }));
+    var baseFee = results[0].pl.fee;
+
+    results.forEach(function (x, i) {
+      var ref = cmpRefs[i];
+      if (ref.fixed) ref.fixed.textContent = x.r.toString();
+      ref.monthly.innerHTML = yen(x.pl.rest) + "<small>円／月</small>";
+      ref.fill.style.width = (maxFee > 0 ? (x.pl.fee / maxFee) * 100 : 0).toFixed(2) + "%";
+      ref.fee.innerHTML = yen(x.pl.fee) + "<small>円</small>";
+      ref.tot.textContent = "総額 " + yen(x.pl.total + down) + "円";
+      ref.row.title = x.c.name + "：初回 " + yen(x.pl.first) + "円、2回目以降 " +
+        yen(x.pl.rest) + "円（" + selected + "回）";
+
+      var d = x.pl.fee - baseFee;
+      if (x.c.base) {
+        ref.diff.innerHTML = '<span class="pill zero">基準</span>';
+      } else if (d > 0) {
+        ref.diff.innerHTML = '<span class="pill">+' + yen(d) + '円</span>';
+      } else if (d < 0) {
+        ref.diff.innerHTML = '<span class="pill less">−' + yen(-d) + '円</span>';
+      } else {
+        ref.diff.innerHTML = '<span class="pill zero">同額</span>';
+      }
+    });
+
+    var card = results.filter(function (x) { return x.c.key === "card"; })[0];
+    var gap = card.pl.fee - baseFee;
+    if (P <= 0) {
+      el.cmpLede.textContent = "治療費を入力すると、他社でお借りした場合の手数料と比べられます。";
+    } else if (gap > 0) {
+      el.cmpLede.innerHTML =
+        "治療費 <b>" + yen(gross) + "円</b> を <b>" + selected + "回</b> でお支払いの場合、" +
+        "アプラス（年率 " + rate.toFixed(1) + "%）の分割払手数料は <b>" + yen(baseFee) + "円</b>。" +
+        "同じ回数をクレジットカードの分割払い（年率 " + card.r + "%）でお支払いになると <b>" +
+        yen(card.pl.fee) + "円</b> かかり、その差は <span class=\"gap\">" + yen(gap) + "円</span> です。";
+    } else {
+      el.cmpLede.innerHTML =
+        "治療費 <b>" + yen(gross) + "円</b> を <b>" + selected + "回</b> でお支払いの場合、" +
+        "アプラス（年率 " + rate.toFixed(1) + "%）の分割払手数料は <b>" + yen(baseFee) + "円</b> です。";
+    }
+  }
+
   function render() {
     var gross = num(el.amount);
     var down = num(el.down);
@@ -519,6 +720,8 @@
       return '<div class="row ' + r[2] + '"><dt>' + r[0] + '</dt><dd>' + text + '</dd></div>';
     }).join("");
 
+    updateCompare(gross, down, P, rate);
+
     /* 逆算 */
     var M = num(el.budget);
     el.budgetGrid.innerHTML = REV_TERMS.map(function (n) {
@@ -545,6 +748,7 @@
     render();
   });
 
+  buildCompare();
   buildChips(el.amountChips, [200000, 300000, 500000, 800000, 1000000, 1500000], el.amount);
   buildChips(el.downChips, [0, 30000, 50000, 100000, 200000], el.down);
   [el.amount, el.down, el.budget].forEach(formatOnInput);
