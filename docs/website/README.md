@@ -18,6 +18,7 @@
 | [05-approval-draft.md](05-approval-draft.md) | 院長への確認依頼用（一覧＋本文のみ・そのまま貼り付け可） | 院長 |
 | [05-approval-print.html](05-approval-print.html) | 院長への確認依頼用のPDF元データ（A4印刷用・記入欄つき） | 院長 |
 | [06-seo-meo.md](06-seo-meo.md) | SEO・MEO設定書（キーワード、タグ、構造化データ、Googleビジネスプロフィール） | 制作会社＋医院 |
+| [07-checklist.md](07-checklist.md) | 記載が必要な項目のチェックリスト | 医院内で使用 |
 
 ## 医院でご記入が必要な箇所
 
