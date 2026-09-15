@@ -1,0 +1,340 @@
+<title>ロイ様 ご紹介のお取り決め</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Barlow+Semi+Condensed:wght@400;500;600&display=swap">
+<style>
+:root{
+  --ground:#FBFAF8; --surface:#FFFFFF; --surface-tint:#F4F1EB;
+  --ink:#14181D; --ink-soft:#3C444C; --muted:#6C7278; --faint:#9AA0A5;
+  --brass:#9A7433; --brass-soft:#EFE4CE;
+  --rule:#E4E0D7; --rule-strong:#CFC9BC;
+  --pos:#1B5443; --posface:#1B5443;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0F1317; --surface:#161B21; --surface-tint:#1C2229;
+    --ink:#EAE7E1; --ink-soft:#C3C7CB; --muted:#98A0A7; --faint:#727A81;
+    --brass:#D8B57C; --brass-soft:#2C2519;
+    --rule:#272D34; --rule-strong:#3A424A;
+    --pos:#7FC9AE; --posface:#7FC9AE;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0F1317; --surface:#161B21; --surface-tint:#1C2229;
+  --ink:#EAE7E1; --ink-soft:#C3C7CB; --muted:#98A0A7; --faint:#727A81;
+  --brass:#D8B57C; --brass-soft:#2C2519;
+  --rule:#272D34; --rule-strong:#3A424A;
+  --pos:#7FC9AE; --posface:#7FC9AE;
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--ground); color:var(--ink);
+  font-family:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Yu Gothic",system-ui,sans-serif;
+  font-size:14.5px; line-height:1.85; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:860px;margin:0 auto;padding:0 26px 88px}
+
+/* ---- letterhead ---- */
+.masthead{padding:54px 0 0}
+.addr{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 20px;align-items:baseline}
+.to{font-family:"Shippori Mincho",serif;font-size:17px;font-weight:600;letter-spacing:.04em}
+.to small{display:block;font-family:"Zen Kaku Gothic New",sans-serif;font-size:11px;
+  letter-spacing:.16em;color:var(--muted);font-weight:700;margin-bottom:4px}
+.from{text-align:right;font-size:11.5px;color:var(--muted);line-height:1.7}
+.from b{display:block;font-family:"Shippori Mincho",serif;font-size:14px;color:var(--ink);
+  letter-spacing:.08em;font-weight:600}
+.rule-brass{height:1px;background:var(--brass);opacity:.5;margin:18px 0 26px}
+h1{
+  font-family:"Shippori Mincho",serif;font-weight:600;
+  font-size:clamp(24px,4.2vw,32px);line-height:1.35;margin:0;text-wrap:balance;
+}
+.greet{margin:22px 0 0;color:var(--ink-soft);max-width:62ch}
+.greet strong{color:var(--ink);font-weight:700}
+
+/* ---- two routes ---- */
+.routes{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:26px}
+.route{border:1px solid var(--rule);border-top:3px solid var(--brass);border-radius:2px;
+  padding:19px 21px;background:var(--surface)}
+.route .rn{font-size:11px;letter-spacing:.2em;color:var(--brass);font-weight:700}
+.route h3{font-family:"Shippori Mincho",serif;font-size:17px;font-weight:600;margin:7px 0 0;letter-spacing:.03em}
+.route .who{font-size:12.5px;color:var(--muted);margin-top:3px}
+.route dl{margin:14px 0 0;display:grid;grid-template-columns:auto 1fr;gap:7px 12px;font-size:13.5px}
+.route dt{color:var(--muted);white-space:nowrap}
+.route dd{margin:0;color:var(--ink);font-weight:700;text-align:right}
+.route dd.none{color:var(--muted);font-weight:400}
+
+section{margin-top:42px}
+h2{
+  font-family:"Shippori Mincho",serif;font-weight:600;font-size:19px;margin:0;
+  border-bottom:1px solid var(--rule-strong);padding-bottom:8px;letter-spacing:.03em;
+}
+p{margin:15px 0 0;color:var(--ink-soft)}
+.sub-head{margin:24px 0 0;font-size:11.5px;letter-spacing:.2em;color:var(--muted);font-weight:700}
+
+/* ---- tables ---- */
+.tw{overflow-x:auto;margin-top:11px}
+table{width:100%;border-collapse:collapse;min-width:480px;font-size:14px}
+th{
+  font-size:10.5px;letter-spacing:.1em;color:var(--faint);font-weight:700;text-align:right;
+  padding:7px 0 7px 14px;border-bottom:1px solid var(--rule-strong);white-space:nowrap;
+}
+th:first-child{text-align:left;padding-left:0}
+td{padding:10px 0 10px 14px;border-bottom:1px solid var(--rule);text-align:right;
+  font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--ink-soft)}
+td:first-child{text-align:left;color:var(--ink);padding-left:0;white-space:normal}
+td.was{color:var(--faint)}
+td.a{font-family:"Barlow Semi Condensed",sans-serif;font-size:18px;font-weight:600;color:var(--ink)}
+td.b{font-family:"Barlow Semi Condensed",sans-serif;font-size:18px;font-weight:600;color:var(--posface)}
+.cap{font-size:12px;color:var(--muted);margin-top:9px;line-height:1.75}
+
+/* ---- examples ---- */
+.egs{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:13px;margin-top:16px}
+.eg{background:var(--surface);border:1px solid var(--rule);border-radius:2px;padding:17px 19px}
+.eg .t{font-size:12.5px;color:var(--muted);line-height:1.6}
+.eg .row{display:flex;justify-content:space-between;align-items:baseline;margin-top:9px;
+  font-size:12px;color:var(--muted)}
+.eg .row b{font-family:"Barlow Semi Condensed",sans-serif;font-variant-numeric:tabular-nums;
+  font-size:21px;font-weight:600;color:var(--ink)}
+.eg .row.fee b{color:var(--posface)}
+
+/* ---- flow ---- */
+ol.flow{margin:15px 0 0;padding:0;list-style:none;display:grid;gap:11px;counter-reset:s}
+ol.flow li{position:relative;padding-left:32px;font-size:13.5px;color:var(--ink-soft);line-height:1.8}
+ol.flow li::before{
+  counter-increment:s;content:counter(s);
+  position:absolute;left:0;top:3px;width:21px;height:21px;border-radius:50%;
+  background:var(--brass-soft);color:var(--brass);border:1px solid var(--brass);
+  font-family:"Barlow Semi Condensed",sans-serif;font-size:12px;font-weight:600;
+  display:flex;align-items:center;justify-content:center;
+}
+ol.flow li strong{color:var(--ink);font-weight:700}
+
+ul.plain{margin:15px 0 0;padding:0;list-style:none;display:grid;gap:9px}
+ul.plain li{position:relative;padding-left:19px;font-size:13.5px;color:var(--ink-soft);line-height:1.8}
+ul.plain li::before{content:"";position:absolute;left:2px;top:11px;width:5px;height:5px;
+  background:var(--brass);border-radius:50%}
+ul.plain li strong{color:var(--ink);font-weight:700}
+
+.ask{margin-top:16px;background:var(--surface-tint);border:1px solid var(--rule);border-radius:2px;padding:22px 24px}
+.ask ul{margin:0;padding:0;list-style:none;display:grid;gap:12px}
+.ask li{font-size:13.5px;color:var(--ink-soft);line-height:1.7}
+.ask li b{display:block;color:var(--ink);font-weight:700;font-size:14px}
+.fill{display:inline-block;min-width:170px;border-bottom:1px dashed var(--brass);
+  color:var(--brass);font-size:12px;font-weight:700;padding:0 6px;margin-top:3px}
+
+footer{margin-top:46px;padding-top:20px;border-top:1px solid var(--rule);
+  font-size:12px;color:var(--muted);line-height:1.9}
+footer b{font-family:"Shippori Mincho",serif;font-size:14px;color:var(--ink);letter-spacing:.08em}
+
+@media (max-width:640px){
+  .wrap{padding:0 18px 64px}
+  .masthead{padding-top:36px}
+  .routes{grid-template-columns:1fr}
+  .from{text-align:left}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ---------- print / PDF ---------- */
+@page{ size:A4 portrait; margin:13mm 13mm 10mm; }
+@media print{
+  :root{
+    --ground:#FFF; --surface:#FFF; --surface-tint:#F6F3ED;
+    --ink:#14181D; --ink-soft:#3C444C; --muted:#5F656B; --faint:#8A9096;
+    --brass:#8A6829; --brass-soft:#F3EADA;
+    --rule:#DCD7CC; --rule-strong:#C2BBAC; --pos:#1B5443; --posface:#176048;
+  }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  body{ background:#FFF; font-size:10px; line-height:1.7; }
+  .wrap{ max-width:none; padding:0; }
+  .masthead{ padding-top:0; }
+  .to{ font-size:13px; } .to small{ font-size:8.5px; }
+  .from{ font-size:8.5px; } .from b{ font-size:11px; }
+  .rule-brass{ margin:11px 0 16px; }
+  h1{ font-size:20px; }
+  .greet{ margin-top:13px; font-size:10px; max-width:none; }
+
+  .routes{ margin-top:14px; gap:10px; }
+  .route{ padding:12px 14px; }
+  .route .rn{ font-size:8.5px; }
+  .route h3{ font-size:13px; margin-top:4px; }
+  .route .who{ font-size:9px; }
+  .route dl{ margin-top:9px; gap:4px 9px; font-size:9.5px; }
+
+  section{ margin-top:19px; }
+  h2{ font-size:14px; padding-bottom:6px; }
+  p{ margin-top:9px; font-size:10px; }
+  .sub-head{ margin-top:13px; font-size:8.5px; }
+
+  .tw{ overflow:visible; margin-top:7px; }
+  table{ min-width:0; font-size:9.5px; }
+  th{ font-size:8.5px; padding:5px 0 5px 10px; }
+  td{ padding:6px 0 6px 10px; }
+  td.a, td.b{ font-size:13px; }
+  .cap{ font-size:8.5px; margin-top:6px; }
+
+  .egs{ margin-top:10px; gap:9px; grid-template-columns:repeat(3,1fr); }
+  .eg{ padding:11px 13px; }
+  .eg .t{ font-size:9px; }
+  .eg .row{ margin-top:5px; font-size:8.5px; }
+  .eg .row b{ font-size:15px; }
+
+  ol.flow{ margin-top:9px; gap:6px; }
+  ol.flow li{ font-size:9.5px; padding-left:25px; line-height:1.7; }
+  ol.flow li::before{ width:17px; height:17px; font-size:9.5px; top:2px; }
+  ul.plain{ margin-top:9px; gap:5px; }
+  ul.plain li{ font-size:9.5px; padding-left:15px; line-height:1.7; }
+  ul.plain li::before{ top:7px; width:4px; height:4px; }
+
+  .ask{ margin-top:10px; padding:13px 15px; }
+  .ask ul{ gap:8px; }
+  .ask li{ font-size:9.5px; line-height:1.6; }
+  .ask li b{ font-size:10px; }
+  .fill{ font-size:9px; min-width:140px; }
+  footer{ margin-top:18px; padding-top:11px; font-size:8.5px; line-height:1.8; }
+  footer b{ font-size:11px; }
+
+  section, .route, .eg, .ask, tr, ol.flow li, .routes, .egs{ break-inside:avoid; page-break-inside:avoid; }
+  h2, .sub-head{ break-after:avoid; page-break-after:avoid; }
+}
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <div class="addr">
+    <div class="to"><small>暁の城</small>ロイ 様</div>
+    <div class="from">
+      <b>博多ステラ歯科</b>
+      2026年9月
+    </div>
+  </div>
+  <div class="rule-brass"></div>
+
+  <h1>ご紹介のお取り決めについて</h1>
+
+  <p class="greet">
+    いつも患者様をご紹介いただき、誠にありがとうございます。
+    かねてよりお話をいただいておりました件について、<strong>毎月定額でお支払いしている紹介料を終了し、
+    ご紹介1件ごとのお取り決めに変更</strong>させていただきたく、内容をまとめました。
+    ご確認のうえ、ご意見をお聞かせください。
+  </p>
+
+  <div class="routes">
+    <div class="route">
+      <div class="rn">ルート A</div>
+      <h3>ご本人が安くなる</h3>
+      <div class="who">ロイ様と親しい方に</div>
+      <dl>
+        <dt>ご紹介の方</dt><dd>20％OFF</dd>
+        <dt>ロイ様へ</dt><dd class="none">なし</dd>
+      </dl>
+    </div>
+    <div class="route">
+      <div class="rn">ルート B</div>
+      <h3>ロイ様へ紹介料</h3>
+      <div class="who">そのほかの方に</div>
+      <dl>
+        <dt>ご紹介の方</dt><dd>通常料金</dd>
+        <dt>ロイ様へ</dt><dd>治療費の20％</dd>
+      </dl>
+    </div>
+  </div>
+
+  <p class="greet"><strong>どちらにするかは、ご紹介いただく時点でロイ様にお決めいただきます。</strong>
+    値引きする分をそのままお渡しする形にしておりますので、当院の負担はA・Bどちらでも変わりません。
+    そのつどご都合のよいほうをお選びいただけます。</p>
+</header>
+
+<section>
+  <h2>金額のご案内</h2>
+  <p>ルートAの「ご紹介価格」と、ルートBの「紹介料」は同額です。すべて税込。</p>
+
+  <div class="sub-head">セラミック治療（1本あたり）</div>
+  <div class="tw">
+    <table>
+      <thead><tr><th>治療メニュー</th><th>通常料金</th><th>A ご紹介価格</th><th>B 紹介料</th></tr></thead>
+      <tbody>
+        <tr><td>ジルコニアセラミック S級（前歯）</td><td class="was">143,000</td><td class="a">114,400</td><td class="b">28,600</td></tr>
+        <tr><td>ジルコニアセラミック ノーマル（前歯）</td><td class="was">110,000</td><td class="a">88,000</td><td class="b">22,000</td></tr>
+        <tr><td>ラミネートベニア（前歯）</td><td class="was">110,000</td><td class="a">88,000</td><td class="b">22,000</td></tr>
+        <tr><td>スーパーエナメル（前歯）</td><td class="was">99,000</td><td class="a">79,200</td><td class="b">19,800</td></tr>
+        <tr><td>e-maxクラウン（前歯）</td><td class="was">99,000</td><td class="a">79,200</td><td class="b">19,800</td></tr>
+        <tr><td>フルジルコニアクラウン（奥歯）</td><td class="was">99,000</td><td class="a">79,200</td><td class="b">19,800</td></tr>
+        <tr><td>e-maxクラウン（奥歯）</td><td class="was">99,000</td><td class="a">79,200</td><td class="b">19,800</td></tr>
+        <tr><td>フルジルコニアインレー（詰め物）</td><td class="was">55,000</td><td class="a">44,000</td><td class="b">11,000</td></tr>
+        <tr><td>e-maxインレー（詰め物）</td><td class="was">55,000</td><td class="a">44,000</td><td class="b">11,000</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="sub-head">マウスピース矯正（インビザライン）</div>
+  <div class="tw">
+    <table>
+      <thead><tr><th>内容</th><th>金額</th><th>A ご紹介の方</th><th>B 紹介料</th></tr></thead>
+      <tbody>
+        <tr><td>矯正検査・診断料<span style="display:block;font-size:12px;color:var(--muted)">レントゲン・口腔内スキャン・治療計画の作成。全プラン共通</span></td>
+          <td class="was">44,000</td><td class="a">無料</td><td class="b">44,000</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cap">矯正は治療費（44万〜88万円）そのものは変わりません。そのかわり、別途いただいている検査・診断料 44,000円を、
+    ルートAではご紹介の方に無料、ルートBではロイ様への紹介料とさせていただきます。</div>
+
+  <div class="sub-head">まとめて治療された場合</div>
+  <div class="egs">
+    <div class="eg">
+      <div class="t">上の前歯6本<br>ジルコニアセラミック S級</div>
+      <div class="row">A ご紹介価格 <b>686,400</b></div>
+      <div class="row fee">B 紹介料 <b>171,600</b></div>
+    </div>
+    <div class="eg">
+      <div class="t">上の前歯6本<br>ジルコニアセラミック ノーマル</div>
+      <div class="row">A ご紹介価格 <b>528,000</b></div>
+      <div class="row fee">B 紹介料 <b>132,000</b></div>
+    </div>
+    <div class="eg">
+      <div class="t">奥歯のかぶせ物3本<br>フルジルコニアクラウン</div>
+      <div class="row">A ご紹介価格 <b>237,600</b></div>
+      <div class="row fee">B 紹介料 <b>59,400</b></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>ご紹介からお支払いまでの流れ</h2>
+  <ol class="flow">
+    <li>ロイ様から当院へ、<strong>お名前とルート（AかB）</strong>をご連絡ください。LINEで結構です。</li>
+    <li>ご本人が来院され、<strong>治療内容が決まった時点</strong>で金額が確定します。</li>
+    <li>ルートAの方には、その場でご紹介価格を適用します。</li>
+    <li>ルートBの分は<strong>月末で集計</strong>し、翌月 <span class="fill">　　日</span> までにお振込みします。</li>
+    <li>毎月、その月のご紹介一覧（お名前・治療内容・紹介料）をお送りします。</li>
+  </ol>
+  <ul class="plain">
+    <li><strong>紹介料は治療が完了し、お支払いが済んだ分</strong>を対象とさせてください。分割払いの方は、完済後のお支払いとなります。</li>
+    <li>キャンセル・中断された場合は対象外となります。</li>
+    <li><strong>ルートAの方にのみ</strong>、ご紹介価格の載った料金表をお渡しください。ルートBの方は通常料金でのご案内となります。</li>
+  </ul>
+</section>
+
+<section>
+  <h2>ご確認・ご連絡いただきたいこと</h2>
+  <div class="ask">
+    <ul>
+      <li><b>お振込先</b>金融機関・支店・口座種別・口座番号・口座名義　<span class="fill">　</span></li>
+      <li><b>インボイス（適格請求書）の登録番号</b>ご登録がある場合はお知らせください。ない場合もお取引に支障はありません。　<span class="fill">　</span></li>
+      <li><b>お支払いの締め日・振込日</b>当院からは月末締め・翌月中旬のお振込を考えております。ご都合はいかがでしょうか。　<span class="fill">　</span></li>
+      <li><b>開始時期</b><span class="fill">　年　月　日　</span>からを予定しております。</li>
+    </ul>
+  </div>
+  <p>まずは半年間お試しいただき、そのうえで継続のご相談をさせていただければと思います。
+    ご不明な点やご要望がございましたら、遠慮なくお申し付けください。</p>
+</section>
+
+<footer>
+  <b>博多ステラ歯科</b><br>
+  ご連絡先　<span class="fill">電話番号／LINE等をご記入ください</span><br>
+  ※ ご紹介価格は自費診療のみが対象です。保険診療は制度上、割引の対象にできませんのでご了承ください。
+</footer>
+
+</div>
