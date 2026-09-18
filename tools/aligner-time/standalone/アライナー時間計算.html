@@ -373,7 +373,7 @@
       <span class="slot" id="slot" aria-live="polite">60</span><span class="slot-unit">分</span>
     </div>
     <div class="summary-sub">
-      処置時間の合計 <b id="rawTotal">46分</b><br>
+      処置時間の合計 <b id="rawTotal">55分</b><br>
       <span id="roundNote"></span>
       <span id="doctorNote" class="doctor-note" hidden></span>
     </div>
@@ -389,7 +389,7 @@
     <div id="procs"></div>
     <div class="totals">
       <span>基本（お渡し・チェック・説明） <b id="baseMin">10分</b></span>
-      <span>処置 <b id="procMin">36分</b></span>
+      <span>処置 <b id="procMin">45分</b></span>
       <button class="preset" id="resetBtn" type="button">入力をリセット</button>
     </div>
   </section>
@@ -430,9 +430,22 @@
               <label for="cfgBtnOn">ボタンセット（分／1個）</label>
               <input type="number" id="cfgBtnOn" min="0" step="0.5">
             </div>
+          </div>
+        </div>
+        <div class="set-group">
+          <span class="set-title">IPR（か所数で決まる）</span>
+          <div class="grid">
             <div class="field">
-              <label for="cfgIpr">IPR（分／1か所）</label>
-              <input type="number" id="cfgIpr" min="0" step="0.5">
+              <label for="cfgIprThreshold">少ない方の上限（か所）</label>
+              <input type="number" id="cfgIprThreshold" min="1" step="1">
+            </div>
+            <div class="field">
+              <label for="cfgIprLow">上限まで（分）</label>
+              <input type="number" id="cfgIprLow" min="0" step="5">
+            </div>
+            <div class="field">
+              <label for="cfgIprHigh">それより多い（分）</label>
+              <input type="number" id="cfgIprHigh" min="0" step="5">
             </div>
           </div>
         </div>
@@ -504,7 +517,9 @@
     attOnPerBlock: 7.5,
     btnOffPerBlock: 7.5,
     btnOnPer: 5,
-    iprPer: 3,
+    iprThreshold: 5,
+    iprLow: 15,
+    iprHigh: 30,
     step: 15,
     minSlot: 15
   };
@@ -550,7 +565,9 @@
     ["cfgAttOn", "attOnPerBlock"],
     ["cfgBtnOff", "btnOffPerBlock"],
     ["cfgBtnOn", "btnOnPer"],
-    ["cfgIpr", "iprPer"],
+    ["cfgIprThreshold", "iprThreshold"],
+    ["cfgIprLow", "iprLow"],
+    ["cfgIprHigh", "iprHigh"],
     ["cfgBase", "base"],
     ["cfgBaseRetainer", "baseRetainer"],
     ["cfgMin", "minSlot"]
@@ -586,7 +603,10 @@
     if (key === "attOn") return countBlocks(state.attOn) * cfg.attOnPerBlock;
     if (key === "btnOff") return countBlocks(state.btnOff) * cfg.btnOffPerBlock;
     if (key === "btnOn") return state.btnOn * cfg.btnOnPer;
-    if (key === "ipr") return state.ipr * cfg.iprPer;
+    if (key === "ipr") {
+      if (state.ipr <= 0) return 0;
+      return state.ipr <= cfg.iprThreshold ? cfg.iprLow : cfg.iprHigh;
+    }
     return 0;
   }
 
@@ -810,7 +830,8 @@
     }
     if (key === "btnOff") return fmt(cfg.btnOffPerBlock) + "分／1ブロック";
     if (key === "btnOn") return fmt(cfg.btnOnPer) + "分／1個";
-    return fmt(cfg.iprPer) + "分／1か所";
+    return "1〜" + fmt(cfg.iprThreshold) + "か所は" + fmt(cfg.iprLow) + "分 / " +
+      fmt(cfg.iprThreshold + 1) + "か所以上は" + fmt(cfg.iprHigh) + "分";
   }
 
   function render(skipInputKey) {
@@ -854,7 +875,7 @@
   }
 
   /* ---------- 保存（医院で共有 → 端末保存） ---------- */
-  var LS_KEY = "aligner-chairtime-config-v4";
+  var LS_KEY = "aligner-chairtime-config-v5";
 
   function normalize(raw) {
     var next = clone(DEFAULTS);
@@ -935,7 +956,7 @@
   if (window.claude && typeof window.claude.use === "function") {
     window.claude.use("db").then(function (db) {
       if (!db) return;
-      dbDoc = db.doc("settings/chairtime-v4");
+      dbDoc = db.doc("settings/chairtime-v5");
       dbDoc.onSnapshot(function (snap) {
         if (snap.exists) {
           cfg = normalize(snap.data());
