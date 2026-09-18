@@ -53,6 +53,7 @@
   }
 
   * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
   body {
     margin: 0;
     background: var(--bg);
@@ -102,8 +103,8 @@
     padding: 14px 18px;
     display: flex;
     flex-wrap: wrap;
-    align-items: baseline;
-    gap: 4px 20px;
+    align-items: center;
+    gap: 6px 18px;
   }
   .slot {
     font-family: var(--display);
@@ -115,8 +116,21 @@
   }
   .slot-unit { font-family: var(--display); font-weight: 700; font-size: 19px; color: var(--accent-ink); }
   .slot-label { font-size: 11px; letter-spacing: .14em; color: var(--muted); display: block; }
-  .summary-sub { color: var(--muted); font-size: 12.5px; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  .summary-sub { color: var(--muted); font-size: 12.5px; font-variant-numeric: tabular-nums; line-height: 1.65; flex: 1 1 180px; }
   .summary-sub b { color: var(--ink); font-weight: 500; }
+  .doctor-note { color: var(--amber); font-weight: 500; }
+  .copy-min {
+    font-family: var(--body);
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--surface-2);
+    color: var(--ink);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .copy-min:hover { border-color: var(--accent); color: var(--accent-ink); }
 
   /* --- カード --- */
   section { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
@@ -131,7 +145,27 @@
   h2 { font-family: var(--display); font-weight: 700; font-size: 15px; letter-spacing: .04em; margin: 0; }
   .hint { color: var(--muted); font-size: 12px; }
 
-  /* --- 処置ブロック --- */
+  /* --- 来院の種類 --- */
+  .modes { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 18px 14px; }
+  .mode {
+    flex: 1 1 150px;
+    font-family: var(--body);
+    font-size: 13.5px;
+    text-align: left;
+    line-height: 1.45;
+    padding: 9px 13px;
+    border-radius: 11px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .mode small { display: block; font-size: 11.5px; color: var(--muted); }
+  .mode:hover { border-color: var(--accent); }
+  .mode[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 500; }
+  .mode[aria-pressed="true"] small { color: var(--on-accent); opacity: .82; }
+
+  /* --- 処置 --- */
   .proc { border-top: 1px solid var(--line); padding: 13px 18px; }
   .proc.active { background: var(--accent-soft); }
   .proc-head {
@@ -153,6 +187,17 @@
   }
   .proc.active .proc-sub { color: var(--accent-ink); }
   .proc-control { margin-top: 9px; }
+  .tag {
+    display: inline-block;
+    font-size: 11px;
+    letter-spacing: .04em;
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: var(--amber-soft);
+    color: var(--amber);
+    margin-left: 8px;
+    vertical-align: 1px;
+  }
 
   .stepper { display: flex; align-items: center; gap: 6px; }
   .stepper button {
@@ -179,6 +224,7 @@
     font-size: 17px;
     font-variant-numeric: tabular-nums;
     -moz-appearance: textfield;
+    padding: 0;
   }
   .stepper input::-webkit-outer-spin-button,
   .stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
@@ -228,7 +274,8 @@
   .totals {
     display: flex;
     flex-wrap: wrap;
-    gap: 4px 18px;
+    align-items: center;
+    gap: 6px 18px;
     padding: 12px 18px;
     border-top: 1px solid var(--line);
     background: var(--surface-2);
@@ -238,12 +285,12 @@
     font-variant-numeric: tabular-nums;
   }
   .totals b { color: var(--ink); font-weight: 500; }
+  .totals .preset { margin-left: auto; background: var(--surface); }
 
-  /* --- 連絡文 --- */
-  .msg-body { padding: 0 18px 18px; display: flex; flex-direction: column; gap: 12px; }
-  .field { display: flex; flex-direction: column; gap: 5px; }
+  /* --- 設定 --- */
   label { font-size: 12px; color: var(--muted); letter-spacing: .04em; }
-  input[type="text"], input[type="number"], textarea, select {
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  input[type="text"], input[type="number"], select {
     font-family: var(--body);
     font-size: 14px;
     color: var(--ink);
@@ -253,7 +300,6 @@
     padding: 9px 12px;
     width: 100%;
   }
-  textarea { line-height: 1.85; resize: vertical; min-height: 17em; }
   .actions { display: flex; flex-wrap: wrap; gap: 8px; }
   .btn {
     font-family: var(--display);
@@ -270,7 +316,6 @@
   .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
   .btn-primary:hover { background: var(--accent-ink); border-color: var(--accent-ink); }
 
-  /* --- 設定 --- */
   details { border-top: 1px solid var(--line); }
   summary {
     list-style: none;
@@ -312,7 +357,7 @@
   <header>
     <p class="eyebrow">ALIGNER CHAIR TIME</p>
     <h1>アライナー来院の所要時間を計算</h1>
-    <p class="lede">クリンチェックを見て、処置の数とブロックを入れるだけ。予約枠と、患者さんへ送る連絡文がそのまま出ます。</p>
+    <p class="lede">クリンチェックを見て、処置の数とブロックを入れるだけ。次回の予約枠が出ます。</p>
   </header>
 
   <div class="summary">
@@ -320,7 +365,12 @@
       <span class="slot-label">予約枠</span>
       <span class="slot" id="slot" aria-live="polite">50</span><span class="slot-unit">分</span>
     </div>
-    <div class="summary-sub">処置時間の合計 <b id="rawTotal">46分</b><br><span id="roundNote"></span></div>
+    <div class="summary-sub">
+      処置時間の合計 <b id="rawTotal">46分</b><br>
+      <span id="roundNote"></span>
+      <span id="doctorNote" class="doctor-note" hidden></span>
+    </div>
+    <button class="copy-min" id="copyBtn" type="button">分数をコピー</button>
   </div>
 
   <section>
@@ -328,32 +378,12 @@
       <h2>処置の入力</h2>
       <span class="chip" id="sampleChip">記入例が入っています</span>
     </div>
+    <div class="modes" id="modes"></div>
     <div id="procs"></div>
     <div class="totals">
       <span>基本（お渡し・チェック・説明） <b id="baseMin">10分</b></span>
       <span>処置 <b id="procMin">36分</b></span>
-    </div>
-  </section>
-
-  <section>
-    <div class="card-head">
-      <h2>患者さんへの連絡文</h2>
-      <span class="hint">アライナー到着のお知らせ</span>
-    </div>
-    <div class="msg-body">
-      <div class="field">
-        <label for="patient">患者さんのお名前</label>
-        <input type="text" id="patient" placeholder="山田" autocomplete="off">
-      </div>
-      <div class="field">
-        <label for="message">本文（そのまま編集できます）</label>
-        <textarea id="message" spellcheck="false"></textarea>
-      </div>
-      <div class="actions">
-        <button class="btn btn-primary" id="copyBtn" type="button">本文をコピー</button>
-        <button class="btn" id="regenBtn" type="button">本文を作り直す</button>
-        <button class="btn" id="resetBtn" type="button">入力をリセット</button>
-      </div>
+      <button class="preset" id="resetBtn" type="button">入力をリセット</button>
     </div>
   </section>
 
@@ -403,8 +433,12 @@
           <span class="set-title">予約枠</span>
           <div class="grid">
             <div class="field">
-              <label for="cfgBase">基本時間（分）</label>
+              <label for="cfgBase">基本時間・アライナー（分）</label>
               <input type="number" id="cfgBase" min="0" step="1">
+            </div>
+            <div class="field">
+              <label for="cfgBaseRetainer">基本時間・リテーナー（分）</label>
+              <input type="number" id="cfgBaseRetainer" min="0" step="1">
             </div>
             <div class="field">
               <label for="cfgStep">予約枠の丸め</label>
@@ -418,10 +452,6 @@
             <div class="field">
               <label for="cfgMin">最短の予約枠（分）</label>
               <input type="number" id="cfgMin" min="0" step="5">
-            </div>
-            <div class="field">
-              <label for="cfgClinic">医院名</label>
-              <input type="text" id="cfgClinic">
             </div>
           </div>
         </div>
@@ -443,18 +473,24 @@
 
   /* 口腔を6分割したブロック（上下 × 右臼歯・前歯・左臼歯） */
   var BLOCKS = [
-    { key: "ur", short: "上の右奥歯", patient: "上の右の奥歯", row: 0, col: 0, kind: "post" },
-    { key: "ua", short: "上の前歯",   patient: "上の前歯",     row: 0, col: 1, kind: "ant" },
-    { key: "ul", short: "上の左奥歯", patient: "上の左の奥歯", row: 0, col: 2, kind: "post" },
-    { key: "lr", short: "下の右奥歯", patient: "下の右の奥歯", row: 1, col: 0, kind: "post" },
-    { key: "la", short: "下の前歯",   patient: "下の前歯",     row: 1, col: 1, kind: "ant" },
-    { key: "ll", short: "下の左奥歯", patient: "下の左の奥歯", row: 1, col: 2, kind: "post" }
+    { key: "ur", short: "上の右奥歯", row: 0 },
+    { key: "ua", short: "上の前歯",   row: 0 },
+    { key: "ul", short: "上の左奥歯", row: 0 },
+    { key: "lr", short: "下の右奥歯", row: 1 },
+    { key: "la", short: "下の前歯",   row: 1 },
+    { key: "ll", short: "下の左奥歯", row: 1 }
   ];
   var BLOCK_KEYS = BLOCKS.map(function (b) { return b.key; });
-  var POST_KEYS = BLOCKS.filter(function (b) { return b.kind === "post"; }).map(function (b) { return b.key; });
+  var POST_KEYS = ["ur", "ul", "lr", "ll"];
+
+  var MODES = [
+    { key: "aligner", label: "基本・追加アライナー", note: "お渡し＋処置" },
+    { key: "retainer", label: "保定（リテーナー）", note: "アタッチメント除去はドクター" }
+  ];
 
   var DEFAULTS = {
     base: 10,
+    baseRetainer: 10,
     attOffThreshold: 4,
     attOffLow: 15,
     attOffHigh: 30,
@@ -463,8 +499,7 @@
     btnOnPer: 5,
     iprPer: 3,
     step: 5,
-    minSlot: 15,
-    clinic: "博多ステラ歯科"
+    minSlot: 15
   };
 
   function emptyBlocks() {
@@ -474,6 +509,7 @@
   var cfg = clone(DEFAULTS);
   /* 起動時は記入例（上下の奥歯にアタッチメントセット＋IPR 2か所） */
   var state = {
+    mode: "aligner",
     attOff: 0,
     attOn: POST_KEYS.reduce(function (acc, k) { acc[k] = true; return acc; }, emptyBlocks()),
     btnOff: emptyBlocks(),
@@ -481,21 +517,19 @@
     ipr: 2
   };
   var isSample = true;
-  var messageEdited = false;
   var dbDoc = null;
 
   var el = {
     slot: document.getElementById("slot"),
     rawTotal: document.getElementById("rawTotal"),
     roundNote: document.getElementById("roundNote"),
+    doctorNote: document.getElementById("doctorNote"),
+    modes: document.getElementById("modes"),
     procs: document.getElementById("procs"),
     baseMin: document.getElementById("baseMin"),
     procMin: document.getElementById("procMin"),
     sampleChip: document.getElementById("sampleChip"),
-    patient: document.getElementById("patient"),
-    message: document.getElementById("message"),
     copyBtn: document.getElementById("copyBtn"),
-    regenBtn: document.getElementById("regenBtn"),
     resetBtn: document.getElementById("resetBtn"),
     saveBtn: document.getElementById("saveBtn"),
     defaultBtn: document.getElementById("defaultBtn"),
@@ -511,8 +545,11 @@
     ["cfgBtnOn", "btnOnPer"],
     ["cfgIpr", "iprPer"],
     ["cfgBase", "base"],
+    ["cfgBaseRetainer", "baseRetainer"],
     ["cfgMin", "minSlot"]
   ];
+
+  var PROCS = ["attOff", "attOn", "btnOff", "btnOn", "ipr"];
 
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
 
@@ -529,14 +566,16 @@
     return BLOCK_KEYS.filter(function (k) { return sel[k]; }).length;
   }
 
-  /* ---------- 計算 ---------- */
-  function attOffMinutes() {
-    if (state.attOff <= 0) return 0;
-    return state.attOff <= cfg.attOffThreshold ? cfg.attOffLow : cfg.attOffHigh;
-  }
+  function isRetainer() { return state.mode === "retainer"; }
 
+  function baseMinutes() { return isRetainer() ? cfg.baseRetainer : cfg.base; }
+
+  /* ---------- 計算 ---------- */
   function minutesOf(key) {
-    if (key === "attOff") return attOffMinutes();
+    if (key === "attOff") {
+      if (state.attOff <= 0) return 0;
+      return state.attOff <= cfg.attOffThreshold ? cfg.attOffLow : cfg.attOffHigh;
+    }
     if (key === "attOn") return countBlocks(state.attOn) * cfg.attOnPerBlock;
     if (key === "btnOff") return countBlocks(state.btnOff) * cfg.btnOffPerBlock;
     if (key === "btnOn") return state.btnOn * cfg.btnOnPer;
@@ -544,22 +583,43 @@
     return 0;
   }
 
-  var PROCS = ["attOff", "attOn", "btnOff", "btnOn", "ipr"];
+  function doctorMinutes() {
+    return isRetainer() ? minutesOf("attOff") : 0;
+  }
 
   function totals() {
     var proc = PROCS.reduce(function (sum, k) { return sum + minutesOf(k); }, 0);
-    var raw = cfg.base + proc;
+    var raw = baseMinutes() + proc;
     var step = cfg.step > 0 ? cfg.step : 1;
     var slot = Math.max(cfg.minSlot, Math.ceil(raw / step) * step);
     return { proc: proc, raw: raw, slot: slot };
   }
 
   function isActive(key) {
-    if (key === "attOff") return state.attOff > 0;
-    if (key === "attOn") return countBlocks(state.attOn) > 0;
-    if (key === "btnOff") return countBlocks(state.btnOff) > 0;
-    if (key === "btnOn") return state.btnOn > 0;
-    return state.ipr > 0;
+    if (key === "attOn" || key === "btnOff") return countBlocks(state[key]) > 0;
+    return state[key] > 0;
+  }
+
+  /* ---------- 来院の種類 ---------- */
+  function buildModes() {
+    el.modes.textContent = "";
+    MODES.forEach(function (m) {
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "mode";
+      btn.id = "mode-" + m.key;
+      btn.setAttribute("aria-pressed", "false");
+      btn.appendChild(document.createTextNode(m.label));
+      var small = document.createElement("small");
+      small.textContent = m.note;
+      btn.appendChild(small);
+      btn.addEventListener("click", function () {
+        state.mode = m.key;
+        dropSample();
+        render();
+      });
+      el.modes.appendChild(btn);
+    });
   }
 
   /* ---------- 入力UIの組み立て ---------- */
@@ -574,10 +634,16 @@
     var nm = document.createElement("span");
     nm.className = "proc-name";
     nm.textContent = name;
+    var tag = document.createElement("span");
+    tag.className = "tag";
+    tag.id = "tag-" + key;
+    tag.textContent = "ドクター";
+    tag.hidden = true;
     var rule = document.createElement("span");
     rule.className = "proc-rule";
     rule.id = "rule-" + key;
     left.appendChild(nm);
+    left.appendChild(tag);
     left.appendChild(rule);
     var sub = document.createElement("div");
     sub.className = "proc-sub";
@@ -708,8 +774,6 @@
       var input = document.getElementById(pair[0]);
       if (input && document.activeElement !== input) input.value = cfg[pair[1]];
     });
-    var clinic = document.getElementById("cfgClinic");
-    if (document.activeElement !== clinic) clinic.value = cfg.clinic;
     document.getElementById("cfgStep").value = String(cfg.step);
   }
 
@@ -725,62 +789,6 @@
       cfg.step = num(e.target.value, DEFAULTS.step) || DEFAULTS.step;
       render();
     });
-    document.getElementById("cfgClinic").addEventListener("input", function (e) {
-      cfg.clinic = e.target.value;
-      render();
-    });
-  }
-
-  /* ---------- 連絡文 ---------- */
-  function blockPhrase(sel) {
-    var chosen = BLOCKS.filter(function (b) { return sel[b.key]; });
-    if (!chosen.length) return "";
-    if (chosen.length === 6) return "全体";
-    if (chosen.length === 4 && POST_KEYS.every(function (k) { return sel[k]; })) return "上下の奥歯";
-    return chosen.map(function (b) { return b.patient; }).join("・");
-  }
-
-  function procLines() {
-    var lines = [];
-    if (state.attOff > 0) lines.push("・アタッチメントの除去：" + state.attOff + "個");
-    var on = blockPhrase(state.attOn);
-    if (on) lines.push("・アタッチメントの装着：" + on);
-    var off = blockPhrase(state.btnOff);
-    if (off) lines.push("・ボタンの除去：" + off);
-    if (state.btnOn > 0) lines.push("・ボタンの装着：" + state.btnOn + "個");
-    if (state.ipr > 0) lines.push("・歯と歯の間の調整（IPR）：" + state.ipr + "か所");
-    return lines;
-  }
-
-  function buildMessage() {
-    var t = totals();
-    var name = (el.patient.value || "").trim();
-    var clinic = (cfg.clinic || "").trim() || DEFAULTS.clinic;
-    var lines = [];
-    lines.push((name || "〇〇") + "様");
-    lines.push("");
-    lines.push("いつもお世話になっております。" + clinic + "です。");
-    lines.push("新しいマウスピース（アライナー）が届きましたのでお知らせいたします。");
-    lines.push("");
-
-    var done = procLines();
-    if (done.length) {
-      lines.push("次回のご来院では、次の処置を行います。");
-      done.forEach(function (l) { lines.push(l); });
-      lines.push("");
-      lines.push("お時間は約" + fmt(t.slot) + "分を予定しております。");
-    } else {
-      lines.push("次回はアライナーのお渡しと確認のみですので、約" + fmt(t.slot) + "分で終わります。");
-    }
-    lines.push("");
-    lines.push("ご都合のよい日時をお知らせください。よろしくお願いいたします。");
-    return lines.join("\n");
-  }
-
-  function refreshMessage(force) {
-    if (messageEdited && !force) return;
-    el.message.value = buildMessage();
-    messageEdited = false;
   }
 
   /* ---------- 描画 ---------- */
@@ -789,7 +797,10 @@
       return "1〜" + fmt(cfg.attOffThreshold) + "個は" + fmt(cfg.attOffLow) + "分 / " +
         fmt(cfg.attOffThreshold + 1) + "個以上は" + fmt(cfg.attOffHigh) + "分";
     }
-    if (key === "attOn") return fmt(cfg.attOnPerBlock) + "分／1ブロック（臼歯のみ" + fmt(cfg.attOnPerBlock * 4) + "分・全体" + fmt(cfg.attOnPerBlock * 6) + "分）";
+    if (key === "attOn") {
+      return fmt(cfg.attOnPerBlock) + "分／1ブロック（臼歯のみ" + fmt(cfg.attOnPerBlock * 4) +
+        "分・全体" + fmt(cfg.attOnPerBlock * 6) + "分）";
+    }
     if (key === "btnOff") return fmt(cfg.btnOffPerBlock) + "分／1ブロック";
     if (key === "btnOn") return fmt(cfg.btnOnPer) + "分／1個";
     return fmt(cfg.iprPer) + "分／1か所";
@@ -800,8 +811,17 @@
     el.slot.textContent = fmt(t.slot);
     el.rawTotal.textContent = fmt(t.raw) + "分";
     el.roundNote.textContent = fmt(cfg.step) + "分単位で切り上げ・最短" + fmt(cfg.minSlot) + "分";
-    el.baseMin.textContent = fmt(cfg.base) + "分";
+    el.baseMin.textContent = fmt(baseMinutes()) + "分";
     el.procMin.textContent = fmt(t.proc) + "分";
+
+    var doc = doctorMinutes();
+    el.doctorNote.hidden = doc <= 0;
+    el.doctorNote.textContent = doc > 0 ? "／ うちドクター " + fmt(doc) + "分（アタッチメント除去）" : "";
+
+    MODES.forEach(function (m) {
+      var btn = document.getElementById("mode-" + m.key);
+      if (btn) btn.setAttribute("aria-pressed", state.mode === m.key ? "true" : "false");
+    });
 
     PROCS.forEach(function (key) {
       var box = document.getElementById("proc-" + key);
@@ -812,6 +832,8 @@
       if (sub) sub.textContent = isActive(key) ? fmt(minutesOf(key)) + "分" : "—";
       var input = document.getElementById("count-" + key);
       if (input && key !== skipInputKey) input.value = state[key];
+      var tag = document.getElementById("tag-" + key);
+      if (tag) tag.hidden = !(key === "attOff" && isRetainer());
     });
 
     ["attOn", "btnOff"].forEach(function (key) {
@@ -822,29 +844,23 @@
     });
 
     fillSettingsForm();
-    refreshMessage(false);
   }
 
   /* ---------- 保存（医院で共有 → 端末保存） ---------- */
-  var LS_KEY = "aligner-chairtime-config-v2";
+  var LS_KEY = "aligner-chairtime-config-v3";
 
   function normalize(raw) {
     var next = clone(DEFAULTS);
     if (!raw || typeof raw !== "object") return next;
-    Object.keys(DEFAULTS).forEach(function (k) {
-      if (k === "clinic") return;
-      next[k] = num(raw[k], DEFAULTS[k]);
-    });
+    Object.keys(DEFAULTS).forEach(function (k) { next[k] = num(raw[k], DEFAULTS[k]); });
     if (!next.step) next.step = DEFAULTS.step;
     if (!next.attOffThreshold) next.attOffThreshold = DEFAULTS.attOffThreshold;
-    next.clinic = typeof raw.clinic === "string" && raw.clinic.trim() ? raw.clinic.trim() : DEFAULTS.clinic;
     return next;
   }
 
   function payload() {
     var out = {};
     Object.keys(DEFAULTS).forEach(function (k) { out[k] = cfg[k]; });
-    out.clinic = (cfg.clinic || "").trim() || DEFAULTS.clinic;
     return out;
   }
 
@@ -873,13 +889,13 @@
   }
 
   /* ---------- 操作 ---------- */
-  el.patient.addEventListener("input", function () { messageEdited = false; refreshMessage(true); });
-  el.message.addEventListener("input", function () { messageEdited = true; });
-  el.regenBtn.addEventListener("click", function () { refreshMessage(true); });
   el.resetBtn.addEventListener("click", function () {
-    state = { attOff: 0, attOn: emptyBlocks(), btnOff: emptyBlocks(), btnOn: 0, ipr: 0 };
+    state.attOff = 0;
+    state.attOn = emptyBlocks();
+    state.btnOff = emptyBlocks();
+    state.btnOn = 0;
+    state.ipr = 0;
     dropSample();
-    messageEdited = false;
     render();
   });
   el.saveBtn.addEventListener("click", saveSettings);
@@ -889,27 +905,20 @@
     status("初期値に戻しました。保存するには「設定を保存」を押してください。");
   });
   el.copyBtn.addEventListener("click", function () {
-    var text = el.message.value;
+    var text = fmt(totals().slot) + "分";
     var done = function (ok) {
-      el.copyBtn.textContent = ok ? "コピーしました" : "コピーできません（長押しで選択）";
-      window.setTimeout(function () { el.copyBtn.textContent = "本文をコピー"; }, 1800);
+      el.copyBtn.textContent = ok ? "コピーしました" : "コピーできません";
+      window.setTimeout(function () { el.copyBtn.textContent = "分数をコピー"; }, 1600);
     };
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(function () { done(true); }, function () { fallbackCopy(done); });
+      navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(false); });
     } else {
-      fallbackCopy(done);
+      done(false);
     }
   });
 
-  function fallbackCopy(done) {
-    el.message.focus();
-    el.message.select();
-    var ok = false;
-    try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
-    done(ok);
-  }
-
   /* ---------- 起動 ---------- */
+  buildModes();
   buildProcs();
   bindSettings();
   readLocal();
@@ -919,7 +928,7 @@
   if (window.claude && typeof window.claude.use === "function") {
     window.claude.use("db").then(function (db) {
       if (!db) return;
-      dbDoc = db.doc("settings/chairtime-v2");
+      dbDoc = db.doc("settings/chairtime-v3");
       dbDoc.onSnapshot(function (snap) {
         if (snap.exists) {
           cfg = normalize(snap.data());
