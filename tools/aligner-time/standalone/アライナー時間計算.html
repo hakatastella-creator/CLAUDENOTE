@@ -370,7 +370,7 @@
   <div class="summary">
     <div>
       <span class="slot-label">予約枠</span>
-      <span class="slot" id="slot" aria-live="polite">50</span><span class="slot-unit">分</span>
+      <span class="slot" id="slot" aria-live="polite">60</span><span class="slot-unit">分</span>
     </div>
     <div class="summary-sub">
       処置時間の合計 <b id="rawTotal">46分</b><br>
@@ -450,10 +450,10 @@
             <div class="field">
               <label for="cfgStep">予約枠の丸め</label>
               <select id="cfgStep">
-                <option value="5">5分単位</option>
-                <option value="10">10分単位</option>
                 <option value="15">15分単位</option>
                 <option value="30">30分単位</option>
+                <option value="10">10分単位</option>
+                <option value="5">5分単位</option>
               </select>
             </div>
             <div class="field">
@@ -505,7 +505,7 @@
     btnOffPerBlock: 7.5,
     btnOnPer: 5,
     iprPer: 3,
-    step: 5,
+    step: 15,
     minSlot: 15
   };
 
@@ -854,7 +854,7 @@
   }
 
   /* ---------- 保存（医院で共有 → 端末保存） ---------- */
-  var LS_KEY = "aligner-chairtime-config-v3";
+  var LS_KEY = "aligner-chairtime-config-v4";
 
   function normalize(raw) {
     var next = clone(DEFAULTS);
@@ -935,7 +935,7 @@
   if (window.claude && typeof window.claude.use === "function") {
     window.claude.use("db").then(function (db) {
       if (!db) return;
-      dbDoc = db.doc("settings/chairtime-v3");
+      dbDoc = db.doc("settings/chairtime-v4");
       dbDoc.onSnapshot(function (snap) {
         if (snap.exists) {
           cfg = normalize(snap.data());
