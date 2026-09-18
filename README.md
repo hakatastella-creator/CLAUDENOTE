@@ -12,3 +12,11 @@ Gmail と Chatwork の未読メッセージを毎朝チェックし、過去の�
 - **学習元**: その相手との直近10件のやり取り
 
 セットアップ手順は [`docs/SETUP.md`](docs/SETUP.md) を参照。
+
+## アライナー来院の所要時間計算
+
+クリンチェックを見て処置の数（アタッチメント除去／セット、ボタン除去／セット、IPR）を入力すると、
+次回来院の予約枠と、患者さんへ送る「アライナーが届きました」の連絡文を作ります。
+
+- **ツール**: [`tools/aligner-time/index.html`](tools/aligner-time/index.html)（ブラウザで開くだけ）
+- 使い方と時間の初期値は [`tools/aligner-time/README.md`](tools/aligner-time/README.md) を参照。
