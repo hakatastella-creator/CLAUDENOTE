@@ -1,0 +1,957 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- このファイルは tools/aligner-time/index.html から build_standalone.py で生成しています。
+     直接編集せず、index.html を直してから再生成してください。 -->
+<title>アライナー チェアタイム計算</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap">
+<style>
+  :root {
+    --bg: #F2F5F3;
+    --surface: #FFFFFF;
+    --surface-2: #E9EFEC;
+    --line: #D3DED9;
+    --ink: #141F1C;
+    --muted: #5B6D68;
+    --accent: #0E6F5C;
+    --accent-ink: #0A5747;
+    --accent-soft: #DCEEE7;
+    --on-accent: #FFFFFF;
+    --amber: #8F5406;
+    --amber-soft: #F6E8D2;
+    --shadow: 0 1px 2px rgba(15, 40, 34, .06), 0 8px 24px -16px rgba(15, 40, 34, .28);
+    --body: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", system-ui, sans-serif;
+    --display: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic", system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0D1413;
+      --surface: #16201E;
+      --surface-2: #1E2B28;
+      --line: #2C3B37;
+      --ink: #E7EFEC;
+      --muted: #94A7A2;
+      --accent: #4FC3A4;
+      --accent-ink: #8FE2CA;
+      --accent-soft: #16332B;
+      --on-accent: #0D1413;
+      --amber: #E4AA5E;
+      --amber-soft: #33281A;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 10px 26px -18px rgba(0, 0, 0, .9);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0D1413;
+    --surface: #16201E;
+    --surface-2: #1E2B28;
+    --line: #2C3B37;
+    --ink: #E7EFEC;
+    --muted: #94A7A2;
+    --accent: #4FC3A4;
+    --accent-ink: #8FE2CA;
+    --accent-soft: #16332B;
+    --on-accent: #0D1413;
+    --amber: #E4AA5E;
+    --amber-soft: #33281A;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 10px 26px -18px rgba(0, 0, 0, .9);
+  }
+
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 15px;
+    line-height: 1.7;
+    -webkit-text-size-adjust: 100%;
+  }
+  .wrap {
+    max-width: 680px;
+    margin: 0 auto;
+    padding-inline: 16px;
+    padding-block: 28px 56px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .eyebrow {
+    font-family: var(--display);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: .18em;
+    color: var(--accent);
+    margin: 0 0 6px;
+  }
+  h1 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: clamp(21px, 5.2vw, 27px);
+    line-height: 1.35;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .lede { color: var(--muted); font-size: 13.5px; margin: 8px 0 0; }
+
+  /* --- 予約枠 --- */
+  .summary {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 5;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    padding: 14px 18px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 18px;
+  }
+  .slot {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 46px;
+    line-height: 1.05;
+    color: var(--accent-ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .slot-unit { font-family: var(--display); font-weight: 700; font-size: 19px; color: var(--accent-ink); }
+  .slot-label { font-size: 11px; letter-spacing: .14em; color: var(--muted); display: block; }
+  .summary-sub { color: var(--muted); font-size: 12.5px; font-variant-numeric: tabular-nums; line-height: 1.65; flex: 1 1 180px; }
+  .summary-sub b { color: var(--ink); font-weight: 500; }
+  .doctor-note { color: var(--amber); font-weight: 500; }
+  .copy-min {
+    font-family: var(--body);
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--surface-2);
+    color: var(--ink);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .copy-min:hover { border-color: var(--accent); color: var(--accent-ink); }
+
+  /* --- カード --- */
+  section { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+  .card-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 6px 12px;
+    padding: 14px 18px 10px;
+  }
+  h2 { font-family: var(--display); font-weight: 700; font-size: 15px; letter-spacing: .04em; margin: 0; }
+  .hint { color: var(--muted); font-size: 12px; }
+
+  /* --- 来院の種類 --- */
+  .modes { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 18px 14px; }
+  .mode {
+    flex: 1 1 150px;
+    font-family: var(--body);
+    font-size: 13.5px;
+    text-align: left;
+    line-height: 1.45;
+    padding: 9px 13px;
+    border-radius: 11px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .mode small { display: block; font-size: 11.5px; color: var(--muted); }
+  .mode:hover { border-color: var(--accent); }
+  .mode[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 500; }
+  .mode[aria-pressed="true"] small { color: var(--on-accent); opacity: .82; }
+
+  /* --- 処置 --- */
+  .proc { border-top: 1px solid var(--line); padding: 13px 18px; }
+  .proc.active { background: var(--accent-soft); }
+  .proc-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 2px 12px;
+  }
+  .proc-name { font-weight: 500; }
+  .proc-rule { color: var(--muted); font-size: 12px; display: block; font-variant-numeric: tabular-nums; }
+  .proc-sub {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 15px;
+    font-variant-numeric: tabular-nums;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .proc.active .proc-sub { color: var(--accent-ink); }
+  .proc-control { margin-top: 9px; }
+  .tag {
+    display: inline-block;
+    font-size: 11px;
+    letter-spacing: .04em;
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: var(--amber-soft);
+    color: var(--amber);
+    margin-left: 8px;
+    vertical-align: 1px;
+  }
+
+  .stepper { display: flex; align-items: center; gap: 6px; }
+  .stepper button {
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink);
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    font-family: var(--body);
+  }
+  .stepper button:hover { border-color: var(--accent); color: var(--accent-ink); }
+  .stepper input[type="number"] {
+    width: 58px; flex: 0 0 58px; height: 42px;
+    text-align: center;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--ink);
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 17px;
+    font-variant-numeric: tabular-nums;
+    -moz-appearance: textfield;
+    padding: 0;
+  }
+  .stepper input::-webkit-outer-spin-button,
+  .stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .stepper .unit { color: var(--muted); font-size: 13px; }
+
+  /* --- 6ブロックの口腔マップ --- */
+  .map { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; max-width: 340px; }
+  .map-col-label {
+    font-size: 11px;
+    letter-spacing: .08em;
+    color: var(--muted);
+    text-align: center;
+    padding-bottom: 2px;
+  }
+  .blk {
+    font-family: var(--body);
+    font-size: 12.5px;
+    line-height: 1.4;
+    padding: 9px 4px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink);
+    cursor: pointer;
+    min-height: 46px;
+  }
+  .blk:hover { border-color: var(--accent); }
+  .blk[aria-pressed="true"] {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--on-accent);
+    font-weight: 500;
+  }
+  .presets { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .preset {
+    font-size: 12px;
+    padding: 5px 11px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+    font-family: var(--body);
+  }
+  .preset:hover { border-color: var(--accent); color: var(--accent-ink); }
+
+  .totals {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 18px;
+    padding: 12px 18px;
+    border-top: 1px solid var(--line);
+    background: var(--surface-2);
+    border-radius: 0 0 14px 14px;
+    font-size: 13px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .totals b { color: var(--ink); font-weight: 500; }
+  .totals .preset { margin-left: auto; background: var(--surface); }
+
+  /* --- 設定 --- */
+  label { font-size: 12px; color: var(--muted); letter-spacing: .04em; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  input[type="text"], input[type="number"], select {
+    font-family: var(--body);
+    font-size: 14px;
+    color: var(--ink);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 9px 12px;
+    width: 100%;
+  }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .btn {
+    font-family: var(--display);
+    font-weight: 500;
+    font-size: 14px;
+    padding: 10px 18px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: var(--surface-2);
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .btn:hover { border-color: var(--accent); }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+  .btn-primary:hover { background: var(--accent-ink); border-color: var(--accent-ink); }
+
+  details { border-top: 1px solid var(--line); }
+  summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 13px 18px;
+    font-family: var(--display);
+    font-weight: 500;
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    align-items: center;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: "開く"; font-family: var(--body); font-size: 12px; color: var(--muted); }
+  details[open] summary::after { content: "閉じる"; }
+  .settings-body { padding: 6px 18px 18px; display: flex; flex-direction: column; gap: 16px; border-top: 1px solid var(--line); }
+  .set-group { display: flex; flex-direction: column; gap: 8px; }
+  .set-title { font-family: var(--display); font-weight: 500; font-size: 13px; color: var(--accent-ink); letter-spacing: .04em; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px 14px; }
+  .grid input, .grid select { font-variant-numeric: tabular-nums; }
+  .status { font-size: 12px; color: var(--muted); }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    font-size: 11px;
+    letter-spacing: .06em;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: var(--amber-soft);
+    color: var(--amber);
+  }
+  footer { color: var(--muted); font-size: 12px; text-align: center; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style></head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="eyebrow">ALIGNER CHAIR TIME</p>
+    <h1>アライナー来院の所要時間を計算</h1>
+    <p class="lede">クリンチェックを見て、処置の数とブロックを入れるだけ。次回の予約枠が出ます。</p>
+  </header>
+
+  <div class="summary">
+    <div>
+      <span class="slot-label">予約枠</span>
+      <span class="slot" id="slot" aria-live="polite">50</span><span class="slot-unit">分</span>
+    </div>
+    <div class="summary-sub">
+      処置時間の合計 <b id="rawTotal">46分</b><br>
+      <span id="roundNote"></span>
+      <span id="doctorNote" class="doctor-note" hidden></span>
+    </div>
+    <button class="copy-min" id="copyBtn" type="button">分数をコピー</button>
+  </div>
+
+  <section>
+    <div class="card-head">
+      <h2>処置の入力</h2>
+      <span class="chip" id="sampleChip">記入例が入っています</span>
+    </div>
+    <div class="modes" id="modes"></div>
+    <div id="procs"></div>
+    <div class="totals">
+      <span>基本（お渡し・チェック・説明） <b id="baseMin">10分</b></span>
+      <span>処置 <b id="procMin">36分</b></span>
+      <button class="preset" id="resetBtn" type="button">入力をリセット</button>
+    </div>
+  </section>
+
+  <section>
+    <details>
+      <summary>時間の設定</summary>
+      <div class="settings-body">
+        <div class="set-group">
+          <span class="set-title">アタッチメント除去（個数で決まる）</span>
+          <div class="grid">
+            <div class="field">
+              <label for="cfgAttOffThreshold">少ない方の上限（個）</label>
+              <input type="number" id="cfgAttOffThreshold" min="1" step="1">
+            </div>
+            <div class="field">
+              <label for="cfgAttOffLow">上限まで（分）</label>
+              <input type="number" id="cfgAttOffLow" min="0" step="5">
+            </div>
+            <div class="field">
+              <label for="cfgAttOffHigh">それより多い（分）</label>
+              <input type="number" id="cfgAttOffHigh" min="0" step="5">
+            </div>
+          </div>
+        </div>
+        <div class="set-group">
+          <span class="set-title">ブロック単位・個数単位</span>
+          <div class="grid">
+            <div class="field">
+              <label for="cfgAttOn">アタッチメントセット（分／1ブロック）</label>
+              <input type="number" id="cfgAttOn" min="0" step="0.5">
+            </div>
+            <div class="field">
+              <label for="cfgBtnOff">ボタン除去（分／1ブロック）</label>
+              <input type="number" id="cfgBtnOff" min="0" step="0.5">
+            </div>
+            <div class="field">
+              <label for="cfgBtnOn">ボタンセット（分／1個）</label>
+              <input type="number" id="cfgBtnOn" min="0" step="0.5">
+            </div>
+            <div class="field">
+              <label for="cfgIpr">IPR（分／1か所）</label>
+              <input type="number" id="cfgIpr" min="0" step="0.5">
+            </div>
+          </div>
+        </div>
+        <div class="set-group">
+          <span class="set-title">予約枠</span>
+          <div class="grid">
+            <div class="field">
+              <label for="cfgBase">基本時間・アライナー（分）</label>
+              <input type="number" id="cfgBase" min="0" step="1">
+            </div>
+            <div class="field">
+              <label for="cfgBaseRetainer">基本時間・リテーナー（分）</label>
+              <input type="number" id="cfgBaseRetainer" min="0" step="1">
+            </div>
+            <div class="field">
+              <label for="cfgStep">予約枠の丸め</label>
+              <select id="cfgStep">
+                <option value="5">5分単位</option>
+                <option value="10">10分単位</option>
+                <option value="15">15分単位</option>
+                <option value="30">30分単位</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="cfgMin">最短の予約枠（分）</label>
+              <input type="number" id="cfgMin" min="0" step="5">
+            </div>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-primary" id="saveBtn" type="button">設定を保存</button>
+          <button class="btn" id="defaultBtn" type="button">初期値に戻す</button>
+        </div>
+        <p class="status" id="cfgStatus">読み込み中…</p>
+      </div>
+    </details>
+  </section>
+
+  <footer>博多ステラ歯科 / CLAUDENOTE</footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* 口腔を6分割したブロック（上下 × 右臼歯・前歯・左臼歯） */
+  var BLOCKS = [
+    { key: "ur", short: "上の右奥歯", row: 0 },
+    { key: "ua", short: "上の前歯",   row: 0 },
+    { key: "ul", short: "上の左奥歯", row: 0 },
+    { key: "lr", short: "下の右奥歯", row: 1 },
+    { key: "la", short: "下の前歯",   row: 1 },
+    { key: "ll", short: "下の左奥歯", row: 1 }
+  ];
+  var BLOCK_KEYS = BLOCKS.map(function (b) { return b.key; });
+  var POST_KEYS = ["ur", "ul", "lr", "ll"];
+
+  var MODES = [
+    { key: "aligner", label: "基本・追加アライナー", note: "お渡し＋処置" },
+    { key: "retainer", label: "保定（リテーナー）", note: "アタッチメント除去はドクター" }
+  ];
+
+  var DEFAULTS = {
+    base: 10,
+    baseRetainer: 10,
+    attOffThreshold: 4,
+    attOffLow: 15,
+    attOffHigh: 30,
+    attOnPerBlock: 7.5,
+    btnOffPerBlock: 7.5,
+    btnOnPer: 5,
+    iprPer: 3,
+    step: 5,
+    minSlot: 15
+  };
+
+  function emptyBlocks() {
+    return BLOCK_KEYS.reduce(function (acc, k) { acc[k] = false; return acc; }, {});
+  }
+
+  var cfg = clone(DEFAULTS);
+  /* 起動時は記入例（上下の奥歯にアタッチメントセット＋IPR 2か所） */
+  var state = {
+    mode: "aligner",
+    attOff: 0,
+    attOn: POST_KEYS.reduce(function (acc, k) { acc[k] = true; return acc; }, emptyBlocks()),
+    btnOff: emptyBlocks(),
+    btnOn: 0,
+    ipr: 2
+  };
+  var isSample = true;
+  var dbDoc = null;
+
+  var el = {
+    slot: document.getElementById("slot"),
+    rawTotal: document.getElementById("rawTotal"),
+    roundNote: document.getElementById("roundNote"),
+    doctorNote: document.getElementById("doctorNote"),
+    modes: document.getElementById("modes"),
+    procs: document.getElementById("procs"),
+    baseMin: document.getElementById("baseMin"),
+    procMin: document.getElementById("procMin"),
+    sampleChip: document.getElementById("sampleChip"),
+    copyBtn: document.getElementById("copyBtn"),
+    resetBtn: document.getElementById("resetBtn"),
+    saveBtn: document.getElementById("saveBtn"),
+    defaultBtn: document.getElementById("defaultBtn"),
+    cfgStatus: document.getElementById("cfgStatus")
+  };
+
+  var NUM_FIELDS = [
+    ["cfgAttOffThreshold", "attOffThreshold"],
+    ["cfgAttOffLow", "attOffLow"],
+    ["cfgAttOffHigh", "attOffHigh"],
+    ["cfgAttOn", "attOnPerBlock"],
+    ["cfgBtnOff", "btnOffPerBlock"],
+    ["cfgBtnOn", "btnOnPer"],
+    ["cfgIpr", "iprPer"],
+    ["cfgBase", "base"],
+    ["cfgBaseRetainer", "baseRetainer"],
+    ["cfgMin", "minSlot"]
+  ];
+
+  var PROCS = ["attOff", "attOn", "btnOff", "btnOn", "ipr"];
+
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+
+  function num(v, fallback) {
+    var n = parseFloat(v);
+    return isFinite(n) && n >= 0 ? n : fallback;
+  }
+
+  function fmt(n) {
+    return (Math.round(n * 10) / 10).toString().replace(/\.0$/, "");
+  }
+
+  function countBlocks(sel) {
+    return BLOCK_KEYS.filter(function (k) { return sel[k]; }).length;
+  }
+
+  function isRetainer() { return state.mode === "retainer"; }
+
+  function baseMinutes() { return isRetainer() ? cfg.baseRetainer : cfg.base; }
+
+  /* ---------- 計算 ---------- */
+  function minutesOf(key) {
+    if (key === "attOff") {
+      if (state.attOff <= 0) return 0;
+      return state.attOff <= cfg.attOffThreshold ? cfg.attOffLow : cfg.attOffHigh;
+    }
+    if (key === "attOn") return countBlocks(state.attOn) * cfg.attOnPerBlock;
+    if (key === "btnOff") return countBlocks(state.btnOff) * cfg.btnOffPerBlock;
+    if (key === "btnOn") return state.btnOn * cfg.btnOnPer;
+    if (key === "ipr") return state.ipr * cfg.iprPer;
+    return 0;
+  }
+
+  function doctorMinutes() {
+    return isRetainer() ? minutesOf("attOff") : 0;
+  }
+
+  function totals() {
+    var proc = PROCS.reduce(function (sum, k) { return sum + minutesOf(k); }, 0);
+    var raw = baseMinutes() + proc;
+    var step = cfg.step > 0 ? cfg.step : 1;
+    var slot = Math.max(cfg.minSlot, Math.ceil(raw / step) * step);
+    return { proc: proc, raw: raw, slot: slot };
+  }
+
+  function isActive(key) {
+    if (key === "attOn" || key === "btnOff") return countBlocks(state[key]) > 0;
+    return state[key] > 0;
+  }
+
+  /* ---------- 来院の種類 ---------- */
+  function buildModes() {
+    el.modes.textContent = "";
+    MODES.forEach(function (m) {
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "mode";
+      btn.id = "mode-" + m.key;
+      btn.setAttribute("aria-pressed", "false");
+      btn.appendChild(document.createTextNode(m.label));
+      var small = document.createElement("small");
+      small.textContent = m.note;
+      btn.appendChild(small);
+      btn.addEventListener("click", function () {
+        state.mode = m.key;
+        dropSample();
+        render();
+      });
+      el.modes.appendChild(btn);
+    });
+  }
+
+  /* ---------- 入力UIの組み立て ---------- */
+  function makeProc(key, name) {
+    var box = document.createElement("div");
+    box.className = "proc";
+    box.id = "proc-" + key;
+
+    var head = document.createElement("div");
+    head.className = "proc-head";
+    var left = document.createElement("div");
+    var nm = document.createElement("span");
+    nm.className = "proc-name";
+    nm.textContent = name;
+    var tag = document.createElement("span");
+    tag.className = "tag";
+    tag.id = "tag-" + key;
+    tag.textContent = "ドクター";
+    tag.hidden = true;
+    var rule = document.createElement("span");
+    rule.className = "proc-rule";
+    rule.id = "rule-" + key;
+    left.appendChild(nm);
+    left.appendChild(tag);
+    left.appendChild(rule);
+    var sub = document.createElement("div");
+    sub.className = "proc-sub";
+    sub.id = "sub-" + key;
+    head.appendChild(left);
+    head.appendChild(sub);
+
+    var control = document.createElement("div");
+    control.className = "proc-control";
+
+    box.appendChild(head);
+    box.appendChild(control);
+    el.procs.appendChild(box);
+    return control;
+  }
+
+  function makeStepper(key, unit) {
+    var wrap = document.createElement("div");
+    wrap.className = "stepper";
+    var minus = document.createElement("button");
+    minus.type = "button";
+    minus.textContent = "−";
+    minus.setAttribute("aria-label", "1減らす");
+    var input = document.createElement("input");
+    input.type = "number";
+    input.min = "0";
+    input.step = "1";
+    input.inputMode = "numeric";
+    input.id = "count-" + key;
+    var unitEl = document.createElement("span");
+    unitEl.className = "unit";
+    unitEl.textContent = unit;
+    var plus = document.createElement("button");
+    plus.type = "button";
+    plus.textContent = "+";
+    plus.setAttribute("aria-label", "1増やす");
+    wrap.appendChild(minus);
+    wrap.appendChild(input);
+    wrap.appendChild(plus);
+    wrap.appendChild(unitEl);
+
+    minus.addEventListener("click", function () { setCount(key, state[key] - 1); });
+    plus.addEventListener("click", function () { setCount(key, state[key] + 1); });
+    input.addEventListener("input", function () { setCount(key, Math.round(num(input.value, 0)), true); });
+    input.addEventListener("blur", function () { input.value = state[key]; });
+    return wrap;
+  }
+
+  function setCount(key, value, fromInput) {
+    state[key] = Math.max(0, Math.min(99, value || 0));
+    dropSample();
+    render(fromInput ? key : null);
+  }
+
+  function makeMap(key, presets) {
+    var wrap = document.createElement("div");
+
+    var map = document.createElement("div");
+    map.className = "map";
+    ["右（患者さんの）", "前歯", "左（患者さんの）"].forEach(function (text) {
+      var lab = document.createElement("div");
+      lab.className = "map-col-label";
+      lab.textContent = text;
+      map.appendChild(lab);
+    });
+    BLOCKS.forEach(function (b) {
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "blk";
+      btn.id = "blk-" + key + "-" + b.key;
+      btn.textContent = b.short;
+      btn.setAttribute("aria-pressed", "false");
+      btn.addEventListener("click", function () {
+        state[key][b.key] = !state[key][b.key];
+        dropSample();
+        render();
+      });
+      map.appendChild(btn);
+    });
+    wrap.appendChild(map);
+
+    if (presets) {
+      var row = document.createElement("div");
+      row.className = "presets";
+      presets.forEach(function (p) {
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "preset";
+        btn.textContent = p.label;
+        btn.addEventListener("click", function () {
+          var next = emptyBlocks();
+          p.keys.forEach(function (k) { next[k] = true; });
+          state[key] = next;
+          dropSample();
+          render();
+        });
+        row.appendChild(btn);
+      });
+      wrap.appendChild(row);
+    }
+    return wrap;
+  }
+
+  function dropSample() {
+    if (!isSample) return;
+    isSample = false;
+    el.sampleChip.hidden = true;
+  }
+
+  function buildProcs() {
+    el.procs.textContent = "";
+    makeProc("attOff", "アタッチメント除去").appendChild(makeStepper("attOff", "個"));
+    makeProc("attOn", "アタッチメントセット").appendChild(makeMap("attOn", [
+      { label: "臼歯のみ（4ブロック）", keys: POST_KEYS },
+      { label: "全体（6ブロック）", keys: BLOCK_KEYS },
+      { label: "クリア", keys: [] }
+    ]));
+    makeProc("btnOff", "ボタン除去").appendChild(makeMap("btnOff", [
+      { label: "クリア", keys: [] }
+    ]));
+    makeProc("btnOn", "ボタンセット").appendChild(makeStepper("btnOn", "個"));
+    makeProc("ipr", "IPR").appendChild(makeStepper("ipr", "か所"));
+  }
+
+  /* ---------- 設定フォーム ---------- */
+  function fillSettingsForm() {
+    NUM_FIELDS.forEach(function (pair) {
+      var input = document.getElementById(pair[0]);
+      if (input && document.activeElement !== input) input.value = cfg[pair[1]];
+    });
+    document.getElementById("cfgStep").value = String(cfg.step);
+  }
+
+  function bindSettings() {
+    NUM_FIELDS.forEach(function (pair) {
+      var input = document.getElementById(pair[0]);
+      input.addEventListener("input", function () {
+        cfg[pair[1]] = num(input.value, DEFAULTS[pair[1]]);
+        render();
+      });
+    });
+    document.getElementById("cfgStep").addEventListener("change", function (e) {
+      cfg.step = num(e.target.value, DEFAULTS.step) || DEFAULTS.step;
+      render();
+    });
+  }
+
+  /* ---------- 描画 ---------- */
+  function ruleText(key) {
+    if (key === "attOff") {
+      return "1〜" + fmt(cfg.attOffThreshold) + "個は" + fmt(cfg.attOffLow) + "分 / " +
+        fmt(cfg.attOffThreshold + 1) + "個以上は" + fmt(cfg.attOffHigh) + "分";
+    }
+    if (key === "attOn") {
+      return fmt(cfg.attOnPerBlock) + "分／1ブロック（臼歯のみ" + fmt(cfg.attOnPerBlock * 4) +
+        "分・全体" + fmt(cfg.attOnPerBlock * 6) + "分）";
+    }
+    if (key === "btnOff") return fmt(cfg.btnOffPerBlock) + "分／1ブロック";
+    if (key === "btnOn") return fmt(cfg.btnOnPer) + "分／1個";
+    return fmt(cfg.iprPer) + "分／1か所";
+  }
+
+  function render(skipInputKey) {
+    var t = totals();
+    el.slot.textContent = fmt(t.slot);
+    el.rawTotal.textContent = fmt(t.raw) + "分";
+    el.roundNote.textContent = fmt(cfg.step) + "分単位で切り上げ・最短" + fmt(cfg.minSlot) + "分";
+    el.baseMin.textContent = fmt(baseMinutes()) + "分";
+    el.procMin.textContent = fmt(t.proc) + "分";
+
+    var doc = doctorMinutes();
+    el.doctorNote.hidden = doc <= 0;
+    el.doctorNote.textContent = doc > 0 ? "／ うちドクター " + fmt(doc) + "分（アタッチメント除去）" : "";
+
+    MODES.forEach(function (m) {
+      var btn = document.getElementById("mode-" + m.key);
+      if (btn) btn.setAttribute("aria-pressed", state.mode === m.key ? "true" : "false");
+    });
+
+    PROCS.forEach(function (key) {
+      var box = document.getElementById("proc-" + key);
+      if (box) box.classList.toggle("active", isActive(key));
+      var rule = document.getElementById("rule-" + key);
+      if (rule) rule.textContent = ruleText(key);
+      var sub = document.getElementById("sub-" + key);
+      if (sub) sub.textContent = isActive(key) ? fmt(minutesOf(key)) + "分" : "—";
+      var input = document.getElementById("count-" + key);
+      if (input && key !== skipInputKey) input.value = state[key];
+      var tag = document.getElementById("tag-" + key);
+      if (tag) tag.hidden = !(key === "attOff" && isRetainer());
+    });
+
+    ["attOn", "btnOff"].forEach(function (key) {
+      BLOCKS.forEach(function (b) {
+        var btn = document.getElementById("blk-" + key + "-" + b.key);
+        if (btn) btn.setAttribute("aria-pressed", state[key][b.key] ? "true" : "false");
+      });
+    });
+
+    fillSettingsForm();
+  }
+
+  /* ---------- 保存（医院で共有 → 端末保存） ---------- */
+  var LS_KEY = "aligner-chairtime-config-v3";
+
+  function normalize(raw) {
+    var next = clone(DEFAULTS);
+    if (!raw || typeof raw !== "object") return next;
+    Object.keys(DEFAULTS).forEach(function (k) { next[k] = num(raw[k], DEFAULTS[k]); });
+    if (!next.step) next.step = DEFAULTS.step;
+    if (!next.attOffThreshold) next.attOffThreshold = DEFAULTS.attOffThreshold;
+    return next;
+  }
+
+  function payload() {
+    var out = {};
+    Object.keys(DEFAULTS).forEach(function (k) { out[k] = cfg[k]; });
+    return out;
+  }
+
+  function readLocal() {
+    try {
+      var raw = window.localStorage.getItem(LS_KEY);
+      if (raw) cfg = normalize(JSON.parse(raw));
+    } catch (e) { /* 非公開ウィンドウなどでは無視 */ }
+  }
+
+  function writeLocal() {
+    try { window.localStorage.setItem(LS_KEY, JSON.stringify(payload())); } catch (e) { /* 無視 */ }
+  }
+
+  function status(text) { el.cfgStatus.textContent = text; }
+
+  function saveSettings() {
+    cfg = normalize(payload());
+    writeLocal();
+    render();
+    if (!dbDoc) { status("この端末に保存しました。"); return; }
+    status("保存中…");
+    dbDoc.set(payload())
+      .then(function () { status("保存しました。この設定は医院のスタッフ全員に反映されます。"); })
+      .catch(function () { status("共有できませんでした。この端末にのみ保存しています。"); });
+  }
+
+  /* ---------- 操作 ---------- */
+  el.resetBtn.addEventListener("click", function () {
+    state.attOff = 0;
+    state.attOn = emptyBlocks();
+    state.btnOff = emptyBlocks();
+    state.btnOn = 0;
+    state.ipr = 0;
+    dropSample();
+    render();
+  });
+  el.saveBtn.addEventListener("click", saveSettings);
+  el.defaultBtn.addEventListener("click", function () {
+    cfg = clone(DEFAULTS);
+    render();
+    status("初期値に戻しました。保存するには「設定を保存」を押してください。");
+  });
+  el.copyBtn.addEventListener("click", function () {
+    var text = fmt(totals().slot) + "分";
+    var done = function (ok) {
+      el.copyBtn.textContent = ok ? "コピーしました" : "コピーできません";
+      window.setTimeout(function () { el.copyBtn.textContent = "分数をコピー"; }, 1600);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(false); });
+    } else {
+      done(false);
+    }
+  });
+
+  /* ---------- 起動 ---------- */
+  buildModes();
+  buildProcs();
+  bindSettings();
+  readLocal();
+  render();
+  status("この端末に保存されます。");
+
+  if (window.claude && typeof window.claude.use === "function") {
+    window.claude.use("db").then(function (db) {
+      if (!db) return;
+      dbDoc = db.doc("settings/chairtime-v3");
+      dbDoc.onSnapshot(function (snap) {
+        if (snap.exists) {
+          cfg = normalize(snap.data());
+          writeLocal();
+          render();
+          status("医院で共有している設定を読み込みました。");
+        } else {
+          status("まだ共有設定がありません。「設定を保存」でスタッフ全員に共有できます。");
+        }
+      }, function () {
+        dbDoc = null;
+        status("この端末に保存されます。");
+      });
+    }).catch(function () { /* 共有なしで動作 */ });
+  }
+})();
+</script>
+</body>
+</html>

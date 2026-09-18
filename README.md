@@ -20,4 +20,5 @@ Gmail と Chatwork の未読メッセージを毎朝チェックし、過去の�
 アタッチメント除去は個数で段階的に、アタッチメントセットとボタン除去は口腔を6分割したブロック単位で計算します。
 
 - **ツール**: [`tools/aligner-time/index.html`](tools/aligner-time/index.html)（ブラウザで開くだけ）
+- **受付PC用**: [`tools/aligner-time/standalone/アライナー時間計算.html`](tools/aligner-time/standalone/)（デスクトップに置いてダブルクリック）
 - 使い方と時間の初期値は [`tools/aligner-time/README.md`](tools/aligner-time/README.md) を参照。
