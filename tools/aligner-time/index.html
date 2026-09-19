@@ -131,6 +131,9 @@
     white-space: nowrap;
   }
   .copy-min:hover { border-color: var(--accent); color: var(--accent-ink); }
+  .summary-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .clear-all { background: var(--surface); color: var(--muted); }
+  .clear-all:hover { border-color: var(--amber); color: var(--amber); }
 
   /* --- カード --- */
   section { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
@@ -285,7 +288,6 @@
     font-variant-numeric: tabular-nums;
   }
   .totals b { color: var(--ink); font-weight: 500; }
-  .totals .preset { margin-left: auto; background: var(--surface); }
 
   /* --- 設定 --- */
   label { font-size: 12px; color: var(--muted); letter-spacing: .04em; }
@@ -370,7 +372,10 @@
       <span id="roundNote"></span>
       <span id="doctorNote" class="doctor-note" hidden></span>
     </div>
-    <button class="copy-min" id="copyBtn" type="button">分数をコピー</button>
+    <div class="summary-actions">
+      <button class="copy-min" id="copyBtn" type="button">分数をコピー</button>
+      <button class="copy-min clear-all" id="clearBtn" type="button">すべてクリア</button>
+    </div>
   </div>
 
   <section>
@@ -383,7 +388,6 @@
     <div class="totals">
       <span>基本（お渡し・チェック・説明） <b id="baseMin">0分</b></span>
       <span>処置 <b id="procMin">45分</b></span>
-      <button class="preset" id="resetBtn" type="button">入力をリセット</button>
     </div>
   </section>
 
@@ -545,7 +549,7 @@
     procMin: document.getElementById("procMin"),
     sampleChip: document.getElementById("sampleChip"),
     copyBtn: document.getElementById("copyBtn"),
-    resetBtn: document.getElementById("resetBtn"),
+    clearBtn: document.getElementById("clearBtn"),
     saveBtn: document.getElementById("saveBtn"),
     defaultBtn: document.getElementById("defaultBtn"),
     cfgStatus: document.getElementById("cfgStatus")
@@ -910,7 +914,8 @@
   }
 
   /* ---------- 操作 ---------- */
-  el.resetBtn.addEventListener("click", function () {
+  el.clearBtn.addEventListener("click", function () {
+    state.mode = MODES[0].key;
     state.attOff = 0;
     state.attOn = emptyBlocks();
     state.btnOff = emptyBlocks();
@@ -918,6 +923,8 @@
     state.ipr = 0;
     dropSample();
     render();
+    el.clearBtn.textContent = "クリアしました";
+    window.setTimeout(function () { el.clearBtn.textContent = "すべてクリア"; }, 1200);
   });
   el.saveBtn.addEventListener("click", saveSettings);
   el.defaultBtn.addEventListener("click", function () {
