@@ -370,10 +370,10 @@
   <div class="summary">
     <div>
       <span class="slot-label">予約枠</span>
-      <span class="slot" id="slot" aria-live="polite">60</span><span class="slot-unit">分</span>
+      <span class="slot" id="slot" aria-live="polite">45</span><span class="slot-unit">分</span>
     </div>
     <div class="summary-sub">
-      処置時間の合計 <b id="rawTotal">55分</b><br>
+      処置時間の合計 <b id="rawTotal">45分</b><br>
       <span id="roundNote"></span>
       <span id="doctorNote" class="doctor-note" hidden></span>
     </div>
@@ -388,7 +388,7 @@
     <div class="modes" id="modes"></div>
     <div id="procs"></div>
     <div class="totals">
-      <span>基本（お渡し・チェック・説明） <b id="baseMin">10分</b></span>
+      <span>基本（お渡し・チェック・説明） <b id="baseMin">0分</b></span>
       <span>処置 <b id="procMin">45分</b></span>
       <button class="preset" id="resetBtn" type="button">入力をリセット</button>
     </div>
@@ -509,8 +509,8 @@
   ];
 
   var DEFAULTS = {
-    base: 10,
-    baseRetainer: 10,
+    base: 0,
+    baseRetainer: 0,
     attOffThreshold: 4,
     attOffLow: 15,
     attOffHigh: 30,
@@ -618,7 +618,7 @@
     var proc = PROCS.reduce(function (sum, k) { return sum + minutesOf(k); }, 0);
     var raw = baseMinutes() + proc;
     var step = cfg.step > 0 ? cfg.step : 1;
-    var slot = Math.max(cfg.minSlot, Math.ceil(raw / step) * step);
+    var slot = raw <= 0 ? 0 : Math.max(cfg.minSlot, Math.ceil(raw / step) * step);
     return { proc: proc, raw: raw, slot: slot };
   }
 
@@ -875,7 +875,7 @@
   }
 
   /* ---------- 保存（医院で共有 → 端末保存） ---------- */
-  var LS_KEY = "aligner-chairtime-config-v5";
+  var LS_KEY = "aligner-chairtime-config-v6";
 
   function normalize(raw) {
     var next = clone(DEFAULTS);
@@ -956,7 +956,7 @@
   if (window.claude && typeof window.claude.use === "function") {
     window.claude.use("db").then(function (db) {
       if (!db) return;
-      dbDoc = db.doc("settings/chairtime-v5");
+      dbDoc = db.doc("settings/chairtime-v6");
       dbDoc.onSnapshot(function (snap) {
         if (snap.exists) {
           cfg = normalize(snap.data());
