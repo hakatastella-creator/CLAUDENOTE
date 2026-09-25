@@ -30,6 +30,10 @@
   .f input { width: 110px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; font-size: 14px; text-align: right; }
   .f .unit { font-size: 12px; color: var(--dim); width: 20px; }
   .grid .subhead { grid-column: 1 / -1; font-weight: 600; font-size: 12px; color: var(--green-d); margin: 6px 0 0; padding-bottom: 2px; border-bottom: 1px dashed var(--line); }
+  .grid .f3 { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 74px 20px 100px 20px; gap: 6px; align-items: center; }
+  .grid .f3 label { font-size: 13px; }
+  .grid .f3 input { padding: 6px 6px; border: 1px solid var(--line); border-radius: 6px; font-size: 14px; text-align: right; min-width: 0; }
+  .grid .f3 .u3 { font-size: 11px; color: var(--dim); }
 
   .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 10px; margin-left: 6px; vertical-align: middle; }
   .tag.glance { background: #d8f0e3; color: #176c47; }
@@ -87,6 +91,7 @@
   table.rep { width: 100%; border-collapse: collapse; font-size: 12px; }
   table.rep th, table.rep td { border: 1px solid var(--line); padding: 4px 8px; }
   table.rep th { background: #eef4fb; text-align: left; font-weight: 600; color: var(--ink2); white-space: nowrap; }
+  table.rep.sales3 thead th { text-align: right; } table.rep.sales3 thead th.lab { text-align: left; }
   table.rep td { text-align: right; font-variant-numeric: tabular-nums; }
   table.rep th.lab { font-weight: 600; }
   table.rep tr.total th, table.rep tr.total td { background: #f2f7f4; font-weight: 700; }
@@ -221,7 +226,7 @@
  * ============================================================ */
 (function () {
   "use strict";
-  const KEY = "hakataStellaMonthly11:";
+  const KEY = "hakataStellaMonthly12:";
   const TAGN = { glance: "一目", count: "要カウント", manual: "手入力" };
 
   const SECTIONS = [
@@ -239,35 +244,36 @@
       { id: "r_recall", label: "リコール件数", unit: "件" }, { id: "r_recall_ori", label: "リコオリ件数", unit: "件" },
     ]},
     { title: "矯正パイプライン", src: "検査→説明予約→治療計画説明→支払→開始 を患者ごとに管理（先月を複製して更新）", tag: "count", type: "pipeline", fields: [] },
-    { title: "売上", src: "会計・レセコン（アポツール外）", tag: "manual", fields: [
-      { id: "u_hoken", label: "保険点数（売上）", unit: "円" },
+    { title: "売上", src: "会計・レセコン（自費項目別の 数量＝件数 と 請求額＝金額）", tag: "manual", fields: [
+      { id: "u_hoken", cnt: "u_hoken_n", label: "保険点数（売上）", unit: "円" },
       { head: "矯正 内訳" },
-      { id: "uk_full", label: "フル", unit: "円" },
-      { id: "uk_mod", label: "モデレート", unit: "円" },
-      { id: "uk_light", label: "ライト", unit: "円" },
-      { id: "uk_express", label: "エクスプレス", unit: "円" },
-      { id: "uk_kensa", label: "矯正検査", unit: "円" },
-      { id: "uk_preortho", label: "プレオルソ", unit: "円" },
-      { id: "uk_retainer", label: "リテーナー", unit: "円" },
+      { id: "uk_full", cnt: "uk_full_n", label: "フル", unit: "円" },
+      { id: "uk_mod", cnt: "uk_mod_n", label: "モデレート", unit: "円" },
+      { id: "uk_light", cnt: "uk_light_n", label: "ライト", unit: "円" },
+      { id: "uk_express", cnt: "uk_express_n", label: "エクスプレス", unit: "円" },
+      { id: "uk_kensa", cnt: "uk_kensa_n", label: "矯正検査", unit: "円" },
+      { id: "uk_preortho", cnt: "uk_preortho_n", label: "プレオルソ", unit: "円" },
+      { id: "uk_retainer", cnt: "uk_retainer_n", label: "リテーナー", unit: "円" },
       { head: "美容 内訳（ハイフ・ホワイトニング）" },
-      { id: "ub_hifu", label: "ハイフ", unit: "円" },
-      { id: "ub_white", label: "ホワイトニング", unit: "円" },
+      { id: "ub_hifu", cnt: "ub_hifu_n", label: "ハイフ", unit: "円" },
+      { id: "ub_white", cnt: "ub_white_n", label: "ホワイトニング", unit: "円" },
       { head: "自費 内訳（ハイフ・WT以外の自費診療）" },
-      { id: "uj_zir_inlay", label: "ジルコニアインレー", unit: "円" },
-      { id: "uj_cer_inlay", label: "セラミックインレー", unit: "円" },
-      { id: "uj_zir_crown", label: "ジルコニアクラウン", unit: "円" },
-      { id: "uj_allceram", label: "オールセラミックス", unit: "円" },
-      { id: "uj_zir_br", label: "ジルコニアBr", unit: "円" },
-      { id: "uj_botox", label: "ボトックス", unit: "円" },
-      { id: "uj_db", label: "ダイレクトボンディング", unit: "円" },
-      { id: "uj_superenamel", label: "スーパーエナメル", unit: "円" },
-      { id: "uj_other", label: "その他自費", unit: "円" },
+      { id: "uj_zir_inlay", cnt: "uj_zir_inlay_n", label: "ジルコニアインレー", unit: "円" },
+      { id: "uj_cer_inlay", cnt: "uj_cer_inlay_n", label: "セラミックインレー", unit: "円" },
+      { id: "uj_zir_crown", cnt: "uj_zir_crown_n", label: "ジルコニアクラウン", unit: "円" },
+      { id: "uj_allceram", cnt: "uj_allceram_n", label: "オールセラミックス", unit: "円" },
+      { id: "uj_zir_br", cnt: "uj_zir_br_n", label: "ジルコニアBr", unit: "円" },
+      { id: "uj_botox", cnt: "uj_botox_n", label: "ボトックス", unit: "円" },
+      { id: "uj_db", cnt: "uj_db_n", label: "ダイレクトボンディング", unit: "円" },
+      { id: "uj_superenamel", cnt: "uj_superenamel_n", label: "スーパーエナメル", unit: "円" },
+      { id: "uj_other", cnt: "uj_other_n", label: "その他自費", unit: "円" },
       { head: "その他" },
-      { id: "u_cancel", label: "キャンセル料", unit: "円" },
-      { id: "u_zatsu", label: "雑収入", unit: "円" },
+      { id: "u_cancel", cnt: "u_cancel_n", label: "キャンセル料", unit: "円" },
+      { id: "u_zatsu", cnt: "u_zatsu_n", label: "雑収入", unit: "円" },
     ]},
   ];
   const ALL = SECTIONS.flatMap((s) => s.fields).filter((f) => f.id);
+  const ALL_IDS = SECTIONS.flatMap((s) => s.fields).flatMap((f) => [f.id, f.cnt]).filter(Boolean);
 
   const $ = (id) => document.getElementById(id);
   const monthEl = $("month");
@@ -327,6 +333,7 @@
     } else {
       const fields = sec.fields.map((f) => {
         if (f.head) return `<div class="subhead">${f.head}</div>`;
+        if (f.cnt) return `<div class="f3"><label>${f.label}</label><input type="number" id="${f.cnt}" placeholder="件数" /><span class="u3">件</span><input type="number" id="${f.id}" placeholder="金額" /><span class="u3">円</span></div>`;
         const step = f.unit === "%" ? ' step="0.1"' : "";
         return `<div class="f"><label>${f.label}</label><input type="number"${step} id="${f.id}" /><span class="unit">${f.unit}</span></div>`;
       }).join("");
@@ -344,12 +351,15 @@
     const kyoseiUri = num("uk_full") + num("uk_mod") + num("uk_light") + num("uk_express") + num("uk_kensa") + num("uk_preortho") + num("uk_retainer");
     const biyoUri = num("ub_hifu") + num("ub_white");
     const jihiUri = num("uj_zir_inlay") + num("uj_cer_inlay") + num("uj_zir_crown") + num("uj_allceram") + num("uj_zir_br") + num("uj_botox") + num("uj_db") + num("uj_superenamel") + num("uj_other");
+    const kyoseiCnt = num("uk_full_n") + num("uk_mod_n") + num("uk_light_n") + num("uk_express_n") + num("uk_kensa_n") + num("uk_preortho_n") + num("uk_retainer_n");
+    const biyoCnt = num("ub_hifu_n") + num("ub_white_n");
+    const jihiCnt = num("uj_zir_inlay_n") + num("uj_cer_inlay_n") + num("uj_zir_crown_n") + num("uj_allceram_n") + num("uj_zir_br_n") + num("uj_botox_n") + num("uj_db_n") + num("uj_superenamel_n") + num("uj_other_n");
     const jihiSougaku = kyoseiUri + biyoUri + jihiUri + num("u_cancel");
     const uriTotal = num("u_hoken") + jihiSougaku + num("u_zatsu");
     const pipe = readPipeline();
     const pc = (s) => pipe.filter((p) => p[s]).length;
     return {
-      uriTotal, jihiSougaku, kyoseiUri, biyoUri, jihiUri, pipe,
+      uriTotal, jihiSougaku, kyoseiUri, biyoUri, jihiUri, kyoseiCnt, biyoCnt, jihiCnt, pipe,
       jihiRate: rate(num("j_jihi"), num("j_jihi") + num("j_hoken")),
       kensaN: pc("kensa"), yoyakuN: pc("yoyaku"), setsumeiN: pc("setsumei"), shiharaiN: pc("shiharai"), kaishiN: pc("kaishi"),
       setsumeiMibarai: pipe.filter((p) => p.setsumei && !p.shiharai).length,
@@ -368,7 +378,7 @@
   }
 
   // ---- 保存・複製 ----
-  const inputs = () => ALL.map((f) => $(f.id)).concat([$("clinic_name")]);
+  const inputs = () => ALL_IDS.map((id) => $(id)).concat([$("clinic_name")]);
   function collect() { const o = {}; inputs().forEach((i) => (o[i.id] = i.value)); o.__pipeline = readPipeline(); o.__month = monthEl.value; return o; }
   function apply(o) { inputs().forEach((i) => (i.value = o && o[i.id] != null ? o[i.id] : "")); setPipeline(o && o.__pipeline || []); recompute(); }
   function save(silent) { localStorage.setItem(KEY + monthEl.value, JSON.stringify(collect())); if (!silent) setStatus("保存しました（" + monthLabel(monthEl.value) + "）", "ok"); }
@@ -474,19 +484,29 @@
     const recallFunnel = [
       { label: "リコール", value: num("r_recall") }, { label: "リコオリ", value: num("r_recall_ori") },
     ];
-    const salesTable = kvT([
-      ["保険点数（売上）", yen(num("u_hoken"))], "spacer",
-      ["矯正 フル", yen(num("uk_full"))], ["矯正 モデレート", yen(num("uk_mod"))], ["矯正 ライト", yen(num("uk_light"))], ["矯正 エクスプレス", yen(num("uk_express"))],
-      ["矯正 検査", yen(num("uk_kensa"))], ["プレオルソ", yen(num("uk_preortho"))], ["リテーナー", yen(num("uk_retainer"))],
-      ["矯正 計", yen(c.kyoseiUri), "sub"], "spacer",
-      ["ハイフ", yen(num("ub_hifu"))], ["ホワイトニング", yen(num("ub_white"))], ["美容 計", yen(c.biyoUri), "sub"], "spacer",
-      ["ジルコニアインレー", yen(num("uj_zir_inlay"))], ["セラミックインレー", yen(num("uj_cer_inlay"))],
-      ["ジルコニアクラウン", yen(num("uj_zir_crown"))], ["オールセラミックス", yen(num("uj_allceram"))], ["ジルコニアBr", yen(num("uj_zir_br"))],
-      ["ボトックス", yen(num("uj_botox"))], ["ダイレクトボンディング", yen(num("uj_db"))],
-      ["スーパーエナメル", yen(num("uj_superenamel"))], ["その他自費", yen(num("uj_other"))],
-      ["自費 計", yen(c.jihiUri), "sub"], "spacer",
-      ["キャンセル料", yen(num("u_cancel"))], ["雑収入", yen(num("u_zatsu"))], "spacer",
-      ["自費総額", yen(c.jihiSougaku), "sub"], ["合計売上高", yen(c.uriTotal), "total"],
+    const CN = (id) => { const v = num(id); return v > 0 ? nf(v) + " 件" : ""; };
+    const cS = (v) => (v > 0 ? nf(v) + " 件" : "");
+    const sales3 = (rows) => {
+      const kept = [];
+      for (const r of rows) { if (r === "spacer") { kept.push("spacer"); continue; } if (!r[3] && isZeroDisp(r[1]) && isZeroDisp(r[2])) continue; kept.push(r); }
+      const body = collapseSpacers(kept).map((r) => r === "spacer"
+        ? `<tr class="rep-spacer"><td colspan="3"></td></tr>`
+        : `<tr class="${r[3] || ""}"><th class="lab">${escX(r[0])}</th><td>${r[1]}</td><td>${r[2]}</td></tr>`).join("");
+      return `<table class="rep sales3"><thead><tr><th class="lab">項目</th><th>件数</th><th>金額</th></tr></thead><tbody>${body}</tbody></table>`;
+    };
+    const salesTable = sales3([
+      ["保険点数（売上）", CN("u_hoken_n"), yen(num("u_hoken"))], "spacer",
+      ["矯正 フル", CN("uk_full_n"), yen(num("uk_full"))], ["矯正 モデレート", CN("uk_mod_n"), yen(num("uk_mod"))], ["矯正 ライト", CN("uk_light_n"), yen(num("uk_light"))], ["矯正 エクスプレス", CN("uk_express_n"), yen(num("uk_express"))],
+      ["矯正 検査", CN("uk_kensa_n"), yen(num("uk_kensa"))], ["プレオルソ", CN("uk_preortho_n"), yen(num("uk_preortho"))], ["リテーナー", CN("uk_retainer_n"), yen(num("uk_retainer"))],
+      ["矯正 計", cS(c.kyoseiCnt), yen(c.kyoseiUri), "sub"], "spacer",
+      ["ハイフ", CN("ub_hifu_n"), yen(num("ub_hifu"))], ["ホワイトニング", CN("ub_white_n"), yen(num("ub_white"))], ["美容 計", cS(c.biyoCnt), yen(c.biyoUri), "sub"], "spacer",
+      ["ジルコニアインレー", CN("uj_zir_inlay_n"), yen(num("uj_zir_inlay"))], ["セラミックインレー", CN("uj_cer_inlay_n"), yen(num("uj_cer_inlay"))],
+      ["ジルコニアクラウン", CN("uj_zir_crown_n"), yen(num("uj_zir_crown"))], ["オールセラミックス", CN("uj_allceram_n"), yen(num("uj_allceram"))], ["ジルコニアBr", CN("uj_zir_br_n"), yen(num("uj_zir_br"))],
+      ["ボトックス", CN("uj_botox_n"), yen(num("uj_botox"))], ["ダイレクトボンディング", CN("uj_db_n"), yen(num("uj_db"))],
+      ["スーパーエナメル", CN("uj_superenamel_n"), yen(num("uj_superenamel"))], ["その他自費", CN("uj_other_n"), yen(num("uj_other"))],
+      ["自費 計", cS(c.jihiCnt), yen(c.jihiUri), "sub"], "spacer",
+      ["キャンセル料", CN("u_cancel_n"), yen(num("u_cancel"))], ["雑収入", CN("u_zatsu_n"), yen(num("u_zatsu"))], "spacer",
+      ["自費総額", "", yen(c.jihiSougaku), "sub"], ["合計売上高", "", yen(c.uriTotal), "total"],
     ]);
     const yoyakuTable = kvT([
       ["総予約件数", nf(num("d_yoyaku")) + " 件"], ["来院人数", nf(num("d_raiin")) + " 人"],
@@ -564,18 +584,25 @@
         rows.push([]);
         return;
       }
+      if (sec.title === "売上") {
+        rows.push([{ v: "項目", bold: true }, { v: "件数", bold: true }, { v: "金額", bold: true }]);
+        sec.fields.forEach((f) => {
+          if (f.head) { rows.push([{ v: "〔" + f.head + "〕", bold: true }]); return; }
+          rows.push([f.label, f.cnt ? num(f.cnt) : "", num(f.id)]);
+        });
+        rows.push([{ v: "矯正 計", bold: true }, c.kyoseiCnt, c.kyoseiUri]); rows.push([]);
+        rows.push([{ v: "美容 計", bold: true }, c.biyoCnt, c.biyoUri]); rows.push([]);
+        rows.push([{ v: "自費 計", bold: true }, c.jihiCnt, c.jihiUri]); rows.push([]);
+        rows.push([{ v: "自費総額", bold: true }, "", c.jihiSougaku]);
+        rows.push([{ v: "合計売上高", bold: true }, "", c.uriTotal]);
+        rows.push([]);
+        return;
+      }
       rows.push([{ v: "項目", bold: true }, { v: "値", bold: true }]);
       sec.fields.forEach((f) => {
         if (f.head) { rows.push([{ v: "〔" + f.head + "〕", bold: true }]); return; }
         rows.push([f.label, f.unit === "%" ? (num(f.id) ? num(f.id) + "%" : "—") : num(f.id)]);
       });
-      if (sec.title === "売上") {
-        rows.push([{ v: "矯正 計", bold: true }, c.kyoseiUri]); rows.push([]);
-        rows.push([{ v: "美容 計", bold: true }, c.biyoUri]); rows.push([]);
-        rows.push([{ v: "自費 計", bold: true }, c.jihiUri]); rows.push([]);
-        rows.push([{ v: "自費総額", bold: true }, c.jihiSougaku]);
-        rows.push([{ v: "合計売上高", bold: true }, c.uriTotal]);
-      }
       rows.push([]);
     });
     rows.push([{ v: "■ 自動計算", bold: true }]);
@@ -612,7 +639,7 @@
   $("btn-print").addEventListener("click", () => window.print());
   $("btn-clear").addEventListener("click", () => {
     if (!confirm(monthLabel(monthEl.value) + " の入力をクリアします。よろしいですか？（保存済みデータは残ります）")) return;
-    ALL.forEach((f) => ($(f.id).value = "")); setPipeline([]); recompute(); setStatus("クリアしました", "ok");
+    ALL_IDS.forEach((id) => ($(id).value = "")); setPipeline([]); recompute(); setStatus("クリアしました", "ok");
   });
   $("btn-copy-prev").addEventListener("click", () => {
     const pm = prevMonth(monthEl.value), raw = localStorage.getItem(KEY + pm);
@@ -620,7 +647,7 @@
     try { const o = JSON.parse(raw); o.__month = monthEl.value; apply(o); setStatus(monthLabel(pm) + " の内容を複製しました（数字を修正してください）", "ok"); }
     catch (e) { setStatus("複製に失敗しました", "err"); }
   });
-  monthEl.addEventListener("change", () => { if (!load(monthEl.value)) { ALL.forEach((f) => ($(f.id).value = "")); setPipeline([]); recompute(); } setStatus(""); });
+  monthEl.addEventListener("change", () => { if (!load(monthEl.value)) { ALL_IDS.forEach((id) => ($(id).value = "")); setPipeline([]); recompute(); } setStatus(""); });
 
   // ---- 初期化 ----
   monthEl.value = nowMonth();
