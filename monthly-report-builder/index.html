@@ -221,7 +221,7 @@
  * ============================================================ */
 (function () {
   "use strict";
-  const KEY = "hakataStellaMonthly8:";
+  const KEY = "hakataStellaMonthly9:";
   const TAGN = { glance: "一目", count: "要カウント", manual: "手入力" };
 
   const SECTIONS = [
@@ -251,6 +251,9 @@
       { id: "uk_mod", label: "モデレート", unit: "円" },
       { id: "uk_light", label: "ライト", unit: "円" },
       { id: "uk_express", label: "エクスプレス", unit: "円" },
+      { id: "uk_kensa", label: "矯正検査", unit: "円" },
+      { id: "uk_preortho", label: "プレオルソ", unit: "円" },
+      { id: "uk_retainer", label: "リテーナー", unit: "円" },
       { head: "美容 内訳（ハイフ・ホワイトニング）" },
       { id: "ub_hifu", label: "ハイフ", unit: "円" },
       { id: "ub_white", label: "ホワイトニング", unit: "円" },
@@ -344,7 +347,7 @@
   // ---- 計算 ----
   function computed() {
     const cancel = num("c_jizen") + num("c_touji") + num("c_muidan");
-    const kyoseiUri = num("uk_full") + num("uk_mod") + num("uk_light") + num("uk_express");
+    const kyoseiUri = num("uk_full") + num("uk_mod") + num("uk_light") + num("uk_express") + num("uk_kensa") + num("uk_preortho") + num("uk_retainer");
     const biyoUri = num("ub_hifu") + num("ub_white");
     const jihiUri = num("uj_zir_inlay") + num("uj_cer_inlay") + num("uj_zir_crown") + num("uj_allceram") + num("uj_zir_br") + num("uj_botox") + num("uj_db") + num("uj_superenamel") + num("uj_other");
     const jihiSougaku = kyoseiUri + biyoUri + jihiUri + num("u_cancel");
@@ -433,6 +436,9 @@
       { label: "モデレート", value: num("uk_mod"), display: yen(num("uk_mod")) },
       { label: "ライト", value: num("uk_light"), display: yen(num("uk_light")) },
       { label: "エクスプレス", value: num("uk_express"), display: yen(num("uk_express")) },
+      { label: "矯正検査", value: num("uk_kensa"), display: yen(num("uk_kensa")) },
+      { label: "プレオルソ", value: num("uk_preortho"), display: yen(num("uk_preortho")) },
+      { label: "リテーナー", value: num("uk_retainer"), display: yen(num("uk_retainer")) },
     ];
     const jihiUchiwake = [
       { label: "ジルコニアIN", value: num("uj_zir_inlay"), display: yen(num("uj_zir_inlay")) },
@@ -465,6 +471,7 @@
     const salesTable = kvTable([
       ["保険点数（売上）", yen(num("u_hoken"))], "spacer",
       ["矯正 フル", yen(num("uk_full"))], ["矯正 モデレート", yen(num("uk_mod"))], ["矯正 ライト", yen(num("uk_light"))], ["矯正 エクスプレス", yen(num("uk_express"))],
+      ["矯正 検査", yen(num("uk_kensa"))], ["プレオルソ", yen(num("uk_preortho"))], ["リテーナー", yen(num("uk_retainer"))],
       ["矯正 計", yen(c.kyoseiUri), "sub"], "spacer",
       ["ハイフ", yen(num("ub_hifu"))], ["ホワイトニング", yen(num("ub_white"))], ["美容 計", yen(c.biyoUri), "sub"], "spacer",
       ["ジルコニアインレー", yen(num("uj_zir_inlay"))], ["セラミックインレー", yen(num("uj_cer_inlay"))],
