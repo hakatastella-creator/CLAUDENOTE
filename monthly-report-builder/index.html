@@ -239,9 +239,6 @@
       { id: "r_taisho", label: "対象者数", unit: "人" }, { id: "r_yoyaku", label: "予約者数", unit: "人" },
       { id: "r_raiin", label: "来院数", unit: "人" }, { id: "r_teiki", label: "定期検診来院率", unit: "%" },
     ]},
-    { title: "クリニックデータ｜中断", src: "/user/dashboard/", tag: "glance", fields: [
-      { id: "x_chudan", label: "中断患者数", unit: "人" },
-    ]},
     { title: "矯正パイプライン", src: "検査→説明予約→治療計画説明→支払→開始 を患者ごとに管理（先月を複製して更新）", tag: "count", type: "pipeline", fields: [] },
     { title: "売上", src: "会計・レセコン（アポツール外）", tag: "manual", fields: [
       { id: "u_hoken", label: "保険点数（売上）", unit: "円" },
@@ -491,9 +488,6 @@
       ["予約取得率", pctS(c.recallGet), "sub"], ["来院数", nf(num("r_raiin")) + " 人"],
       ["来院率", pctS(c.recallVisit), "sub"], ["定期検診来院率", pctS(num("r_teiki") || null)],
     ]);
-    const chudanTable = kvTable([
-      ["中断患者数", nf(num("x_chudan")) + " 人"],
-    ]);
 
     const page = `
       <div class="rep-header"><div class="clinic">${clinic}</div><div class="title">月次レポート</div><div class="month">${ml}</div></div>
@@ -532,10 +526,6 @@
           <div>${recallTable}</div>
           <div class="chart"><div class="c-title">リコール ファネル（人）</div>${barsH(recallFunnel, { valueW: 48, labelW: 76 })}</div>
         </div>
-      </div>
-
-      <div class="rep-section"><h3>中断</h3>
-        <div style="max-width:340px">${chudanTable}</div>
       </div>
 
       <div class="rep-foot">出典：アポツール（クリニックデータ）の集計値＋矯正はカウント、売上は会計・レセコンから手入力。患者個人情報は含みません。／作成日時：${new Date().toLocaleString("ja-JP")}</div>
