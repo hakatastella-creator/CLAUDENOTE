@@ -221,7 +221,7 @@
  * ============================================================ */
 (function () {
   "use strict";
-  const KEY = "hakataStellaMonthly10:";
+  const KEY = "hakataStellaMonthly11:";
   const TAGN = { glance: "一目", count: "要カウント", manual: "手入力" };
 
   const SECTIONS = [
@@ -235,9 +235,8 @@
     { title: "クリニックデータ｜自費・保険（件数）", src: "/user/dashboard/", tag: "glance", fields: [
       { id: "j_jihi", label: "自費件数", unit: "件" }, { id: "j_hoken", label: "保険件数", unit: "件" },
     ]},
-    { title: "クリニックデータ｜定期検診（リコール）", src: "/user/dashboard/", tag: "glance", fields: [
-      { id: "r_taisho", label: "対象者数", unit: "人" }, { id: "r_yoyaku", label: "予約者数", unit: "人" },
-      { id: "r_raiin", label: "来院数", unit: "人" }, { id: "r_teiki", label: "定期検診来院率", unit: "%" },
+    { title: "リコール", src: "イベントカレンダー（月間件数）", tag: "count", fields: [
+      { id: "r_recall", label: "リコール件数", unit: "件" }, { id: "r_recall_ori", label: "リコオリ件数", unit: "件" },
     ]},
     { title: "矯正パイプライン", src: "検査→説明予約→治療計画説明→支払→開始 を患者ごとに管理（先月を複製して更新）", tag: "count", type: "pipeline", fields: [] },
     { title: "売上", src: "会計・レセコン（アポツール外）", tag: "manual", fields: [
@@ -352,8 +351,6 @@
     return {
       uriTotal, jihiSougaku, kyoseiUri, biyoUri, jihiUri, pipe,
       jihiRate: rate(num("j_jihi"), num("j_jihi") + num("j_hoken")),
-      recallGet: rate(num("r_yoyaku"), num("r_taisho")),
-      recallVisit: rate(num("r_raiin"), num("r_yoyaku")),
       kensaN: pc("kensa"), yoyakuN: pc("yoyaku"), setsumeiN: pc("setsumei"), shiharaiN: pc("shiharai"), kaishiN: pc("kaishi"),
       setsumeiMibarai: pipe.filter((p) => p.setsumei && !p.shiharai).length,
       shiharaiMikaishi: pipe.filter((p) => p.shiharai && !p.kaishi).length,
@@ -364,7 +361,7 @@
     const rows = [
       ["合計売上高", yen(c.uriTotal)], ["自費総額", yen(c.jihiSougaku)],
       ["矯正 売上計", yen(c.kyoseiUri)], ["美容 売上計", yen(c.biyoUri)], ["自費 売上計", yen(c.jihiUri)],
-      ["自費率", pctS(c.jihiRate)], ["定期検診 予約取得率", pctS(c.recallGet)], ["定期検診 来院率", pctS(c.recallVisit)],
+      ["自費率", pctS(c.jihiRate)],
       ["矯正 検査/説明/支払/開始", `${c.kensaN} / ${c.setsumeiN} / ${c.shiharaiN} / ${c.kaishiN} 人`],
     ];
     $("calc").innerHTML = rows.map((r) => `<div class="f"><label>${r[0]}</label><span class="cv">${r[1]}</span></div>`).join("");
@@ -475,7 +472,7 @@
     const kyoseiTable = named.length ? pipeTable : kyoseiCountTable;
     const pipeFollow = c.shiharaiN > 0 ? `<div class="names-list" style="margin-top:6px">🔸 説明済・未支払：<b>${c.setsumeiMibarai}</b> 人 ／ 支払済・未開始（発注〜到着待ち）：<b>${c.shiharaiMikaishi}</b> 人</div>` : "";
     const recallFunnel = [
-      { label: "対象者数", value: num("r_taisho") }, { label: "予約者数", value: num("r_yoyaku") }, { label: "来院数", value: num("r_raiin") },
+      { label: "リコール", value: num("r_recall") }, { label: "リコオリ", value: num("r_recall_ori") },
     ];
     const salesTable = kvT([
       ["保険点数（売上）", yen(num("u_hoken"))], "spacer",
@@ -503,9 +500,8 @@
       ["自費件数", nf(num("j_jihi")) + " 件"], ["保険件数", nf(num("j_hoken")) + " 件"], ["自費率", pctS(c.jihiRate), "sub"],
     ]);
     const recallTable = kvT([
-      ["対象者数", nf(num("r_taisho")) + " 人"], ["予約者数", nf(num("r_yoyaku")) + " 人"],
-      ["予約取得率", pctS(c.recallGet), "sub"], ["来院数", nf(num("r_raiin")) + " 人"],
-      ["来院率", pctS(c.recallVisit), "sub"], ["定期検診来院率", pctS(num("r_teiki") || null)],
+      ["リコール件数", nf(num("r_recall")) + " 件"],
+      ["リコオリ件数", nf(num("r_recall_ori")) + " 件"],
     ]);
 
     const page = `
@@ -540,10 +536,10 @@
         </div>
       </div>
 
-      <div class="rep-section"><h3>定期検診（リコール）</h3>
+      <div class="rep-section"><h3>リコール</h3>
         <div class="rep-cols">
           <div>${recallTable}</div>
-          <div class="chart"><div class="c-title">リコール ファネル（人）</div>${barsH(recallFunnel, { valueW: 48, labelW: 76 })}</div>
+          <div class="chart"><div class="c-title">リコール・リコオリ（件）</div>${barsH(recallFunnel, { valueW: 48, labelW: 76 })}</div>
         </div>
       </div>
 
@@ -585,8 +581,7 @@
     rows.push([{ v: "■ 自動計算", bold: true }]);
     rows.push([{ v: "項目", bold: true }, { v: "値", bold: true }]);
     [["合計売上高", c.uriTotal], ["自費総額", c.jihiSougaku], ["矯正 売上計", c.kyoseiUri], ["美容 売上計", c.biyoUri], ["自費 売上計", c.jihiUri],
-     ["自費率", pctS(c.jihiRate)], ["定期検診 予約取得率", pctS(c.recallGet)],
-     ["定期検診 来院率", pctS(c.recallVisit)], ["矯正 検査/説明予約/説明/支払/開始（人）", `${c.kensaN}/${c.yoyakuN}/${c.setsumeiN}/${c.shiharaiN}/${c.kaishiN}`]
+     ["自費率", pctS(c.jihiRate)], ["矯正 検査/説明予約/説明/支払/開始（人）", `${c.kensaN}/${c.yoyakuN}/${c.setsumeiN}/${c.shiharaiN}/${c.kaishiN}`]
     ].forEach((r) => rows.push([r[0], r[1]]));
     rows.push([]); rows.push([{ v: "作成日時：" + new Date().toLocaleString("ja-JP") }]);
     return rows;
