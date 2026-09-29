@@ -121,6 +121,7 @@ function build(html, todayStr){
     tl.push(`■ ${e.name} 様（カルテ ${e.patientNo}／${e.site || "部位未記入"}）　${r.text}`);
     tl.push(`　次にやること：${a.label}`);
     tl.push(`　${dueLine(a, r)}`);
+    if(a.caution) tl.push(`　${a.caution.text}`);
     for(const m of memosOf(e, L.STEPS)) tl.push(`　${m.no}${m.nm}のメモ：${m.text}`);
     tl.push("");
   }
