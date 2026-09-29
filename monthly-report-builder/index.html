@@ -234,6 +234,10 @@
       { id: "d_yoyaku", label: "総予約件数", unit: "件" }, { id: "d_raiin", label: "来院人数", unit: "人" },
       { id: "d_mitei", label: "予約未定者（矯正以外）", unit: "人" },
     ]},
+    { title: "クリニックデータ｜初再診内訳", src: "レセコン個人別（新患・再初診・再診）", tag: "glance", fields: [
+      { id: "p_shinkan", label: "新患", unit: "人" }, { id: "p_saisho", label: "再初診", unit: "人" },
+      { id: "p_saishin", label: "再診", unit: "人" },
+    ]},
     { title: "クリニックデータ｜キャンセル", src: "/user/dashboard/", tag: "glance", fields: [
       { id: "c_rate", label: "キャンセル率", unit: "%" }, { id: "c_recovery", label: "リカバリー率（キャンセル後の来院）", unit: "%" },
     ]},
@@ -269,7 +273,7 @@
       { id: "uj_other", cnt: "uj_other_n", label: "その他自費", unit: "円" },
       { head: "その他" },
       { id: "u_cancel", cnt: "u_cancel_n", label: "キャンセル料", unit: "円" },
-      { id: "u_zatsu", cnt: "u_zatsu_n", label: "雑収入", unit: "円" },
+      { id: "u_zatsu", cnt: "u_zatsu_n", label: "物販（販売品目）", unit: "円" },
     ]},
   ];
   const ALL = SECTIONS.flatMap((s) => s.fields).filter((f) => f.id);
@@ -444,7 +448,7 @@
       { label: "矯正", value: c.kyoseiUri, display: yen(c.kyoseiUri) },
       { label: "美容", value: c.biyoUri, display: yen(c.biyoUri) },
       { label: "自費", value: c.jihiUri, display: yen(c.jihiUri) },
-      { label: "雑収入", value: num("u_zatsu"), display: yen(num("u_zatsu")) },
+      { label: "物販", value: num("u_zatsu"), display: yen(num("u_zatsu")) },
     ];
     const kyoseiUchiwake = [
       { label: "フル", value: num("uk_full"), display: yen(num("uk_full")) },
@@ -505,7 +509,7 @@
       ["ボトックス", CN("uj_botox_n"), yen(num("uj_botox"))], ["ダイレクトボンディング", CN("uj_db_n"), yen(num("uj_db"))],
       ["スーパーエナメル", CN("uj_superenamel_n"), yen(num("uj_superenamel"))], ["その他自費", CN("uj_other_n"), yen(num("uj_other"))],
       ["自費 計", cS(c.jihiCnt), yen(c.jihiUri), "sub"], "spacer",
-      ["キャンセル料", CN("u_cancel_n"), yen(num("u_cancel"))], ["雑収入", CN("u_zatsu_n"), yen(num("u_zatsu"))], "spacer",
+      ["キャンセル料", CN("u_cancel_n"), yen(num("u_cancel"))], ["物販（販売品目）", CN("u_zatsu_n"), yen(num("u_zatsu"))], "spacer",
       ["自費総額", "", yen(c.jihiSougaku), "sub"], ["合計売上高", "", yen(c.uriTotal), "total"],
     ]);
     const yoyakuTable = kvT([
@@ -515,6 +519,18 @@
     const cancelTable = kvT([
       ["キャンセル率", pctS(num("c_rate") || null)],
       ["リカバリー率（キャンセル後の来院）", pctS(num("c_recovery") || null)],
+    ]);
+    const shoshaishinTotal = num("p_shinkan") + num("p_saisho") + num("p_saishin");
+    const shoshaishin = [
+      { label: "新患", value: num("p_shinkan") },
+      { label: "再初診", value: num("p_saisho") },
+      { label: "再診", value: num("p_saishin") },
+    ];
+    const shoshaishinTable = kvT([
+      ["新患", nf(num("p_shinkan")) + " 人"],
+      ["再初診", nf(num("p_saisho")) + " 人"],
+      ["再診", nf(num("p_saishin")) + " 人"],
+      ["初再診 計", nf(shoshaishinTotal) + " 人", "sub"],
     ]);
     const jihiTable = kvTable([
       ["自費件数", nf(num("j_jihi")) + " 件"], ["保険件数", nf(num("j_hoken")) + " 件"], ["自費率", pctS(c.jihiRate), "sub"],
@@ -528,7 +544,7 @@
       <div class="rep-header"><div class="clinic">${clinic}</div><div class="title">月次レポート</div><div class="month">${ml}</div></div>
       <div class="kpi-row">
         ${kpi("合計売上高", yen(c.uriTotal))}
-        ${kpi("来院人数", nf(num("d_raiin")) + " 人", "自費 " + nf(num("j_jihi")) + "・保険 " + nf(num("j_hoken")))}
+        ${kpi("来院人数", nf(num("d_raiin")) + " 人", "新患 " + nf(num("p_shinkan")) + "・自費 " + nf(num("j_jihi")))}
         ${kpi("キャンセル率", pctS(num("c_rate") || null), "リカバリー " + pctS(num("c_recovery") || null))}
         ${kpi("矯正開始", nf(c.kaishiN) + " 人", "検査 " + nf(c.kensaN) + "・説明 " + nf(c.setsumeiN))}
       </div>
@@ -542,10 +558,11 @@
         </div>
       </div>
 
-      <div class="rep-section"><h3>予約・来院／キャンセル</h3>
+      <div class="rep-section"><h3>予約・来院／初再診・キャンセル</h3>
         <div class="rep-cols">
-          <div>${yoyakuTable}<div style="height:8px"></div>${cancelTable}</div>
-          <div class="chart"><div class="c-title">自費・保険</div>${jihiTable}</div>
+          <div>${yoyakuTable}<div style="height:8px"></div>${shoshaishinTable}<div style="height:8px"></div>${cancelTable}</div>
+          <div class="chart"><div class="c-title">初再診 内訳（人）</div>${barsH(nz(shoshaishin), { valueW: 48, labelW: 64 })}
+            <div class="c-title" style="margin-top:10px">自費・保険</div>${jihiTable}</div>
         </div>
       </div>
 
