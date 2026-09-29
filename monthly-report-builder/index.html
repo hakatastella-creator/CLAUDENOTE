@@ -412,8 +412,10 @@
     const uriTotal = num("u_hoken") + jihiSougaku + num("u_zatsu");
     const pipe = readPipeline();
     const pc = (s) => pipe.filter((p) => p[s]).length;
+    // 矯正開始＝フル・モデレート・ライト・エクスプレスを始めた件数（売上の件数から自動計算）
+    const kaishiStart = num("uk_full_n") + num("uk_mod_n") + num("uk_light_n") + num("uk_express_n");
     return {
-      uriTotal, jihiSougaku, kyoseiUri, biyoUri, jihiUri, kyoseiCnt, biyoCnt, jihiCnt, pipe,
+      uriTotal, jihiSougaku, kyoseiUri, biyoUri, jihiUri, kyoseiCnt, biyoCnt, jihiCnt, pipe, kaishiStart,
       jihiRate: rate(num("j_jihi"), num("j_jihi") + num("j_hoken")),
       kensaN: pc("kensa"), yoyakuN: pc("yoyaku"), setsumeiN: pc("setsumei"), shiharaiN: pc("shiharai"), kaishiN: pc("kaishi"),
       setsumeiMibarai: pipe.filter((p) => p.setsumei && !p.shiharai).length,
@@ -426,7 +428,7 @@
       ["合計売上高", yen(c.uriTotal)], ["自費総額", yen(c.jihiSougaku)],
       ["矯正 売上計", yen(c.kyoseiUri)], ["美容 売上計", yen(c.biyoUri)], ["自費 売上計", yen(c.jihiUri)],
       ["自費率", pctS(c.jihiRate)],
-      ["矯正 検査/説明/支払/開始", `${c.kensaN} / ${c.setsumeiN} / ${c.shiharaiN} / ${c.kaishiN} 人`],
+      ["矯正開始（フル・モデ・ライト・EX）", `${c.kaishiStart} 件`],
     ];
     $("calc").innerHTML = rows.map((r) => `<div class="f"><label>${r[0]}</label><span class="cv">${r[1]}</span></div>`).join("");
   }
@@ -524,16 +526,27 @@
       { label: "検査", value: c.kensaN }, { label: "説明予約", value: c.yoyakuN }, { label: "説明", value: c.setsumeiN },
       { label: "支払", value: c.shiharaiN }, { label: "開始", value: c.kaishiN },
     ];
+    // 矯正開始（フル・モデ・ライト・EX の件数）と種類別内訳
+    const startTypes = [["フル", "uk_full_n"], ["モデレート", "uk_mod_n"], ["ライト", "uk_light_n"], ["エクスプレス", "uk_express_n"]];
+    const kaishiSub = startTypes.filter((t) => num(t[1]) > 0).map((t) => t[0] + num(t[1])).join("・") || "内訳なし";
+    const kyoseiCntRows = [
+      { label: "フル", value: num("uk_full_n") }, { label: "モデレート", value: num("uk_mod_n") }, { label: "ライト", value: num("uk_light_n") }, { label: "エクスプレス", value: num("uk_express_n") },
+      { label: "検査", value: num("uk_kensa_n") }, { label: "プレオルソ", value: num("uk_preortho_n") }, { label: "リテーナー", value: num("uk_retainer_n") },
+    ];
+    const kyoseiBillTable = kvT([
+      ["矯正開始（フル・モデ・ライト・EX）", nf(c.kaishiStart) + " 件", "sub"],
+      ["フル", nf(num("uk_full_n")) + " 件"], ["モデレート", nf(num("uk_mod_n")) + " 件"], ["ライト", nf(num("uk_light_n")) + " 件"], ["エクスプレス", nf(num("uk_express_n")) + " 件"],
+      ["矯正検査", nf(num("uk_kensa_n")) + " 件"], ["プレオルソ", nf(num("uk_preortho_n")) + " 件"], ["リテーナー", nf(num("uk_retainer_n")) + " 件"],
+    ]);
     const mk = (b) => (b ? "✓" : "·");
     const named = c.pipe.filter((p) => p.name);
     const pipeTable = `<table class="rep"><thead><tr><th class="lab">氏名</th><th>検査</th><th>説明予約</th><th>説明</th><th>支払</th><th>開始</th></tr></thead><tbody>` +
       c.pipe.map((p) => `<tr><th class="lab">${escX(p.name || "—")}</th><td>${mk(p.kensa)}</td><td>${mk(p.yoyaku)}</td><td>${mk(p.setsumei)}</td><td>${mk(p.shiharai)}</td><td>${mk(p.kaishi)}</td></tr>`).join("") +
       `<tr class="total"><th class="lab">人数</th><td>${c.kensaN}</td><td>${c.yoyakuN}</td><td>${c.setsumeiN}</td><td>${c.shiharaiN}</td><td>${c.kaishiN}</td></tr></tbody></table>`;
-    const kyoseiCountTable = kvT([
-      ["矯正検査", nf(c.kensaN) + " 人"], ["説明予約", nf(c.yoyakuN) + " 人"], ["治療計画説明", nf(c.setsumeiN) + " 人"],
-      ["支払", nf(c.shiharaiN) + " 人"], ["矯正開始", nf(c.kaishiN) + " 人"],
-    ]);
-    const kyoseiTable = named.length ? pipeTable : kyoseiCountTable;
+    // パイプラインに患者名が入っていればステージ表、無ければ売上件数ベースの矯正サマリー
+    const kyoseiTable = named.length ? pipeTable : kyoseiBillTable;
+    const kyoseiChartRows = named.length ? kyoseiFunnel : kyoseiCntRows;
+    const kyoseiChartTitle = named.length ? "ステージ別 人数" : "矯正 件数（種類別）";
     const pipeFollow = c.shiharaiN > 0 ? `<div class="names-list" style="margin-top:6px">🔸 説明済・未支払：<b>${c.setsumeiMibarai}</b> 人 ／ 支払済・未開始（発注〜到着待ち）：<b>${c.shiharaiMikaishi}</b> 人</div>` : "";
     const recallFunnel = [
       { label: "リコール", value: num("r_recall") }, { label: "リコオリ", value: num("r_recall_ori") },
@@ -596,7 +609,7 @@
         ${kpi("合計売上高", yen(c.uriTotal))}
         ${kpi("来院人数", nf(num("d_raiin")) + " 人", "新患 " + nf(num("p_shinkan")) + "・自費 " + nf(num("j_jihi")))}
         ${kpi("キャンセル率", pctS(num("c_rate") || null), "リカバリー " + pctS(num("c_recovery") || null))}
-        ${kpi("矯正開始", nf(c.kaishiN) + " 人", "検査 " + nf(c.kensaN) + "・説明 " + nf(c.setsumeiN))}
+        ${kpi("矯正開始", nf(c.kaishiStart) + " 件", kaishiSub)}
       </div>
 
       <div class="rep-section"><h3>売上</h3>
@@ -619,7 +632,7 @@
       <div class="rep-section"><h3>矯正</h3>
         <div class="rep-cols">
           <div>${kyoseiTable}${pipeFollow}</div>
-          <div class="chart"><div class="c-title">ステージ別 人数</div>${barsH(nz(kyoseiFunnel), { valueW: 40, labelW: 64 })}</div>
+          <div class="chart"><div class="c-title">${kyoseiChartTitle}</div>${barsH(nz(kyoseiChartRows), { valueW: 40, labelW: 76 })}</div>
         </div>
       </div>
 
@@ -675,7 +688,7 @@
     rows.push([{ v: "■ 自動計算", bold: true }]);
     rows.push([{ v: "項目", bold: true }, { v: "値", bold: true }]);
     [["合計売上高", c.uriTotal], ["自費総額", c.jihiSougaku], ["矯正 売上計", c.kyoseiUri], ["美容 売上計", c.biyoUri], ["自費 売上計", c.jihiUri],
-     ["自費率", pctS(c.jihiRate)], ["矯正 検査/説明予約/説明/支払/開始（人）", `${c.kensaN}/${c.yoyakuN}/${c.setsumeiN}/${c.shiharaiN}/${c.kaishiN}`]
+     ["自費率", pctS(c.jihiRate)], ["矯正開始（フル・モデ・ライト・EX）（件）", c.kaishiStart], ["矯正パイプライン 検査/説明予約/説明/支払/開始（人）", `${c.kensaN}/${c.yoyakuN}/${c.setsumeiN}/${c.shiharaiN}/${c.kaishiN}`]
     ].forEach((r) => rows.push([r[0], r[1]]));
     rows.push([]); rows.push([{ v: "作成日時：" + new Date().toLocaleString("ja-JP") }]);
     return rows;
