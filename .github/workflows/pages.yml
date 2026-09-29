@@ -1,0 +1,44 @@
+name: Deploy monthly-report-builder to GitHub Pages
+
+# 月次レポート作成ツール（monthly-report-builder）を GitHub Pages に公開する。
+# main への push で自動実行し、Pages を自動で有効化してから公開する。
+on:
+  push:
+    branches: [main]
+    paths:
+      - "monthly-report-builder/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure Pages (auto-enable)
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Upload the tool folder as the site root
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: monthly-report-builder
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>月次レポート作成｜博多ステラ歯科</title>
+<style>
+  :root {
+    --green: #1f8a5b; --green-d: #176c47; --amber: #b5761f;
+    --line: #d5dce3; --bg: #f4f7f6; --ink: #1f2933; --dim: #7b8794;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif; color: var(--ink); background: var(--bg); line-height: 1.6; }
+  header { background: var(--green); color: #fff; padding: 16px 20px; }
+  header h1 { margin: 0; font-size: 18px; }
+  header .sub { font-size: 12px; opacity: 0.9; margin-top: 2px; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 16px; }
+  .topbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; }
+  .topbar label { font-weight: 600; font-size: 13px; }
+  .topbar input[type="text"], .topbar input[type="month"] { padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; font-size: 14px; }
+  .topbar input.clinic { flex: 1; min-width: 200px; }
+  .legend-bar { font-size: 12px; color: var(--dim); margin: 0 0 12px; display: flex; gap: 12px; flex-wrap: wrap; }
+
+  fieldset { background: #fff; border: 1px solid var(--line); border-radius: 10px; margin: 0 0 14px; padding: 8px 14px 14px; }
+  legend { font-weight: 700; color: var(--green-d); padding: 0 6px; font-size: 15px; }
+  .src { font-size: 11px; color: var(--dim); margin: 2px 0 8px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 8px 14px; }
+  .f { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .f label { font-size: 13px; }
+  .f input { width: 110px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; font-size: 14px; text-align: right; }
+  .f .unit { font-size: 12px; color: var(--dim); width: 20px; }
+  .grid .subhead { grid-column: 1 / -1; font-weight: 600; font-size: 12px; color: var(--green-d); margin: 6px 0 0; padding-bottom: 2px; border-bottom: 1px dashed var(--line); }
+  .grid .f3 { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 74px 20px 100px 20px; gap: 6px; align-items: center; }
+  .grid .f3 label { font-size: 13px; }
+  .grid .f3 input { padding: 6px 6px; border: 1px solid var(--line); border-radius: 6px; font-size: 14px; text-align: right; min-width: 0; }
+  .grid .f3 .u3 { font-size: 11px; color: var(--dim); }
+
+  .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 10px; margin-left: 6px; vertical-align: middle; }
+  .tag.glance { background: #d8f0e3; color: #176c47; }
+  .tag.count { background: #fdecd6; color: #9a5b12; }
+  .tag.manual { background: #e6eefb; color: #25508a; }
+
+  .pipe-wrap { overflow-x: auto; }
+  .pipe-head, .pipe-row { display: grid; grid-template-columns: minmax(120px, 1.6fr) repeat(5, 54px) 28px; gap: 6px; align-items: center; min-width: 440px; }
+  .pipe-head { font-size: 11px; color: var(--dim); font-weight: 600; margin-bottom: 4px; }
+  .pipe-head span { text-align: center; }
+  .pipe-head .h-name { text-align: left; }
+  .pipe-row { margin-bottom: 6px; }
+  .pipe-row input[type="text"] { padding: 5px 6px; border: 1px solid var(--line); border-radius: 5px; font-size: 13px; }
+  .pipe-row .chk { text-align: center; }
+  .pipe-row input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
+  .pipe-del { border: none; background: transparent; color: #b44a1e; cursor: pointer; font-size: 14px; }
+  #pipe-add { margin-top: 8px; padding: 6px 12px; font-size: 13px; }
+  .names-list { font-size: 11px; color: #52514e; line-height: 1.7; word-break: break-word; }
+
+  fieldset.calc { background: #eef7f1; border-color: #cfe7da; }
+  fieldset.calc legend { color: var(--green-d); }
+  .calc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 6px 14px; }
+  .calc-grid .f label { font-weight: 600; }
+  .calc-grid .cv { font-weight: 700; color: var(--green-d); font-variant-numeric: tabular-nums; }
+
+  .actions { position: sticky; bottom: 0; display: flex; flex-wrap: wrap; gap: 8px; background: rgba(244,247,246,.95); padding: 12px 0; margin-top: 6px; }
+  button { padding: 10px 14px; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; color: #fff; background: var(--green); }
+  button:hover { background: var(--green-d); }
+  button.excel { background: var(--amber); flex: 1; min-width: 220px; }
+  button.excel:hover { background: #955f16; }
+  button.ghost { background: #fff; color: var(--ink); border: 1px solid var(--line); }
+  button.ghost:hover { background: #eef1f4; }
+  .status { font-size: 13px; min-height: 18px; padding: 4px 2px; }
+  .status.ok { color: var(--green-d); }
+  .status.err { color: #b44a1e; }
+  .note { font-size: 12px; color: var(--dim); margin-top: 4px; }
+
+  /* ===== OCR取り込み ===== */
+  .ocr-card { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin: 0 0 14px; }
+  .ocr-card h2 { font-size: 15px; color: var(--green-d); margin: 0 0 2px; }
+  .ocr-card .ocr-sub { font-size: 12px; color: var(--dim); margin: 0 0 10px; }
+  .dropzone { border: 2px dashed #b9c6cf; border-radius: 10px; background: #f8fafb; padding: 22px 14px; text-align: center; color: var(--dim); font-size: 13px; line-height: 1.9; cursor: pointer; transition: .15s; }
+  .dropzone:hover, .dropzone.drag { border-color: var(--green); background: #eef7f1; color: var(--green-d); }
+  .dropzone b { color: var(--ink); }
+  .dropzone input[type="file"] { display: none; }
+  .ocr-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
+  .ocr-row button { padding: 8px 14px; font-size: 13px; }
+  .ocr-row .opt { font-size: 12px; color: var(--ink2, #52514e); display: flex; align-items: center; gap: 5px; }
+  .ocr-progress { height: 8px; background: #e6ebef; border-radius: 5px; overflow: hidden; margin-top: 10px; display: none; }
+  .ocr-progress.show { display: block; }
+  .ocr-progress > i { display: block; height: 100%; width: 0; background: var(--green); transition: width .2s; }
+  .ocr-thumbs { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .ocr-thumbs .th { position: relative; width: 92px; }
+  .ocr-thumbs img { width: 92px; height: 64px; object-fit: cover; border: 1px solid var(--line); border-radius: 6px; }
+  .ocr-thumbs .th .badge { position: absolute; left: 3px; bottom: 3px; font-size: 9px; background: rgba(31,138,91,.92); color: #fff; padding: 1px 5px; border-radius: 6px; }
+  .ocr-thumbs .th .rm { position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border-radius: 50%; border: none; background: #b44a1e; color: #fff; font-size: 12px; line-height: 1; cursor: pointer; padding: 0; }
+  .ocr-log { margin-top: 10px; font-size: 12px; }
+  .ocr-log .grp { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; margin-bottom: 8px; background: #fbfdfe; }
+  .ocr-log .grp > .gh { font-weight: 700; color: var(--green-d); margin-bottom: 4px; }
+  .ocr-log .kv { display: flex; justify-content: space-between; gap: 10px; padding: 2px 0; border-bottom: 1px dotted #e5ebef; }
+  .ocr-log .kv:last-child { border-bottom: none; }
+  .ocr-log .kv .k { color: var(--ink2, #52514e); }
+  .ocr-log .kv .v { font-variant-numeric: tabular-nums; font-weight: 600; }
+  .ocr-log .kv.miss .v { color: #b44a1e; font-weight: 400; }
+  .f input.filled, .f3 input.filled { background: #eafaf1; border-color: #8fd3b0; }
+  @keyframes flashfill { 0% { background: #d6f3e3; } 100% { background: #eafaf1; } }
+  .f input.flash, .f3 input.flash { animation: flashfill .8s ease; }
+
+  /* ===== レポート表示（表・グラフ・印刷/PDF） ===== */
+  #report { display: none; }
+  #report.show { display: block; position: fixed; inset: 0; z-index: 9999; background: #eceff1; overflow: auto; }
+  .rep-toolbar { position: sticky; top: 0; display: flex; gap: 8px; justify-content: flex-end; padding: 10px 16px; background: rgba(236,239,241,.96); border-bottom: 1px solid var(--line); }
+  .report-page { background: #fff; max-width: 820px; margin: 16px auto; padding: 28px 32px; box-shadow: 0 4px 24px rgba(0,0,0,.12); color: var(--ink); --series: #2a78d6; --ink2: #52514e; --muted: #898781; --axis: #c3c2b7; }
+  .rep-header { border-bottom: 3px solid var(--green); padding-bottom: 10px; margin-bottom: 16px; }
+  .rep-header .clinic { font-size: 13px; color: var(--ink2); }
+  .rep-header .title { font-size: 22px; font-weight: 800; margin: 2px 0; }
+  .rep-header .month { font-size: 15px; color: var(--green-d); font-weight: 700; }
+  .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+  .kpi-card { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; border-top: 4px solid var(--green); background: linear-gradient(180deg,#f6faf8 0%,#ffffff 60%); box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+  .kpi-card .k-label { font-size: 11px; color: var(--ink2); font-weight: 600; }
+  .kpi-card .k-value { font-size: 23px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.2; color: var(--green-d); margin: 2px 0 1px; }
+  .kpi-card .k-sub { font-size: 10px; color: var(--muted); }
+  .rep-section { margin: 0 0 18px; break-inside: avoid; }
+  .rep-section > h3 { font-size: 14px; font-weight: 700; color: var(--green-d); border-left: 4px solid var(--green); padding-left: 8px; margin: 0 0 8px; }
+  .rep-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+  table.rep { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.rep th, table.rep td { border: 1px solid var(--line); padding: 4px 8px; }
+  table.rep th { background: #eef4fb; text-align: left; font-weight: 600; color: var(--ink2); white-space: nowrap; }
+  table.rep.sales3 thead th { text-align: right; } table.rep.sales3 thead th.lab { text-align: left; }
+  table.rep td { text-align: right; font-variant-numeric: tabular-nums; }
+  table.rep th.lab { font-weight: 600; }
+  table.rep tr.total th, table.rep tr.total td { background: #f2f7f4; font-weight: 700; }
+  table.rep tr.rep-spacer td { border: none; height: 8px; padding: 0; background: #fff; }
+  table.rep tr.sub th, table.rep tr.sub td { background: #f7fafc; font-weight: 600; }
+  .tbl-title { font-size: 11px; color: var(--muted); margin: 0 0 4px; }
+  .chart .c-title { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
+  .chart-svg { width: 100%; height: auto; }
+  .c-lab { fill: var(--ink2); font-size: 11px; }
+  .c-val { fill: var(--ink); font-size: 11px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .c-bar { fill: var(--series); }
+  .c-axis { stroke: var(--axis); stroke-width: 1; }
+  .chart .empty { font-size: 11px; color: var(--muted); padding: 8px 0; }
+  .rep-foot { margin-top: 14px; padding-top: 8px; border-top: 1px solid var(--line); font-size: 10px; color: var(--muted); }
+  @media (max-width: 620px) { .kpi-row { grid-template-columns: repeat(2, 1fr); } .rep-cols { grid-template-columns: 1fr; } }
+  @media print {
+    header, .topbar, .legend-bar, #f, .ocr-card, .actions, .status, .wrap > .note { display: none !important; }
+    #report.show { position: static; background: #fff; overflow: visible; }
+    .rep-toolbar { display: none !important; }
+    .report-page { box-shadow: none; margin: 0; max-width: none; padding: 0; }
+    .rep-section { break-inside: avoid; }
+    @page { size: A4; margin: 14mm; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>🗓 月次レポート作成システム</h1>
+  <div class="sub">アポツールの画面を見ながら数字を入力 → 月次レポートを作成（受付向け）</div>
+</header>
+
+<div class="wrap">
+  <div class="topbar">
+    <label>医院名</label>
+    <input type="text" class="clinic" id="clinic_name" value="博多ステラ歯科・矯正歯科クリニック" />
+    <label>対象月</label>
+    <input type="month" id="month" />
+  </div>
+  <div class="legend-bar">
+    <span><span class="tag glance">一目</span> 画面の集計値を転記</span>
+    <span><span class="tag count">要カウント</span> イベント登録が無ければ数える</span>
+    <span><span class="tag manual">手入力</span> 会計・レセコンから</span>
+  </div>
+
+  <div class="ocr-card" id="ocr-card">
+    <h2>📸 スクショから自動入力（OCR）</h2>
+    <div class="ocr-sub">レセコン／アポツールの画面のスクショを貼るだけ。数字を読み取って下のフォームに自動で埋めます（読み取り結果は下に表示。金額は目視で確認してください）。画像はこの端末内だけで処理し、外部には送信しません。</div>
+    <label class="dropzone" id="ocr-drop">
+      ここに<b>画像をドラッグ</b>、または <b>Ctrl+V で貼り付け</b>、あるいは<b>クリックして選択</b><br>
+      <span style="font-size:11px">対応：レセコン「個人別サマリー」「自費項目別」「販売品目別」／アポツール「クリニックデータ」</span>
+      <input type="file" id="ocr-file" accept="image/*" multiple />
+    </label>
+    <div class="ocr-thumbs" id="ocr-thumbs"></div>
+    <div class="ocr-row">
+      <button type="button" id="ocr-run">🔎 読み取って自動入力</button>
+      <button type="button" class="ghost" id="ocr-clear">クリア</button>
+      <label class="opt"><input type="checkbox" id="ocr-overwrite" /> 入力済みも上書きする</label>
+    </div>
+    <div class="ocr-progress" id="ocr-progress"><i></i></div>
+    <div class="status" id="ocr-status"></div>
+    <div class="ocr-log" id="ocr-log"></div>
+  </div>
+
+  <form id="f" autocomplete="off"></form>
+
+  <div class="actions">
+    <button type="button" class="excel" id="btn-report">🖨 レポートを表示（表・グラフ／印刷・PDF）</button>
+    <button type="button" id="btn-excel">📊 Excelを作成</button>
+    <button type="button" class="ghost" id="btn-save">💾 一時保存</button>
+    <button type="button" class="ghost" id="btn-copy-prev">📂 先月を複製</button>
+    <button type="button" class="ghost" id="btn-clear">🗑 クリア</button>
+  </div>
+  <div class="status" id="status"></div>
+  <div class="note">入力内容はこのブラウザ内（この端末）に対象月ごとに保存されます。外部には送信されません。</div>
+</div>
+
+<div id="report" aria-hidden="true">
+  <div class="rep-toolbar">
+    <button type="button" id="btn-print">🖨 印刷 / PDFで保存</button>
+    <button type="button" class="ghost" id="btn-report-close">← 入力に戻る</button>
+  </div>
+  <div class="report-page"></div>
+</div>
+
+<script>
+/* ============================================================
+ * xlsx 生成エンジン（外部ライブラリ不要）
+ * ============================================================ */
+(function () {
+  "use strict";
+  const enc = new TextEncoder();
+  const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+  function crc32(b) { let c = 0xffffffff; for (let i = 0; i < b.length; i++) c = CRC[(c ^ b[i]) & 0xff] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; }
+  function zip(files) {
+    const chunks = [], central = []; let offset = 0;
+    for (const f of files) {
+      const nb = enc.encode(f.name), data = f.data, crc = crc32(data);
+      const lh = new Uint8Array(30 + nb.length), dv = new DataView(lh.buffer);
+      dv.setUint32(0, 0x04034b50, true); dv.setUint16(4, 20, true); dv.setUint16(6, 0, true); dv.setUint16(8, 0, true);
+      dv.setUint16(10, 0, true); dv.setUint16(12, 0x21, true); dv.setUint32(14, crc, true);
+      dv.setUint32(18, data.length, true); dv.setUint32(22, data.length, true); dv.setUint16(26, nb.length, true); dv.setUint16(28, 0, true); lh.set(nb, 30);
+      chunks.push(lh, data);
+      const cd = new Uint8Array(46 + nb.length), cdv = new DataView(cd.buffer);
+      cdv.setUint32(0, 0x02014b50, true); cdv.setUint16(4, 20, true); cdv.setUint16(6, 20, true); cdv.setUint16(8, 0, true);
+      cdv.setUint16(10, 0, true); cdv.setUint16(12, 0, true); cdv.setUint16(14, 0x21, true); cdv.setUint32(16, crc, true);
+      cdv.setUint32(20, data.length, true); cdv.setUint32(24, data.length, true); cdv.setUint16(28, nb.length, true);
+      cdv.setUint16(30, 0, true); cdv.setUint16(32, 0, true); cdv.setUint16(34, 0, true); cdv.setUint16(36, 0, true);
+      cdv.setUint32(38, 0, true); cdv.setUint32(42, offset, true); cd.set(nb, 46);
+      central.push(cd); offset += lh.length + data.length;
+    }
+    const cdStart = offset; let cdSize = 0; for (const c of central) { chunks.push(c); cdSize += c.length; }
+    const eo = new Uint8Array(22), edv = new DataView(eo.buffer);
+    edv.setUint32(0, 0x06054b50, true); edv.setUint16(4, 0, true); edv.setUint16(6, 0, true);
+    edv.setUint16(8, central.length, true); edv.setUint16(10, central.length, true);
+    edv.setUint32(12, cdSize, true); edv.setUint32(16, cdStart, true); edv.setUint16(20, 0, true); chunks.push(eo);
+    let total = 0; for (const c of chunks) total += c.length;
+    const out = new Uint8Array(total); let p = 0; for (const c of chunks) { out.set(c, p); p += c.length; } return out;
+  }
+  function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
+  function colName(n) { let s = ""; n++; while (n > 0) { const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - 1) / 26); } return s; }
+  function cell(r, ci, c) {
+    const ref = colName(ci) + r; let v = c, b = false; if (c && typeof c === "object") { v = c.v; b = !!c.bold; }
+    const s = b ? ' s="1"' : "";
+    if (v === null || v === undefined || v === "") return `<c r="${ref}"${s}/>`;
+    if (typeof v === "number" && isFinite(v)) return `<c r="${ref}"${s}><v>${v}</v></c>`;
+    return `<c r="${ref}"${s} t="inlineStr"><is><t xml:space="preserve">${esc(v)}</t></is></c>`;
+  }
+  const CT = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>';
+  const RELS = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>';
+  const WBR = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>';
+  const STY = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border/></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
+  function wbx(name) { return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="' + esc(name).slice(0, 31) + '" sheetId="1" r:id="rId1"/></sheets></workbook>'; }
+  function sheet(rows) {
+    let sd = ""; rows.forEach((row, i) => { const r = i + 1; let cs = ""; (row || []).forEach((c, ci) => cs += cell(r, ci, c)); sd += `<row r="${r}">${cs}</row>`; });
+    return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><cols><col min="1" max="1" width="40" customWidth="1"/><col min="2" max="2" width="16" customWidth="1"/></cols><sheetData>' + sd + '</sheetData></worksheet>';
+  }
+  window.__xlsx = function (name, rows) {
+    return zip([
+      { name: "[Content_Types].xml", data: enc.encode(CT) },
+      { name: "_rels/.rels", data: enc.encode(RELS) },
+      { name: "xl/workbook.xml", data: enc.encode(wbx(name)) },
+      { name: "xl/_rels/workbook.xml.rels", data: enc.encode(WBR) },
+      { name: "xl/styles.xml", data: enc.encode(STY) },
+      { name: "xl/worksheets/sheet1.xml", data: enc.encode(sheet(rows)) },
+    ]);
+  };
+})();
+
+/* ============================================================
+ * 入力項目・計算・レポート
+ * ============================================================ */
+(function () {
+  "use strict";
+  const KEY = "hakataStellaMonthly12:";
+  const TAGN = { glance: "一目", count: "要カウント", manual: "手入力" };
+
+  const SECTIONS = [
+    { title: "クリニックデータ｜予約・来院", src: "/user/dashboard/", tag: "glance", fields: [
+      { id: "d_yoyaku", label: "総予約件数", unit: "件" }, { id: "d_raiin", label: "来院人数", unit: "人" },
+      { id: "d_mitei", label: "予約未定者（矯正以外）", unit: "人" },
+    ]},
+    { title: "クリニックデータ｜初再診内訳", src: "レセコン個人別（新患・再初診・再診）", tag: "glance", fields: [
+      { id: "p_shinkan", label: "新患", unit: "人" }, { id: "p_saisho", label: "再初診", unit: "人" },
+      { id: "p_saishin", label: "再診", unit: "人" },
+    ]},
+    { title: "クリニックデータ｜キャンセル", src: "/user/dashboard/", tag: "glance", fields: [
+      { id: "c_rate", label: "キャンセル率", unit: "%" }, { id: "c_recovery", label: "リカバリー率（キャンセル後の来院）", unit: "%" },
+    ]},
+    { title: "クリニックデータ｜自費・保険（件数）", src: "/user/dashboard/", tag: "glance", fields: [
+      { id: "j_jihi", label: "自費件数", unit: "件" }, { id: "j_hoken", label: "保険件数", unit: "件" },
+    ]},
+    { title: "リコール", src: "イベントカレンダー（月間件数）", tag: "count", fields: [
+      { id: "r_recall", label: "リコール件数", unit: "件" }, { id: "r_recall_ori", label: "リコオリ件数", unit: "件" },
+    ]},
+    { title: "矯正パイプライン", src: "検査→説明予約→治療計画説明→支払→開始 を患者ごとに管理（先月を複製して更新）", tag: "count", type: "pipeline", fields: [] },
+    { title: "売上", src: "会計・レセコン（自費項目別の 数量＝件数 と 請求額＝金額）", tag: "manual", fields: [
+      { id: "u_hoken", cnt: "u_hoken_n", label: "保険点数（売上）", unit: "円" },
+      { head: "矯正 内訳" },
+      { id: "uk_full", cnt: "uk_full_n", label: "フル", unit: "円" },
+      { id: "uk_mod", cnt: "uk_mod_n", label: "モデレート", unit: "円" },
+      { id: "uk_light", cnt: "uk_light_n", label: "ライト", unit: "円" },
+      { id: "uk_express", cnt: "uk_express_n", label: "エクスプレス", unit: "円" },
+      { id: "uk_kensa", cnt: "uk_kensa_n", label: "矯正検査", unit: "円" },
+      { id: "uk_preortho", cnt: "uk_preortho_n", label: "プレオルソ", unit: "円" },
+      { id: "uk_retainer", cnt: "uk_retainer_n", label: "リテーナー", unit: "円" },
+      { head: "美容 内訳（ハイフ・ホワイトニング）" },
+      { id: "ub_hifu", cnt: "ub_hifu_n", label: "ハイフ", unit: "円" },
+      { id: "ub_white", cnt: "ub_white_n", label: "ホワイトニング", unit: "円" },
+      { head: "自費 内訳（ハイフ・WT以外の自費診療）" },
+      { id: "uj_zir_inlay", cnt: "uj_zir_inlay_n", label: "ジルコニアインレー", unit: "円" },
+      { id: "uj_cer_inlay", cnt: "uj_cer_inlay_n", label: "セラミックインレー", unit: "円" },
+      { id: "uj_zir_crown", cnt: "uj_zir_crown_n", label: "ジルコニアクラウン", unit: "円" },
+      { id: "uj_allceram", cnt: "uj_allceram_n", label: "オールセラミックス", unit: "円" },
+      { id: "uj_zir_br", cnt: "uj_zir_br_n", label: "ジルコニアBr", unit: "円" },
+      { id: "uj_botox", cnt: "uj_botox_n", label: "ボトックス", unit: "円" },
+      { id: "uj_db", cnt: "uj_db_n", label: "ダイレクトボンディング", unit: "円" },
+      { id: "uj_superenamel", cnt: "uj_superenamel_n", label: "スーパーエナメル", unit: "円" },
+      { id: "uj_other", cnt: "uj_other_n", label: "その他自費", unit: "円" },
+      { head: "その他" },
+      { id: "u_cancel", cnt: "u_cancel_n", label: "キャンセル料", unit: "円" },
+      { id: "u_zatsu", cnt: "u_zatsu_n", label: "物販（販売品目）", unit: "円" },
+    ]},
+  ];
+  const ALL = SECTIONS.flatMap((s) => s.fields).filter((f) => f.id);
+  const ALL_IDS = SECTIONS.flatMap((s) => s.fields).flatMap((f) => [f.id, f.cnt]).filter(Boolean);
+
+  const $ = (id) => document.getElementById(id);
+  const monthEl = $("month");
+  const statusEl = $("status");
+  const num = (id) => { const v = parseFloat(($(id) ? $(id).value : "").toString().replace(/,/g, "")); return isFinite(v) ? v : 0; };
+  const nf = (n) => (n || 0).toLocaleString("ja-JP");
+  const yen = (n) => "¥" + Math.round(n || 0).toLocaleString("ja-JP");
+  const rate = (a, b) => (b > 0 ? Math.round((a / b) * 1000) / 10 : null);
+  const pctS = (v) => (v == null ? "—" : v + "%");
+  const escX = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const STAGES = ["kensa", "yoyaku", "setsumei", "shiharai", "kaishi"];
+
+  // 矯正パイプライン（患者ごとのステージ管理）
+  function addPipeRow(d) {
+    d = d || {};
+    const row = document.createElement("div");
+    row.className = "pipe-row";
+    row.innerHTML = `<input type="text" class="p-name" placeholder="氏名" />` +
+      STAGES.map((s) => `<span class="chk"><input type="checkbox" class="p-${s}" /></span>`).join("") +
+      `<button type="button" class="pipe-del" title="削除">✕</button>`;
+    row.querySelector(".p-name").value = d.name || "";
+    STAGES.forEach((s) => { if (d[s]) row.querySelector(".p-" + s).checked = true; });
+    row.querySelector(".pipe-del").addEventListener("click", () => { row.remove(); recompute(); });
+    document.getElementById("pipe-rows").appendChild(row);
+  }
+  function readPipeline() {
+    const out = [];
+    document.querySelectorAll("#pipe-rows .pipe-row").forEach((row) => {
+      const name = row.querySelector(".p-name").value.trim();
+      const o = { name }; let any = !!name;
+      STAGES.forEach((s) => { o[s] = row.querySelector(".p-" + s).checked; if (o[s]) any = true; });
+      if (any) out.push(o);
+    });
+    return out;
+  }
+  function setPipeline(arr) {
+    const host = document.getElementById("pipe-rows");
+    if (!host) return;
+    host.innerHTML = "";
+    (arr && arr.length ? arr : [{}]).forEach((d) => addPipeRow(d));
+  }
+
+  function nowMonth() { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0"); }
+  function monthLabel(ym) { const [y, m] = (ym || "").split("-"); return y && m ? `${y}年${Number(m)}月` : ym; }
+  function setStatus(m, t) { statusEl.textContent = m || ""; statusEl.className = "status " + (t || ""); }
+
+  // ---- フォーム生成 ----
+  const form = $("f");
+  SECTIONS.forEach((sec, i) => {
+    const fs = document.createElement("fieldset");
+    const srcLine = (sec.type === "pipeline" ? "" : "アポツール：") + sec.src + (sec.note ? `（${sec.note}）` : "");
+    const legend = `<legend>${i + 1}. ${sec.title}<span class="tag ${sec.tag}">${TAGN[sec.tag]}</span></legend><div class="src">${srcLine}</div>`;
+    if (sec.type === "pipeline") {
+      fs.innerHTML = legend +
+        `<div class="pipe-wrap"><div class="pipe-head"><span class="h-name">氏名</span><span>検査</span><span>説明予約</span><span>説明</span><span>支払</span><span>開始</span><span></span></div><div id="pipe-rows"></div></div>` +
+        `<button type="button" class="ghost" id="pipe-add">＋ 患者を追加</button>`;
+    } else {
+      const fields = sec.fields.map((f) => {
+        if (f.head) return `<div class="subhead">${f.head}</div>`;
+        if (f.cnt) return `<div class="f3"><label>${f.label}</label><input type="number" id="${f.cnt}" placeholder="件数" /><span class="u3">件</span><input type="number" id="${f.id}" placeholder="金額" /><span class="u3">円</span></div>`;
+        const step = f.unit === "%" ? ' step="0.1"' : "";
+        return `<div class="f"><label>${f.label}</label><input type="number"${step} id="${f.id}" /><span class="unit">${f.unit}</span></div>`;
+      }).join("");
+      fs.innerHTML = legend + `<div class="grid">${fields}</div>`;
+    }
+    form.appendChild(fs);
+  });
+  const calcFs = document.createElement("fieldset");
+  calcFs.className = "calc";
+  calcFs.innerHTML = `<legend>自動計算（確認用）</legend><div class="calc-grid" id="calc"></div>`;
+  form.appendChild(calcFs);
+
+  // ---- 計算 ----
+  function computed() {
+    const kyoseiUri = num("uk_full") + num("uk_mod") + num("uk_light") + num("uk_express") + num("uk_kensa") + num("uk_preortho") + num("uk_retainer");
+    const biyoUri = num("ub_hifu") + num("ub_white");
+    const jihiUri = num("uj_zir_inlay") + num("uj_cer_inlay") + num("uj_zir_crown") + num("uj_allceram") + num("uj_zir_br") + num("uj_botox") + num("uj_db") + num("uj_superenamel") + num("uj_other");
+    const kyoseiCnt = num("uk_full_n") + num("uk_mod_n") + num("uk_light_n") + num("uk_express_n") + num("uk_kensa_n") + num("uk_preortho_n") + num("uk_retainer_n");
+    const biyoCnt = num("ub_hifu_n") + num("ub_white_n");
+    const jihiCnt = num("uj_zir_inlay_n") + num("uj_cer_inlay_n") + num("uj_zir_crown_n") + num("uj_allceram_n") + num("uj_zir_br_n") + num("uj_botox_n") + num("uj_db_n") + num("uj_superenamel_n") + num("uj_other_n");
+    const jihiSougaku = kyoseiUri + biyoUri + jihiUri + num("u_cancel");
+    const uriTotal = num("u_hoken") + jihiSougaku + num("u_zatsu");
+    const pipe = readPipeline();
+    const pc = (s) => pipe.filter((p) => p[s]).length;
+    return {
+      uriTotal, jihiSougaku, kyoseiUri, biyoUri, jihiUri, kyoseiCnt, biyoCnt, jihiCnt, pipe,
+      jihiRate: rate(num("j_jihi"), num("j_jihi") + num("j_hoken")),
+      kensaN: pc("kensa"), yoyakuN: pc("yoyaku"), setsumeiN: pc("setsumei"), shiharaiN: pc("shiharai"), kaishiN: pc("kaishi"),
+      setsumeiMibarai: pipe.filter((p) => p.setsumei && !p.shiharai).length,
+      shiharaiMikaishi: pipe.filter((p) => p.shiharai && !p.kaishi).length,
+    };
+  }
+  function recompute() {
+    const c = computed();
+    const rows = [
+      ["合計売上高", yen(c.uriTotal)], ["自費総額", yen(c.jihiSougaku)],
+      ["矯正 売上計", yen(c.kyoseiUri)], ["美容 売上計", yen(c.biyoUri)], ["自費 売上計", yen(c.jihiUri)],
+      ["自費率", pctS(c.jihiRate)],
+      ["矯正 検査/説明/支払/開始", `${c.kensaN} / ${c.setsumeiN} / ${c.shiharaiN} / ${c.kaishiN} 人`],
+    ];
+    $("calc").innerHTML = rows.map((r) => `<div class="f"><label>${r[0]}</label><span class="cv">${r[1]}</span></div>`).join("");
+  }
+
+  // ---- 保存・複製 ----
+  const inputs = () => ALL_IDS.map((id) => $(id)).concat([$("clinic_name")]);
+  function collect() { const o = {}; inputs().forEach((i) => (o[i.id] = i.value)); o.__pipeline = readPipeline(); o.__month = monthEl.value; return o; }
+  function apply(o) { inputs().forEach((i) => (i.value = o && o[i.id] != null ? o[i.id] : "")); setPipeline(o && o.__pipeline || []); recompute(); }
+  function save(silent) { localStorage.setItem(KEY + monthEl.value, JSON.stringify(collect())); if (!silent) setStatus("保存しました（" + monthLabel(monthEl.value) + "）", "ok"); }
+  function load(ym) { const raw = localStorage.getItem(KEY + ym); if (raw) { try { apply(JSON.parse(raw)); return true; } catch (e) {} } return false; }
+  function prevMonth(ym) { const [y, m] = ym.split("-").map(Number); const d = m === 1 ? [y - 1, 12] : [y, m - 1]; return d[0] + "-" + String(d[1]).padStart(2, "0"); }
+
+  // ---- グラフ ----
+  function barsH(rows, o) {
+    o = o || {}; const W = o.w || 440, rh = o.rh || 26, Lw = o.labelW || 96, Rw = o.valueW || 60;
+    const Bw = Math.max(40, W - Lw - Rw), max = Math.max(1, ...rows.map((r) => r.value));
+    if (max <= 0 || !rows.length) return '<div class="empty">データがありません</div>';
+    const H = rows.length * rh + 6; let s = "";
+    rows.forEach((r, i) => {
+      const y = i * rh + 3, cy = y + rh / 2, len = Math.max(2, (r.value / max) * Bw);
+      const disp = r.display != null ? r.display : nf(r.value);
+      s += `<text x="${Lw - 6}" y="${cy}" text-anchor="end" dominant-baseline="central" class="c-lab">${escX(r.label)}</text>`;
+      s += `<rect x="${Lw}" y="${y + 3}" width="${len}" height="${rh - 10}" rx="4" class="c-bar"><title>${escX(r.label)}: ${escX(disp)}</title></rect>`;
+      s += `<text x="${Lw + len + 6}" y="${cy}" dominant-baseline="central" class="c-val">${escX(disp)}</text>`;
+    });
+    return `<svg viewBox="0 0 ${W} ${H}" class="chart-svg" preserveAspectRatio="xMinYMin meet" role="img">${s}</svg>`;
+  }
+  function barsV(rows, o) {
+    o = o || {}; const W = o.w || 380, H = o.h || 170, n = rows.length, bw = o.bw || 40;
+    const gap = (W - n * bw) / (n + 1), max = Math.max(1, ...rows.map((r) => r.value));
+    const base = H - 22, top = 14, plot = base - top;
+    let s = `<line x1="0" y1="${base}" x2="${W}" y2="${base}" class="c-axis"/>`;
+    rows.forEach((r, i) => {
+      const x = gap + i * (bw + gap), h = Math.max(2, (r.value / max) * plot), y = base - h;
+      s += `<rect x="${x}" y="${y}" width="${bw}" height="${h}" rx="4" class="c-bar"><title>${escX(r.label)}: ${nf(r.value)}</title></rect>`;
+      s += `<text x="${x + bw / 2}" y="${y - 4}" text-anchor="middle" class="c-val">${nf(r.value)}</text>`;
+      s += `<text x="${x + bw / 2}" y="${base + 14}" text-anchor="middle" class="c-lab">${escX(r.label)}</text>`;
+    });
+    return `<svg viewBox="0 0 ${W} ${H}" class="chart-svg" preserveAspectRatio="xMinYMin meet" role="img">${s}</svg>`;
+  }
+  function kvTable(rows) {
+    return `<table class="rep"><tbody>${rows.map((r) => r === "spacer" ? `<tr class="rep-spacer"><td colspan="2"></td></tr>` : `<tr class="${r[2] || ""}"><th class="lab">${escX(r[0])}</th><td>${r[1]}</td></tr>`).join("")}</tbody></table>`;
+  }
+
+  // ---- レポート ----
+  function renderReport() {
+    const clinic = escX($("clinic_name").value || "当院");
+    const ml = monthLabel(monthEl.value);
+    const c = computed();
+    const kpi = (l, v, s) => `<div class="kpi-card"><div class="k-label">${l}</div><div class="k-value">${v}</div><div class="k-sub">${s || ""}</div></div>`;
+    // ゼロ・空欄を隠して見やすくする
+    const nz = (rows) => rows.filter((r) => r.value > 0);
+    const isZeroDisp = (d) => { const s = String(d).replace(/[,\s¥%人件円日]/g, ""); return s === "" || s === "—" || Number(s) === 0; };
+    const collapseSpacers = (arr) => {
+      const out = [];
+      for (const r of arr) { if (r === "spacer") { if (out.length && out[out.length - 1] !== "spacer") out.push("spacer"); } else out.push(r); }
+      while (out.length && out[out.length - 1] === "spacer") out.pop();
+      while (out.length && out[0] === "spacer") out.shift();
+      return out;
+    };
+    const kvT = (rows) => {
+      const kept = [];
+      for (const r of rows) { if (r === "spacer") { kept.push("spacer"); continue; } if (!r[2] && isZeroDisp(r[1])) continue; kept.push(r); }
+      return kvTable(collapseSpacers(kept));
+    };
+
+    const salesCat = [
+      { label: "保険点数", value: num("u_hoken"), display: yen(num("u_hoken")) },
+      { label: "矯正", value: c.kyoseiUri, display: yen(c.kyoseiUri) },
+      { label: "美容", value: c.biyoUri, display: yen(c.biyoUri) },
+      { label: "自費", value: c.jihiUri, display: yen(c.jihiUri) },
+      { label: "物販", value: num("u_zatsu"), display: yen(num("u_zatsu")) },
+    ];
+    const kyoseiUchiwake = [
+      { label: "フル", value: num("uk_full"), display: yen(num("uk_full")) },
+      { label: "モデレート", value: num("uk_mod"), display: yen(num("uk_mod")) },
+      { label: "ライト", value: num("uk_light"), display: yen(num("uk_light")) },
+      { label: "エクスプレス", value: num("uk_express"), display: yen(num("uk_express")) },
+      { label: "矯正検査", value: num("uk_kensa"), display: yen(num("uk_kensa")) },
+      { label: "プレオルソ", value: num("uk_preortho"), display: yen(num("uk_preortho")) },
+      { label: "リテーナー", value: num("uk_retainer"), display: yen(num("uk_retainer")) },
+    ];
+    const jihiUchiwake = [
+      { label: "ジルコニアIN", value: num("uj_zir_inlay"), display: yen(num("uj_zir_inlay")) },
+      { label: "セラミックIN", value: num("uj_cer_inlay"), display: yen(num("uj_cer_inlay")) },
+      { label: "ジルコニアCR", value: num("uj_zir_crown"), display: yen(num("uj_zir_crown")) },
+      { label: "オールセラミック", value: num("uj_allceram"), display: yen(num("uj_allceram")) },
+      { label: "ジルコニアBr", value: num("uj_zir_br"), display: yen(num("uj_zir_br")) },
+      { label: "ボトックス", value: num("uj_botox"), display: yen(num("uj_botox")) },
+      { label: "ダイレクトBD", value: num("uj_db"), display: yen(num("uj_db")) },
+      { label: "スーパーエナメル", value: num("uj_superenamel"), display: yen(num("uj_superenamel")) },
+      { label: "その他", value: num("uj_other"), display: yen(num("uj_other")) },
+    ];
+    const kyoseiFunnel = [
+      { label: "検査", value: c.kensaN }, { label: "説明予約", value: c.yoyakuN }, { label: "説明", value: c.setsumeiN },
+      { label: "支払", value: c.shiharaiN }, { label: "開始", value: c.kaishiN },
+    ];
+    const mk = (b) => (b ? "✓" : "·");
+    const named = c.pipe.filter((p) => p.name);
+    const pipeTable = `<table class="rep"><thead><tr><th class="lab">氏名</th><th>検査</th><th>説明予約</th><th>説明</th><th>支払</th><th>開始</th></tr></thead><tbody>` +
+      c.pipe.map((p) => `<tr><th class="lab">${escX(p.name || "—")}</th><td>${mk(p.kensa)}</td><td>${mk(p.yoyaku)}</td><td>${mk(p.setsumei)}</td><td>${mk(p.shiharai)}</td><td>${mk(p.kaishi)}</td></tr>`).join("") +
+      `<tr class="total"><th class="lab">人数</th><td>${c.kensaN}</td><td>${c.yoyakuN}</td><td>${c.setsumeiN}</td><td>${c.shiharaiN}</td><td>${c.kaishiN}</td></tr></tbody></table>`;
+    const kyoseiCountTable = kvT([
+      ["矯正検査", nf(c.kensaN) + " 人"], ["説明予約", nf(c.yoyakuN) + " 人"], ["治療計画説明", nf(c.setsumeiN) + " 人"],
+      ["支払", nf(c.shiharaiN) + " 人"], ["矯正開始", nf(c.kaishiN) + " 人"],
+    ]);
+    const kyoseiTable = named.length ? pipeTable : kyoseiCountTable;
+    const pipeFollow = c.shiharaiN > 0 ? `<div class="names-list" style="margin-top:6px">🔸 説明済・未支払：<b>${c.setsumeiMibarai}</b> 人 ／ 支払済・未開始（発注〜到着待ち）：<b>${c.shiharaiMikaishi}</b> 人</div>` : "";
+    const recallFunnel = [
+      { label: "リコール", value: num("r_recall") }, { label: "リコオリ", value: num("r_recall_ori") },
+    ];
+    const CN = (id) => { const v = num(id); return v > 0 ? nf(v) + " 件" : ""; };
+    const cS = (v) => (v > 0 ? nf(v) + " 件" : "");
+    const sales3 = (rows) => {
+      const kept = [];
+      for (const r of rows) { if (r === "spacer") { kept.push("spacer"); continue; } if (!r[3] && isZeroDisp(r[1]) && isZeroDisp(r[2])) continue; kept.push(r); }
+      const body = collapseSpacers(kept).map((r) => r === "spacer"
+        ? `<tr class="rep-spacer"><td colspan="3"></td></tr>`
+        : `<tr class="${r[3] || ""}"><th class="lab">${escX(r[0])}</th><td>${r[1]}</td><td>${r[2]}</td></tr>`).join("");
+      return `<table class="rep sales3"><thead><tr><th class="lab">項目</th><th>件数</th><th>金額</th></tr></thead><tbody>${body}</tbody></table>`;
+    };
+    const salesTable = sales3([
+      ["保険点数（売上）", CN("u_hoken_n"), yen(num("u_hoken"))], "spacer",
+      ["矯正 フル", CN("uk_full_n"), yen(num("uk_full"))], ["矯正 モデレート", CN("uk_mod_n"), yen(num("uk_mod"))], ["矯正 ライト", CN("uk_light_n"), yen(num("uk_light"))], ["矯正 エクスプレス", CN("uk_express_n"), yen(num("uk_express"))],
+      ["矯正 検査", CN("uk_kensa_n"), yen(num("uk_kensa"))], ["プレオルソ", CN("uk_preortho_n"), yen(num("uk_preortho"))], ["リテーナー", CN("uk_retainer_n"), yen(num("uk_retainer"))],
+      ["矯正 計", cS(c.kyoseiCnt), yen(c.kyoseiUri), "sub"], "spacer",
+      ["ハイフ", CN("ub_hifu_n"), yen(num("ub_hifu"))], ["ホワイトニング", CN("ub_white_n"), yen(num("ub_white"))], ["美容 計", cS(c.biyoCnt), yen(c.biyoUri), "sub"], "spacer",
+      ["ジルコニアインレー", CN("uj_zir_inlay_n"), yen(num("uj_zir_inlay"))], ["セラミックインレー", CN("uj_cer_inlay_n"), yen(num("uj_cer_inlay"))],
+      ["ジルコニアクラウン", CN("uj_zir_crown_n"), yen(num("uj_zir_crown"))], ["オールセラミックス", CN("uj_allceram_n"), yen(num("uj_allceram"))], ["ジルコニアBr", CN("uj_zir_br_n"), yen(num("uj_zir_br"))],
+      ["ボトックス", CN("uj_botox_n"), yen(num("uj_botox"))], ["ダイレクトボンディング", CN("uj_db_n"), yen(num("uj_db"))],
+      ["スーパーエナメル", CN("uj_superenamel_n"), yen(num("uj_superenamel"))], ["その他自費", CN("uj_other_n"), yen(num("uj_other"))],
+      ["自費 計", cS(c.jihiCnt), yen(c.jihiUri), "sub"], "spacer",
+      ["キャンセル料", CN("u_cancel_n"), yen(num("u_cancel"))], ["物販（販売品目）", CN("u_zatsu_n"), yen(num("u_zatsu"))], "spacer",
+      ["自費総額", "", yen(c.jihiSougaku), "sub"], ["合計売上高", "", yen(c.uriTotal), "total"],
+    ]);
+    const yoyakuTable = kvT([
+      ["総予約件数", nf(num("d_yoyaku")) + " 件"], ["来院人数", nf(num("d_raiin")) + " 人"],
+      ["予約未定者（矯正以外）", nf(num("d_mitei")) + " 人"],
+    ]);
+    const cancelTable = kvT([
+      ["キャンセル率", pctS(num("c_rate") || null)],
+      ["リカバリー率（キャンセル後の来院）", pctS(num("c_recovery") || null)],
+    ]);
+    const shoshaishinTotal = num("p_shinkan") + num("p_saisho") + num("p_saishin");
+    const shoshaishin = [
+      { label: "新患", value: num("p_shinkan") },
+      { label: "再初診", value: num("p_saisho") },
+      { label: "再診", value: num("p_saishin") },
+    ];
+    const shoshaishinTable = kvT([
+      ["新患", nf(num("p_shinkan")) + " 人"],
+      ["再初診", nf(num("p_saisho")) + " 人"],
+      ["再診", nf(num("p_saishin")) + " 人"],
+      ["初再診 計", nf(shoshaishinTotal) + " 人", "sub"],
+    ]);
+    const jihiTable = kvTable([
+      ["自費件数", nf(num("j_jihi")) + " 件"], ["保険件数", nf(num("j_hoken")) + " 件"], ["自費率", pctS(c.jihiRate), "sub"],
+    ]);
+    const recallTable = kvT([
+      ["リコール件数", nf(num("r_recall")) + " 件"],
+      ["リコオリ件数", nf(num("r_recall_ori")) + " 件"],
+    ]);
+
+    const page = `
+      <div class="rep-header"><div class="clinic">${clinic}</div><div class="title">月次レポート</div><div class="month">${ml}</div></div>
+      <div class="kpi-row">
+        ${kpi("合計売上高", yen(c.uriTotal))}
+        ${kpi("来院人数", nf(num("d_raiin")) + " 人", "新患 " + nf(num("p_shinkan")) + "・自費 " + nf(num("j_jihi")))}
+        ${kpi("キャンセル率", pctS(num("c_rate") || null), "リカバリー " + pctS(num("c_recovery") || null))}
+        ${kpi("矯正開始", nf(c.kaishiN) + " 人", "検査 " + nf(c.kensaN) + "・説明 " + nf(c.setsumeiN))}
+      </div>
+
+      <div class="rep-section"><h3>売上</h3>
+        <div class="rep-cols">
+          <div>${salesTable}</div>
+          <div class="chart"><div class="c-title">売上構成（カテゴリ別）</div>${barsH(nz(salesCat), { valueW: 96, labelW: 72 })}
+            <div class="c-title" style="margin-top:10px">矯正 内訳</div>${barsH(nz(kyoseiUchiwake), { valueW: 96, labelW: 84 })}
+            <div class="c-title" style="margin-top:10px">自費 内訳</div>${barsH(nz(jihiUchiwake), { valueW: 88, labelW: 116 })}</div>
+        </div>
+      </div>
+
+      <div class="rep-section"><h3>予約・来院／初再診・キャンセル</h3>
+        <div class="rep-cols">
+          <div>${yoyakuTable}<div style="height:8px"></div>${shoshaishinTable}<div style="height:8px"></div>${cancelTable}</div>
+          <div class="chart"><div class="c-title">初再診 内訳（人）</div>${barsH(nz(shoshaishin), { valueW: 48, labelW: 64 })}
+            <div class="c-title" style="margin-top:10px">自費・保険</div>${jihiTable}</div>
+        </div>
+      </div>
+
+      <div class="rep-section"><h3>矯正</h3>
+        <div class="rep-cols">
+          <div>${kyoseiTable}${pipeFollow}</div>
+          <div class="chart"><div class="c-title">ステージ別 人数</div>${barsH(nz(kyoseiFunnel), { valueW: 40, labelW: 64 })}</div>
+        </div>
+      </div>
+
+      <div class="rep-section"><h3>リコール</h3>
+        <div class="rep-cols">
+          <div>${recallTable}</div>
+          <div class="chart"><div class="c-title">リコール・リコオリ（件）</div>${barsH(recallFunnel, { valueW: 48, labelW: 76 })}</div>
+        </div>
+      </div>
+
+      <div class="rep-foot">出典：アポツール（クリニックデータ）の集計値＋矯正はカウント、売上は会計・レセコンから手入力。患者個人情報は含みません。／作成日時：${new Date().toLocaleString("ja-JP")}</div>
+    `;
+    document.querySelector("#report .report-page").innerHTML = page;
+  }
+
+  // ---- Excel ----
+  function buildRows() {
+    const rows = [];
+    const clinic = $("clinic_name").value || "当院";
+    rows.push([{ v: `${clinic}　月次レポート　${monthLabel(monthEl.value)}`, bold: true }]);
+    rows.push([]);
+    const c = computed();
+    SECTIONS.forEach((sec, i) => {
+      rows.push([{ v: `■ ${i + 1}. ${sec.title}（${TAGN[sec.tag]}）`, bold: true }]);
+      if (sec.type === "pipeline") {
+        rows.push([{ v: "氏名", bold: true }, { v: "検査", bold: true }, { v: "説明予約", bold: true }, { v: "説明", bold: true }, { v: "支払", bold: true }, { v: "開始", bold: true }]);
+        c.pipe.forEach((p) => rows.push([p.name, p.kensa ? "○" : "", p.yoyaku ? "○" : "", p.setsumei ? "○" : "", p.shiharai ? "○" : "", p.kaishi ? "○" : ""]));
+        rows.push([{ v: "人数", bold: true }, c.kensaN, c.yoyakuN, c.setsumeiN, c.shiharaiN, c.kaishiN]);
+        rows.push([]);
+        return;
+      }
+      if (sec.title === "売上") {
+        rows.push([{ v: "項目", bold: true }, { v: "件数", bold: true }, { v: "金額", bold: true }]);
+        sec.fields.forEach((f) => {
+          if (f.head) { rows.push([{ v: "〔" + f.head + "〕", bold: true }]); return; }
+          rows.push([f.label, f.cnt ? num(f.cnt) : "", num(f.id)]);
+        });
+        rows.push([{ v: "矯正 計", bold: true }, c.kyoseiCnt, c.kyoseiUri]); rows.push([]);
+        rows.push([{ v: "美容 計", bold: true }, c.biyoCnt, c.biyoUri]); rows.push([]);
+        rows.push([{ v: "自費 計", bold: true }, c.jihiCnt, c.jihiUri]); rows.push([]);
+        rows.push([{ v: "自費総額", bold: true }, "", c.jihiSougaku]);
+        rows.push([{ v: "合計売上高", bold: true }, "", c.uriTotal]);
+        rows.push([]);
+        return;
+      }
+      rows.push([{ v: "項目", bold: true }, { v: "値", bold: true }]);
+      sec.fields.forEach((f) => {
+        if (f.head) { rows.push([{ v: "〔" + f.head + "〕", bold: true }]); return; }
+        rows.push([f.label, f.unit === "%" ? (num(f.id) ? num(f.id) + "%" : "—") : num(f.id)]);
+      });
+      rows.push([]);
+    });
+    rows.push([{ v: "■ 自動計算", bold: true }]);
+    rows.push([{ v: "項目", bold: true }, { v: "値", bold: true }]);
+    [["合計売上高", c.uriTotal], ["自費総額", c.jihiSougaku], ["矯正 売上計", c.kyoseiUri], ["美容 売上計", c.biyoUri], ["自費 売上計", c.jihiUri],
+     ["自費率", pctS(c.jihiRate)], ["矯正 検査/説明予約/説明/支払/開始（人）", `${c.kensaN}/${c.yoyakuN}/${c.setsumeiN}/${c.shiharaiN}/${c.kaishiN}`]
+    ].forEach((r) => rows.push([r[0], r[1]]));
+    rows.push([]); rows.push([{ v: "作成日時：" + new Date().toLocaleString("ja-JP") }]);
+    return rows;
+  }
+  function exportExcel() {
+    try {
+      const bytes = window.__xlsx("月次レポート", buildRows());
+      const blob = new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+      const url = URL.createObjectURL(blob); const a = document.createElement("a");
+      const clinic = ($("clinic_name").value || "月次").replace(/[\\/:*?"<>|]/g, "");
+      a.href = url; a.download = `月次レポート_${monthEl.value}_${clinic}.xlsx`;
+      document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 3000);
+      save(true); setStatus("Excelを作成しました（保存済み）", "ok");
+    } catch (e) { setStatus("エラー: " + e.message, "err"); }
+  }
+
+  function showReport() { save(true); renderReport(); const r = $("report"); r.classList.add("show"); r.setAttribute("aria-hidden", "false"); window.scrollTo(0, 0); }
+  function hideReport() { const r = $("report"); r.classList.remove("show"); r.setAttribute("aria-hidden", "true"); }
+
+  // ---- 配線 ----
+  form.addEventListener("input", recompute);
+  form.addEventListener("change", recompute);
+  $("pipe-add").addEventListener("click", () => addPipeRow());
+  $("btn-report").addEventListener("click", showReport);
+  $("btn-excel").addEventListener("click", exportExcel);
+  $("btn-save").addEventListener("click", () => save(false));
+  $("btn-report-close").addEventListener("click", hideReport);
+  $("btn-print").addEventListener("click", () => window.print());
+  $("btn-clear").addEventListener("click", () => {
+    if (!confirm(monthLabel(monthEl.value) + " の入力をクリアします。よろしいですか？（保存済みデータは残ります）")) return;
+    ALL_IDS.forEach((id) => ($(id).value = "")); setPipeline([]); recompute(); setStatus("クリアしました", "ok");
+  });
+  $("btn-copy-prev").addEventListener("click", () => {
+    const pm = prevMonth(monthEl.value), raw = localStorage.getItem(KEY + pm);
+    if (!raw) { setStatus(monthLabel(pm) + " の保存データがありません", "err"); return; }
+    try { const o = JSON.parse(raw); o.__month = monthEl.value; apply(o); setStatus(monthLabel(pm) + " の内容を複製しました（数字を修正してください）", "ok"); }
+    catch (e) { setStatus("複製に失敗しました", "err"); }
+  });
+  monthEl.addEventListener("change", () => { if (!load(monthEl.value)) { ALL_IDS.forEach((id) => ($(id).value = "")); setPipeline([]); recompute(); } setStatus(""); });
+
+  // ---- 初期化 ----
+  monthEl.value = nowMonth();
+  if (!load(monthEl.value)) setPipeline([]);
+  recompute();
+})();
+
+/* ============================================================
+ * OCR取り込み（Tesseract.js／ブラウザ内で処理・外部送信なし）
+ *  スクショを貼る → 数字を読み取り → フォームへ自動入力
+ * ============================================================ */
+(function () {
+  "use strict";
+  const TESS_URL = "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js";
+  const $ = (id) => document.getElementById(id);
+  const drop = $("ocr-drop"); if (!drop) return;
+  const fileInput = $("ocr-file"), thumbs = $("ocr-thumbs");
+  const runBtn = $("ocr-run"), clearBtn = $("ocr-clear"), overwriteEl = $("ocr-overwrite");
+  const prog = $("ocr-progress"), progBar = prog.querySelector("i");
+  const statusEl = $("ocr-status"), logEl = $("ocr-log");
+
+  const SCREENS = { summary: "個人別サマリー", hanbai: "販売品目別", jihiItems: "自費項目別", apotool: "クリニックデータ" };
+  let images = [];
+
+  function setStatus(m, c) { statusEl.textContent = m || ""; statusEl.className = "status" + (c ? " " + c : ""); }
+  function showProg(p) { prog.classList.add("show"); progBar.style.width = Math.round(p * 100) + "%"; }
+  function hideProg() { prog.classList.remove("show"); progBar.style.width = "0"; }
+
+  // ---- 画像の受け取り（ドラッグ／貼り付け／選択） ----
+  function addFiles(list) {
+    Array.from(list || []).filter((f) => f.type && f.type.startsWith("image/")).forEach((f) => {
+      const r = new FileReader();
+      r.onload = () => { const img = new Image(); img.onload = () => { images.push({ name: f.name || "画像", url: r.result, el: img, screen: null }); renderThumbs(); }; img.src = r.result; };
+      r.readAsDataURL(f);
+    });
+  }
+  function renderThumbs() {
+    thumbs.innerHTML = images.map((im, i) => `<div class="th"><img src="${im.url}" alt=""><button class="rm" data-i="${i}" title="削除">×</button>${im.screen ? `<span class="badge">${im.screen}</span>` : ""}</div>`).join("");
+    thumbs.querySelectorAll(".rm").forEach((b) => b.addEventListener("click", (e) => { images.splice(+e.currentTarget.dataset.i, 1); renderThumbs(); }));
+  }
+  drop.addEventListener("click", () => fileInput.click());
+  fileInput.addEventListener("change", () => { addFiles(fileInput.files); fileInput.value = ""; });
+  ["dragenter", "dragover"].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add("drag"); }));
+  ["dragleave", "drop"].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove("drag"); }));
+  drop.addEventListener("drop", (e) => { if (e.dataTransfer && e.dataTransfer.files) addFiles(e.dataTransfer.files); });
+  window.addEventListener("paste", (e) => {
+    if (!e.clipboardData) return;
+    const imgs = Array.from(e.clipboardData.items || []).filter((it) => it.type && it.type.startsWith("image/")).map((it) => it.getAsFile()).filter(Boolean);
+    if (imgs.length) { addFiles(imgs); setStatus(imgs.length + "枚を貼り付けました。「🔎 読み取って自動入力」を押してください。", "ok"); }
+  });
+  clearBtn.addEventListener("click", () => { images = []; renderThumbs(); logEl.innerHTML = ""; setStatus(""); });
+
+  // ---- 前処理（拡大＋グレースケール＋コントラスト強調） ----
+  function preprocess(img) {
+    const scale = Math.min(3, Math.max(1.6, 1700 / Math.max(1, img.width)));
+    const w = Math.min(2500, Math.round(img.width * scale)), h = Math.round(img.height * (w / img.width));
+    const c = document.createElement("canvas"); c.width = w; c.height = h;
+    const ctx = c.getContext("2d"); ctx.drawImage(img, 0, 0, w, h);
+    try {
+      const d = ctx.getImageData(0, 0, w, h), a = d.data;
+      for (let i = 0; i < a.length; i += 4) { let g = 0.299 * a[i] + 0.587 * a[i + 1] + 0.114 * a[i + 2]; g = (g - 128) * 1.4 + 128; g = g < 0 ? 0 : g > 255 ? 255 : g; a[i] = a[i + 1] = a[i + 2] = g; }
+      ctx.putImageData(d, 0, 0);
+    } catch (e) {}
+    return c;
+  }
+
+  // ---- Tesseract 遅延ロード ----
+  let tessReady = null;
+  function loadTess() {
+    if (window.Tesseract) return Promise.resolve();
+    if (tessReady) return tessReady;
+    tessReady = new Promise((res, rej) => { const s = document.createElement("script"); s.src = TESS_URL; s.onload = res; s.onerror = () => rej(new Error("OCRライブラリを読み込めませんでした（初回はインターネット接続が必要です）")); document.head.appendChild(s); });
+    return tessReady;
+  }
+
+  // ---- 文字・数値ユーティリティ ----
+  const toHalf = (s) => String(s).replace(/[０-９]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 0xFEE0)).replace(/[，、]/g, ",").replace(/％/g, "%").replace(/[．]/g, ".");
+  const keyOf = (s) => toHalf(s).replace(/\s+/g, "");
+  const numLine = (s) => toHalf(s).replace(/(\d)[ 　]+(?=\d)/g, "$1");
+  function ints(s) { const m = numLine(s).match(/\d[\d,]*/g); return m ? m.map((x) => parseInt(x.replace(/,/g, ""), 10)).filter((n) => !isNaN(n)) : []; }
+  function floatIn(s) { const m = numLine(s).match(/\d+(?:\.\d+)?/); return m ? parseFloat(m[0]) : null; }
+  function normLines(t) { return String(t).split(/\r?\n/).map((l) => l.replace(/[ \t　]+/g, " ").trim()).filter(Boolean); }
+
+  // 自費項目名 → フィールドID（上から順に判定。最初に一致したもの）
+  const JIHI_ALIAS = [
+    [/ジルコニア.{0,2}インレー/, "uj_zir_inlay"], [/セラミック.{0,2}インレー/, "uj_cer_inlay"],
+    [/ジルコニア.{0,2}(クラウン|CR)/i, "uj_zir_crown"], [/ジルコニア.{0,2}(Br|BR|ブリッジ)/, "uj_zir_br"],
+    [/オールセラミック/, "uj_allceram"],
+    [/モデレート/, "uk_mod"], [/エクスプレス/, "uk_express"], [/ライト/, "uk_light"],
+    [/フルブラケット|矯正.{0,2}フル|フルマウス/, "uk_full"],
+    [/(矯正)?検査/, "uk_kensa"], [/プレオルソ/, "uk_preortho"], [/リテーナー|保定装置/, "uk_retainer"],
+    [/ハイフ|HIFU/i, "ub_hifu"], [/ホワイトニング/, "ub_white"],
+    [/ボトックス|ボツリヌス/, "uj_botox"], [/ダイレクトボンディング|ダイレクトBD/, "uj_db"],
+    [/スーパーエナメル|エナメル|エネメル/, "uj_superenamel"],
+  ];
+
+  function detect(kt) {
+    const h = (s) => kt.includes(s);
+    const aliasHits = JIHI_ALIAS.filter((a) => a[0].test(kt)).length;
+    const sc = {
+      hanbai: (h("販売品目") ? 3 : 0) + (h("品名") ? 1 : 0) + (h("数量") && h("請求額") ? 1 : 0),
+      jihiItems: (h("自費項目") ? 3 : 0) + (aliasHits >= 3 ? 2 : 0),
+      summary: (h("合計保険点数") ? 2 : 0) + (h("診療日数") ? 2 : 0) + (h("保険来院") ? 1 : 0) + (h("再初診") ? 1 : 0),
+      apotool: (h("キャンセル率") ? 2 : 0) + (h("リコール") ? 1 : 0) + (h("予約未定") ? 1 : 0) + (h("来院率") ? 1 : 0),
+    };
+    let best = null, bs = 0; for (const k in sc) if (sc[k] > bs) { bs = sc[k]; best = k; } return bs > 0 ? best : null;
+  }
+
+  // キーワード直後（近接10文字以内・同一行）の数値のみ拾う。
+  // 離れた数値や別行の数値は拾わない＝「間違って埋める」より「空欄」を優先（金額の誤入力防止）。
+  // suffix を指定すると「数値の直後がその文字」の場合だけ採用（例：人数の集計値は「◯人」だけ拾い、
+  // 患者ごとの『再診回数』などの裸の数値を誤って拾わない）。
+  function numAfter(lines, keys, not, isFloat, suffix) {
+    const re = isFloat ? /\d+(?:\.\d+)?/ : (suffix ? new RegExp("\\d[\\d,]*(?=" + suffix + ")") : /\d[\d,]*/);
+    for (let i = 0; i < lines.length; i++) {
+      const k = keyOf(lines[i]);
+      for (const key of keys) {
+        const idx = k.indexOf(key); if (idx < 0) continue;
+        if ((not || []).some((x) => k.includes(x))) continue;
+        const after = k.slice(idx + key.length, idx + key.length + 10);
+        const m = after.match(re);
+        if (m) return isFloat ? parseFloat(m[0]) : parseInt(m[0].replace(/,/g, ""), 10);
+      }
+    }
+    return null;
+  }
+  function parseSummary(lines) {
+    const F = {}, rows = [];
+    const grab = (keys, not, suf) => numAfter(lines, keys, not, false, suf);
+    const set = (id, v, label) => { if (v != null) { F[id] = v; rows.push({ label, value: String(v), field: id }); } };
+    // 集計値は「◯人」表記のみ採用（患者テーブルの回数カラムとの衝突を防ぐ）
+    set("d_raiin", grab(["合計来院人数"], null, "人") != null ? grab(["合計来院人数"], null, "人") : grab(["来院人数"], ["保険", "自費", "訪問", "外来", "介護"], "人"), "来院人数（合計）");
+    set("j_jihi", grab(["自費来院人数"], null, "人"), "自費来院人数");
+    set("j_hoken", grab(["保険来院人数"], null, "人"), "保険来院人数");
+    set("p_shinkan", grab(["新患"], null, "人"), "新患");
+    set("p_saisho", grab(["再初診"], null, "人"), "再初診");
+    set("p_saishin", grab(["再診"], ["再初診"], "人"), "再診");
+    const ten = grab(["合計保険点数"]) != null ? grab(["合計保険点数"]) : grab(["合計点数"]);
+    if (ten != null) { F.u_hoken = ten * 10; rows.push({ label: "合計保険点数 " + ten.toLocaleString() + " ×10", value: "¥" + (ten * 10).toLocaleString(), field: "u_hoken" }); }
+    return { fields: F, rows };
+  }
+  function parseHanbai(lines) {
+    const F = {}, rows = [];
+    // 表の「合計」行（左メニューの「合計入金額」等は除外）
+    const cand = lines.filter((l) => { const k = keyOf(l); return k.includes("合計") && !NOISE.some((x) => k.includes(x)) && ints(l).length; });
+    const line = cand.length ? cand[cand.length - 1] : null;
+    if (line) { const n = ints(line); const amt = Math.max.apply(null, n); if (amt > 0 && amt <= 20000000) { F.u_zatsu = amt; if (n.length >= 2 && n[0] <= 5000) F.u_zatsu_n = n[0]; rows.push({ label: "物販 合計", value: (F.u_zatsu_n ? F.u_zatsu_n + "件 / " : "") + "¥" + amt.toLocaleString(), field: "u_zatsu" }); } }
+    return { fields: F, rows };
+  }
+  // 左メニュー・下部合計バーなど「表以外だけの行」を除外するためのノイズ語（物販の合計行判定に使用）
+  const NOISE = ["合計入金額", "カード入金", "カド入", "振込", "当日現金", "現金残", "預り", "繰越", "未収", "損金", "入金額計"];
+  function parseJihiItems(lines) {
+    // サイドバーの文字が行頭に混入しても、自費項目名が一致すれば金額（=行内最大値）を採用する。
+    // ノイズ行は「自費項目名に一致しない」ため、そもそも自動入力されない（＝アリバイのalias gate）。
+    const F = {}, rows = [], used = {};
+    for (const raw of lines) {
+      const k = keyOf(raw), n = ints(raw); if (!n.length) continue;
+      let field = null; for (const a of JIHI_ALIAS) if (a[0].test(k)) { field = a[1]; break; }
+      const amt = Math.max.apply(null, n); let cnt = n.length >= 2 ? n[0] : null;
+      if (amt <= 0 || amt > 3000000) continue;                       // 1項目の月合計として非現実的な巨額を除外
+      if (cnt != null && (cnt <= 0 || cnt > 300)) cnt = null;        // 先頭にサイドバー数字が紛れた等 → 件数は捨てる（金額は採用）
+      const nm = (raw.replace(/[0-9０-９].*$/, "").trim()) || k;
+      if (field && !used[field]) { used[field] = 1; F[field] = amt; if (cnt != null) F[field + "_n"] = cnt; rows.push({ label: nm, value: (cnt != null ? cnt + "件 / " : "") + "¥" + amt.toLocaleString(), field }); }
+      else if (n.length >= 2) rows.push({ label: nm, value: (cnt != null ? cnt + "件 / " : "") + "¥" + amt.toLocaleString(), field: null });
+    }
+    return { fields: F, rows };
+  }
+  function parseApotool(lines) {
+    const F = {}, rows = [];
+    const gf = (keys) => numAfter(lines, keys, null, true);
+    const setf = (id, v, label, round) => { if (v != null) { const val = round ? Math.round(v) : v; F[id] = val; rows.push({ label, value: String(val), field: id }); } };
+    setf("c_rate", gf(["キャンセル率"]), "キャンセル率");
+    setf("c_recovery", gf(["リカバリー", "キャンセル後", "回復"]), "リカバリー率");
+    setf("d_mitei", gf(["予約未定"]), "予約未定者", true);
+    setf("r_recall", gf(["リコール"]), "リコール", true);
+    setf("r_recall_ori", gf(["リコオリ"]), "リコオリ", true);
+    return { fields: F, rows };
+  }
+
+  runBtn.addEventListener("click", run);
+  async function run() {
+    if (!images.length) { setStatus("先に画像を追加してください。", "err"); return; }
+    runBtn.disabled = true; logEl.innerHTML = ""; setStatus("OCRライブラリを準備中…"); showProg(0.02);
+    try { await loadTess(); } catch (e) { setStatus(e.message, "err"); hideProg(); runBtn.disabled = false; return; }
+    const overwrite = overwriteEl.checked, groups = [], filled = new Set();
+    for (let i = 0; i < images.length; i++) {
+      const im = images[i]; setStatus(`読み取り中… (${i + 1}/${images.length}) ${im.name}`); showProg(i / images.length);
+      let text = "";
+      try {
+        const res = await window.Tesseract.recognize(preprocess(im.el), "jpn+eng", { logger: (m) => { if (m.status === "recognizing text") showProg((i + (m.progress || 0)) / images.length); } });
+        text = (res && res.data && res.data.text) || "";
+      } catch (e) { groups.push({ label: im.name, screen: "エラー", rows: [{ label: "OCRに失敗しました", value: e.message, field: null }] }); continue; }
+      const lines = normLines(text), kt = keyOf(lines.join(" ")), sk = detect(kt);
+      im.screen = sk ? SCREENS[sk] : null; renderThumbs();
+      let p = { fields: {}, rows: [] };
+      if (sk === "summary") p = parseSummary(lines);
+      else if (sk === "hanbai") p = parseHanbai(lines);
+      else if (sk === "jihiItems") p = parseJihiItems(lines);
+      else if (sk === "apotool") p = parseApotool(lines);
+      else { const a = parseSummary(lines), b = parseJihiItems(lines), c = parseHanbai(lines); p = { fields: Object.assign({}, a.fields, b.fields, c.fields), rows: a.rows.concat(b.rows, c.rows) }; }
+      Object.keys(p.fields).forEach((id) => {
+        const el = document.getElementById(id); if (!el) return;
+        if (!overwrite && String(el.value).trim() !== "") return;
+        el.value = p.fields[id]; el.classList.add("filled", "flash"); setTimeout(() => el.classList.remove("flash"), 800);
+        el.dispatchEvent(new Event("input", { bubbles: true })); filled.add(id);
+      });
+      groups.push({ label: im.name, screen: im.screen || "判別できませんでした", rows: p.rows });
+    }
+    showProg(1); setTimeout(hideProg, 400); renderLog(groups);
+    setStatus(`完了：${filled.size}項目を自動入力しました。金額を目視で確認し、必要なら直してから「🖨 レポートを表示」してください。`, "ok");
+    runBtn.disabled = false;
+  }
+  function renderLog(groups) {
+    logEl.innerHTML = groups.map((g) => {
+      const items = g.rows.length ? g.rows.map((r) => `<div class="kv ${r.field ? "" : "miss"}"><span class="k">${r.label}${r.field ? "" : "（未割当・手入力してください）"}</span><span class="v">${r.value}</span></div>`).join("") : `<div class="kv miss"><span class="k">読み取れた数値がありません（画面を大きく／鮮明に撮り直すと改善します）</span><span class="v">—</span></div>`;
+      return `<div class="grp"><div class="gh">${g.label} … ${g.screen}</div>${items}</div>`;
+    }).join("");
+  }
+})();
+</script>
+</body>
+</html>
