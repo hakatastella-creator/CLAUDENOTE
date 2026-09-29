@@ -5,3 +5,6 @@ __pycache__/
 venv/
 *.log
 .DS_Store
+
+# Node.js dependencies (installed locally for tooling/tests; not part of the app)
+node_modules/
