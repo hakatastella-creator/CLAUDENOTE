@@ -2,6 +2,7 @@ name: Deploy monthly-report-builder to GitHub Pages
 
 # 月次レポート作成ツール（monthly-report-builder）を GitHub Pages に公開する。
 # main への push で自動実行し、Pages を自動で有効化してから公開する。
+# （Pages 有効化後の初回デプロイをトリガーするための再実行）
 on:
   push:
     branches: [main]
