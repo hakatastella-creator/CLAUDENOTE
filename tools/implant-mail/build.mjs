@@ -67,6 +67,9 @@ const TONE = {
 };
 const tone = k => TONE[k] || TONE.stale;
 
+// 遅れているときは表と同じく lateLabel に差し替える（index.html の描画と同じ扱い）。
+function labelOf(a, r){ return (r.kind === "late" && a.lateLabel) ? a.lateLabel : a.label; }
+
 // 期限の書き方。window は「時期の幅」なので期限とは言わない。
 function dueLine(a, r){
   if(a.window) {
@@ -119,7 +122,7 @@ function build(html, todayStr){
   const tl = [`${long(todayStr)}時点で、対応が必要なインプラント患者が ${n} 名います。`, ""];
   for(const { e, a, r } of targets){
     tl.push(`■ ${e.name} 様（カルテ ${e.patientNo}／${e.site || "部位未記入"}）　${r.text}`);
-    tl.push(`　次にやること：${a.label}`);
+    tl.push(`　次にやること：${labelOf(a, r)}`);
     tl.push(`　${dueLine(a, r)}`);
     if(a.caution) tl.push(`　${a.caution.text}`);
     for(const m of memosOf(e, L.STEPS)) tl.push(`　${m.no}${m.nm}のメモ：${m.text}`);
@@ -146,7 +149,7 @@ function build(html, todayStr){
             <div style="font-size:11px;font-weight:700;color:${t.pillFg};background:${t.pillBg};display:inline-block;padding:3px 10px;border-radius:99px;">${esc(r.text)}</div>
             <div style="margin-top:8px;font-size:17px;font-weight:700;color:#0f172a;">${esc(e.name)} 様</div>
             <div style="margin-top:2px;font-size:12px;color:#64748b;">カルテ ${esc(e.patientNo)}　／　${esc(e.site || "部位未記入")}</div>
-            <div style="margin-top:10px;font-size:15px;line-height:1.6;color:#0f172a;font-weight:700;">${esc(a.label)}</div>
+            <div style="margin-top:10px;font-size:15px;line-height:1.6;color:#0f172a;font-weight:700;">${esc(labelOf(a, r))}</div>
             <div style="margin-top:4px;font-size:13px;line-height:1.6;color:#475569;">${esc(dueLine(a, r))}</div>
             ${caution}${memos}
           </td>
@@ -182,7 +185,8 @@ function build(html, todayStr){
 </body></html>`;
 
   return { count:n, lateCount:late, subject, text, html:htmlBody,
-           targets: targets.map(t => ({ name:t.e.name, kind:t.r.kind, text:t.r.text, label:t.a.label })) };
+           targets: targets.map(t => ({ name:t.e.name, kind:t.r.kind, text:t.r.text,
+                                        label: labelOf(t.a, t.r) })) };
 }
 
 /* ---------- 実行 ---------- */
