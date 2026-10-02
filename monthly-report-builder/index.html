@@ -289,7 +289,7 @@
       { id: "p_saishin", label: "再診", unit: "人" },
     ]},
     { title: "クリニックデータ｜キャンセル", src: "/user/dashboard/", tag: "glance", fields: [
-      { id: "c_rate", label: "キャンセル率", unit: "%" }, { id: "c_recovery", label: "リカバリー率（キャンセル後の来院）", unit: "%" },
+      { id: "c_rate", label: "キャンセル率", unit: "%" },
     ]},
     { title: "クリニックデータ｜自費・保険（件数）", src: "/user/dashboard/", tag: "glance", fields: [
       { id: "j_jihi", label: "自費件数", unit: "件" }, { id: "j_hoken", label: "保険件数", unit: "件" },
@@ -581,7 +581,6 @@
     ]);
     const cancelTable = kvT([
       ["キャンセル率", pctS(num("c_rate") || null)],
-      ["リカバリー率（キャンセル後の来院）", pctS(num("c_recovery") || null)],
     ]);
     const shoshaishinTotal = num("p_shinkan") + num("p_saisho") + num("p_saishin");
     const shoshaishin = [
@@ -608,7 +607,7 @@
       <div class="kpi-row">
         ${kpi("合計売上高", yen(c.uriTotal))}
         ${kpi("来院人数", nf(num("d_raiin")) + " 人", "新患 " + nf(num("p_shinkan")) + "・自費 " + nf(num("j_jihi")))}
-        ${kpi("キャンセル率", pctS(num("c_rate") || null), "リカバリー " + pctS(num("c_recovery") || null))}
+        ${kpi("キャンセル率", pctS(num("c_rate") || null), "")}
         ${kpi("矯正開始", nf(c.kaishiStart) + " 件", kaishiSub)}
       </div>
 
@@ -900,7 +899,6 @@
     const gf = (keys) => numAfter(lines, keys, null, true);
     const setf = (id, v, label, round) => { if (v != null) { const val = round ? Math.round(v) : v; F[id] = val; rows.push({ label, value: String(val), field: id }); } };
     setf("c_rate", gf(["キャンセル率"]), "キャンセル率");
-    setf("c_recovery", gf(["リカバリー", "キャンセル後", "回復"]), "リカバリー率");
     setf("d_mitei", gf(["予約未定"]), "予約未定者", true);
     setf("r_recall", gf(["リコール"]), "リコール", true);
     setf("r_recall_ori", gf(["リコオリ"]), "リコオリ", true);
