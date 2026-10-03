@@ -397,8 +397,8 @@
       </div>
       <div class="chips" id="planChips">
         <button class="chip plan" type="button" data-plan="aplus" data-r="5.8" aria-pressed="true">アプラス 5.8%</button>
-        <button class="chip plan" type="button" data-plan="suruga" data-r="5.5" aria-pressed="false">スルガ銀行 5.5%</button>
-        <button class="chip plan" type="button" data-plan="suruga" data-r="3.4" aria-pressed="false">スルガ銀行 3.4%</button>
+        <button class="chip plan" type="button" data-plan="suruga" data-r="7.5" aria-pressed="false">スルガ銀行 7.5%</button>
+        <button class="chip plan" type="button" data-plan="suruga" data-r="14" aria-pressed="false">スルガ銀行 14%</button>
       </div>
     </div>
 
@@ -441,7 +441,7 @@
     <div class="cmp-rows" id="cmpRows"></div>
     <p class="cmp-note">
       当院ご提携の2社以外の年率は、国内で一般的とされる水準の目安であり、特定の金融機関・商品の条件を示すものではありません。
-      スルガ銀行デンタルローンプラスは保証会社・審査結果により適用金利が異なり、条件によっては上記の範囲を超える場合があります。
+      スルガ銀行デンタルローンプラスの適用金利は、保証会社および審査結果により年 7.5〜14.0% の範囲で決定されます。
       実際の年率および手数料は、各社の商品内容とお客様の審査結果により決定されます。年率の数値はいずれも画面上で変更できます。
     </p>
   </section>
@@ -463,7 +463,7 @@
 
   <p class="note">
     <b>ご注意</b>　本表は元利均等方式による概算です。実際のお支払い回数・金額・手数料は、株式会社アプラスの審査結果およびご契約内容により決定されます。
-    金額は円単位で計算し、端数は初回のお支払いで調整しています。ボーナス併用払いには対応していません。実質年率・取扱回数は変更となる場合がありますので、最新の条件をご確認ください。スルガ銀行デンタルローンプラスの金利は審査および保証会社により決定されるため、実際の適用金利は異なる場合があります。他社との比較にお示しした年率は一般的な水準の目安です。
+    金額は円単位で計算し、端数は初回のお支払いで調整しています。ボーナス併用払いには対応していません。実質年率・取扱回数は変更となる場合がありますので、最新の条件をご確認ください。スルガ銀行デンタルローンプラスの金利は年 7.5〜14.0%（審査および保証会社により決定）です。他社との比較にお示しした年率は一般的な水準の目安です。
   </p>
 </div>
 
@@ -473,13 +473,13 @@
   /* 比較用の年率は「一般的とされる水準の目安」。画面上で変更できる */
   var COMPARE = [
     { key:"aplus",  partner:true, rate:5.8,  short:"アプラス",   name:"アプラス",                       desc:"実質年率 5.8%（固定）" },
-    { key:"suruga", partner:true, rate:5.5,  short:"スルガ銀行", name:"スルガ銀行 デンタルローンプラス", desc:"年 3.4〜5.5%（審査により決定）" },
+    { key:"suruga", partner:true, rate:7.5,  short:"スルガ銀行", name:"スルガ銀行 デンタルローンプラス", desc:"年 7.5〜14.0%（審査により決定）" },
     { key:"other",  rate:8.0,  name:"他社のデンタルローン・医療ローン",   desc:"5〜10%程度が一般的" },
     { key:"bank",   rate:10.0, name:"銀行のフリーローン・多目的ローン",   desc:"5〜14%程度が一般的" },
     { key:"card",   rate:15.0, name:"クレジットカードの分割払い",         desc:"12〜15%程度が一般的" },
     { key:"loan",   rate:18.0, name:"カードローン・キャッシング",         desc:"14〜18%程度が一般的" }
   ];
-  var STORE = "stella-dental-loan";
+  var STORE = "stella-dental-loan-v2";
 
   var el = {
     amount: document.getElementById("amount"),
