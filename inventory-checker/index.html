@@ -1,0 +1,408 @@
+<title>ステラ在庫チェック</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800&family=Noto+Sans+JP:wght@400;500;700&display=swap">
+<style>
+  /* Layout: 上に「発注した方がいいもの」、下に全品目を棚ごとに並べ、残量はタップで4段階切替 */
+  :root {
+    --bg: #f3f6f7;
+    --surface: #ffffff;
+    --ink: #1d2a30;
+    --dim: #66767e;
+    --line: #d9e2e5;
+    --accent: #1b7f8c;        /* 診療室のミントティール */
+    --accent-soft: #e0f1f3;
+    --ok: #2e8b57;  --ok-soft: #e3f3ea;
+    --half: #8a8f2a; --half-soft: #f1f2dc;
+    --low: #c27012; --low-soft: #fcecd8;
+    --out: #c0392b; --out-soft: #fbe2df;
+    --wait: #4a63b5; --wait-soft: #e3e8f8;
+    --font-display: "M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", "Noto Sans JP", sans-serif;
+    --font-body: "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #11181b; --surface: #1a2428; --ink: #e4ecef; --dim: #93a4ab; --line: #2c3a40;
+      --accent: #4fb7c4; --accent-soft: #1d3439;
+      --ok: #5cc48a; --ok-soft: #1c3227; --half: #c6cb5a; --half-soft: #2e3019;
+      --low: #f0a24a; --low-soft: #3a2a17; --out: #ef7666; --out-soft: #3d1f1b;
+      --wait: #8ea2ec; --wait-soft: #232b45;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #11181b; --surface: #1a2428; --ink: #e4ecef; --dim: #93a4ab; --line: #2c3a40;
+    --accent: #4fb7c4; --accent-soft: #1d3439;
+    --ok: #5cc48a; --ok-soft: #1c3227; --half: #c6cb5a; --half-soft: #2e3019;
+    --low: #f0a24a; --low-soft: #3a2a17; --out: #ef7666; --out-soft: #3d1f1b;
+    --wait: #8ea2ec; --wait-soft: #232b45;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.6; }
+  .wrap { max-width: 880px; margin: 0 auto; padding-inline: 16px; padding-block: 20px 48px; display: grid; gap: 22px; }
+
+  header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 8px 16px; }
+  h1 { font-family: var(--font-display); font-weight: 800; font-size: 26px; margin: 0; letter-spacing: 0.02em; }
+  h1 small { display: block; font-family: var(--font-body); font-size: 12px; font-weight: 500; color: var(--dim); letter-spacing: 0.04em; }
+  .sync { font-size: 12px; color: var(--dim); }
+  .sync b { color: var(--accent); font-weight: 700; }
+
+  h2 { font-family: var(--font-display); font-size: 17px; font-weight: 700; margin: 0; text-wrap: balance; }
+  .sec-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+
+  /* 発注リスト */
+  .order-panel { background: var(--surface); border: 2px solid var(--low); border-radius: 14px; padding: 16px; }
+  .order-panel.clear { border-color: var(--ok); }
+  .order-panel .lead { font-size: 13px; color: var(--dim); margin: 0 0 12px; }
+  .order-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .order-item { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; align-items: center; padding: 10px 12px; border-radius: 10px; background: var(--low-soft); }
+  .order-item.out { background: var(--out-soft); }
+  .order-item.wait { background: var(--wait-soft); }
+  .order-item .nm { font-weight: 700; min-width: 0; overflow-wrap: anywhere; }
+  .order-item .meta { font-size: 12px; color: var(--dim); }
+  .all-good { display: flex; align-items: center; gap: 10px; font-weight: 500; color: var(--ok); }
+  .all-good::before { content: ""; width: 12px; height: 12px; border-radius: 50%; background: var(--ok); flex: none; }
+
+  button { font: inherit; cursor: pointer; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); padding: 7px 12px; font-size: 13px; font-weight: 500; }
+  button:hover { border-color: var(--accent); }
+  button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: var(--surface); font-weight: 700; }
+  button.ghost { border-color: transparent; background: transparent; color: var(--dim); }
+  button.danger { color: var(--out); }
+
+  /* 凡例 */
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--dim); }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+
+  /* 品目リスト */
+  .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .toolbar input[type="search"] { flex: 1; min-width: 0; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); font: inherit; }
+  .shelf { display: grid; gap: 6px; margin-top: 14px; }
+  .shelf h3 { font-size: 12px; font-weight: 700; color: var(--accent); letter-spacing: 0.08em; margin: 0 0 2px; padding-bottom: 4px; border-bottom: 1px dashed var(--line); }
+  .row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+  .row .nm { font-weight: 700; overflow-wrap: anywhere; }
+  .row .sub { font-size: 12px; color: var(--dim); display: flex; flex-wrap: wrap; gap: 2px 10px; }
+  .row .sub .stale { color: var(--low); }
+  .row .edit { grid-column: 1 / -1; }
+
+  /* 残量メーター（4段階のボタン） */
+  .gauge { display: inline-grid; grid-template-columns: repeat(4, auto); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+  .gauge button { border: none; border-radius: 0; padding: 6px 10px; font-size: 12px; background: transparent; color: var(--dim); white-space: nowrap; }
+  .gauge button + button { border-left: 1px solid var(--line); }
+  .gauge button[aria-pressed="true"][data-lv="3"] { background: var(--ok-soft); color: var(--ok); font-weight: 700; }
+  .gauge button[aria-pressed="true"][data-lv="2"] { background: var(--half-soft); color: var(--half); font-weight: 700; }
+  .gauge button[aria-pressed="true"][data-lv="1"] { background: var(--low-soft); color: var(--low); font-weight: 700; }
+  .gauge button[aria-pressed="true"][data-lv="0"] { background: var(--out-soft); color: var(--out); font-weight: 700; }
+
+  .pill { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 999px; }
+  .pill.wait { background: var(--wait-soft); color: var(--wait); }
+
+  /* 追加・編集フォーム */
+  form.add { display: grid; grid-template-columns: 2fr 1.3fr 1.6fr auto; gap: 8px; align-items: end; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
+  form.add label { display: grid; gap: 2px; font-size: 12px; color: var(--dim); min-width: 0; }
+  form.add input, form.add select { padding: 8px; border: 1px solid var(--line); border-radius: 8px; font: inherit; font-size: 14px; background: var(--surface); color: var(--ink); min-width: 0; width: 100%; }
+  .edit-box { display: grid; grid-template-columns: 2fr 1.3fr 1.6fr; gap: 8px; margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--line); }
+  .edit-box input { padding: 7px; border: 1px solid var(--line); border-radius: 8px; font: inherit; font-size: 13px; background: var(--surface); color: var(--ink); min-width: 0; width: 100%; }
+  .edit-box .acts { grid-column: 1 / -1; display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+
+  .empty { background: var(--surface); border: 1px dashed var(--line); border-radius: 12px; padding: 20px; display: grid; gap: 10px; justify-items: start; }
+  .empty p { margin: 0; color: var(--dim); }
+
+  .note { font-size: 12px; color: var(--dim); margin: 0; }
+  .toast { position: fixed; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 8px 16px; border-radius: 999px; font-size: 13px; }
+
+  @media (max-width: 620px) {
+    form.add, .edit-box { grid-template-columns: 1fr 1fr; }
+    form.add label:first-child, .edit-box input:first-child { grid-column: 1 / -1; }
+    .row { grid-template-columns: 1fr; }
+    .order-item { grid-template-columns: 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1><small>博多ステラ歯科</small>ステラ在庫チェック</h1>
+    <div class="sync" id="sync">読み込み中…</div>
+  </header>
+
+  <section class="order-panel" id="order-panel" aria-labelledby="order-h">
+    <div class="sec-head">
+      <h2 id="order-h">発注した方がいいもの</h2>
+      <button type="button" id="copy-btn" hidden>発注リストをコピー</button>
+    </div>
+    <p class="lead">残量が「少なめ」か「なし」になった品目がここに出ます。発注したら「発注した」を押すと入荷待ちに変わります。</p>
+    <div id="order-body"></div>
+  </section>
+
+  <section aria-labelledby="all-h">
+    <div class="sec-head">
+      <h2 id="all-h">すべての品目</h2>
+      <div class="legend" aria-label="残量の目安">
+        <span>たっぷり＝箱・袋が複数ある</span>
+        <span>半分＝最後の箱を使っている</span>
+        <span>少なめ＝あと数日〜1週間分</span>
+      </div>
+    </div>
+    <div class="toolbar">
+      <input type="search" id="q" placeholder="品目名で絞り込み" aria-label="品目名で絞り込み">
+    </div>
+    <div id="list"></div>
+  </section>
+
+  <section aria-labelledby="add-h">
+    <h2 id="add-h" style="margin-bottom:10px">品目を追加</h2>
+    <form class="add" id="add-form" autocomplete="off">
+      <label>品目名<input id="add-name" required maxlength="60" placeholder="例：ニトリルグローブ M"></label>
+      <label>置き場所・分類<input id="add-cat" maxlength="30" list="cat-list" placeholder="例：診療室"></label>
+      <label>発注先・メモ<input id="add-note" maxlength="80" placeholder="例：〇〇歯科商店 2箱"></label>
+      <button class="primary" type="submit">追加</button>
+      <datalist id="cat-list"></datalist>
+    </form>
+  </section>
+
+  <p class="note" id="mode-note"></p>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(() => {
+  const LEVELS = [
+    { lv: 3, label: "たっぷり" },
+    { lv: 2, label: "半分" },
+    { lv: 1, label: "少なめ" },
+    { lv: 0, label: "なし" },
+  ];
+  const LABEL = Object.fromEntries(LEVELS.map(l => [l.lv, l.label]));
+  const STALE_DAYS = 30;
+  const STARTER = [
+    ["ニトリルグローブ S", "診療室"], ["ニトリルグローブ M", "診療室"], ["サージカルマスク", "診療室"],
+    ["使い捨てエプロン", "診療室"], ["紙コップ", "診療室"], ["バキュームチップ", "診療室"],
+    ["滅菌パック", "滅菌室"], ["アルコール綿", "滅菌室"], ["印象材（アルジネート）", "技工・材料"],
+    ["コンポジットレジン", "技工・材料"], ["歯ブラシ（販売用）", "受付"], ["ペーパータオル", "共用"],
+  ];
+
+  const $ = id => document.getElementById(id);
+  let items = [];          // {id, name, cat, note, level, ordered, orderedAt, updatedAt}
+  let store = null;        // {add, update, remove}
+  let editing = null;
+  let query = "";
+  let loaded = false;
+
+  // ---------- 保存先 ----------
+  function localStore() {
+    const KEY = "stella-inventory-v1";
+    const load = () => { try { return JSON.parse(localStorage.getItem(KEY) || "[]"); } catch { return []; } };
+    const save = () => { try { localStorage.setItem(KEY, JSON.stringify(items)); } catch {} };
+    items = load();
+    loaded = true;
+    render();
+    return {
+      async add(data) { items.push({ id: "l" + Date.now() + Math.random().toString(36).slice(2, 6), ...data }); save(); render(); },
+      async update(id, patch) { const it = items.find(i => i.id === id); if (it) Object.assign(it, patch); save(); render(); },
+      async remove(id) { items = items.filter(i => i.id !== id); save(); render(); },
+    };
+  }
+
+  function dbStore(db) {
+    const col = db.collection("items");
+    col.onSnapshot(snap => {
+      items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      loaded = true;
+      render();
+    }, err => { setSync("同期できませんでした（" + (err && err.message || "エラー") + "）"); });
+    return {
+      add: data => col.add(data),
+      update: (id, patch) => col.doc(id).update(patch),
+      remove: id => col.doc(id).delete(),
+    };
+  }
+
+  function setSync(t) { $("sync").innerHTML = t; }
+
+  async function boot() {
+    let db = null;
+    try { db = window.claude && window.claude.use ? await window.claude.use("db") : null; } catch { db = null; }
+    if (db) {
+      store = dbStore(db);
+      setSync("<b>●</b> スタッフ全員で共有中");
+      $("mode-note").textContent = "変更はこのページを開いている全員にすぐ反映されます。";
+    } else {
+      store = localStore();
+      setSync("この端末だけに保存中");
+      $("mode-note").textContent = "共有サーバーにつながっていないため、この端末のブラウザにだけ保存しています。";
+    }
+  }
+
+  // ---------- 操作 ----------
+  async function act(fn, msg) {
+    try { await fn(); if (msg) toast(msg); }
+    catch (e) { toast("保存できませんでした：" + (e && (e.message || e.code) || "権限がない可能性があります")); }
+  }
+  const now = () => new Date().toISOString();
+
+  function setLevel(it, lv) {
+    if (it.level === lv) return;
+    const patch = { level: lv, updatedAt: now() };
+    if (lv >= 2 && it.ordered) { patch.ordered = false; patch.orderedAt = null; }
+    act(() => store.update(it.id, patch));
+  }
+  const markOrdered = it => act(() => store.update(it.id, { ordered: true, orderedAt: now() }), `「${it.name}」を発注済みにしました`);
+  const unmarkOrdered = it => act(() => store.update(it.id, { ordered: false, orderedAt: null }));
+  const markArrived = it => act(() => store.update(it.id, { ordered: false, orderedAt: null, level: 3, updatedAt: now() }), `「${it.name}」を入荷済みにしました`);
+
+  // ---------- 表示 ----------
+  function daysAgo(iso) {
+    if (!iso) return null;
+    return Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+  }
+  function agoText(iso) {
+    const d = daysAgo(iso);
+    if (d === null) return "未確認";
+    if (d <= 0) return "今日";
+    if (d === 1) return "昨日";
+    return d + "日前";
+  }
+  function el(tag, attrs = {}, ...kids) {
+    const n = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) {
+      if (k === "class") n.className = v;
+      else if (k.startsWith("on")) n.addEventListener(k.slice(2), v);
+      else if (v !== false && v != null) n.setAttribute(k, v);
+    }
+    for (const c of kids.flat()) if (c != null && c !== false) n.append(c);
+    return n;
+  }
+  const byName = (a, b) => a.name.localeCompare(b.name, "ja");
+
+  function renderOrders() {
+    const body = $("order-body");
+    body.replaceChildren();
+    const need = items.filter(i => (i.level ?? 3) <= 1).sort((a, b) => (a.ordered - b.ordered) || (a.level - b.level) || byName(a, b));
+    const toOrder = need.filter(i => !i.ordered);
+    $("order-panel").classList.toggle("clear", toOrder.length === 0);
+    $("copy-btn").hidden = toOrder.length === 0;
+    if (!need.length) {
+      body.append(el("div", { class: "all-good" }, items.length ? "いま発注が必要なものはありません" : "品目を登録すると、ここに発注の目安が出ます"));
+      return;
+    }
+    const ul = el("ul", { class: "order-list" });
+    for (const it of need) {
+      const cls = "order-item" + (it.ordered ? " wait" : it.level === 0 ? " out" : "");
+      const meta = it.ordered
+        ? `発注済み（${agoText(it.orderedAt)}）・入荷待ち`
+        : `残量：${LABEL[it.level]}` + (it.note ? `　${it.note}` : "");
+      const btns = it.ordered
+        ? el("div", { class: "toolbar" },
+            el("button", { type: "button", class: "primary", onclick: () => markArrived(it) }, "入荷した"),
+            el("button", { type: "button", class: "ghost", onclick: () => unmarkOrdered(it) }, "取り消す"))
+        : el("button", { type: "button", class: "primary", onclick: () => markOrdered(it) }, "発注した");
+      ul.append(el("li", { class: cls },
+        el("div", {}, el("div", { class: "nm" }, it.name), el("div", { class: "meta" }, meta)),
+        btns));
+    }
+    body.append(ul);
+  }
+
+  function renderList() {
+    const list = $("list");
+    list.replaceChildren();
+    if (!loaded) { list.append(el("p", { class: "note", style: "margin-top:12px" }, "品目を読み込んでいます…")); return; }
+    if (!items.length) {
+      list.append(el("div", { class: "empty" },
+        el("p", {}, "まだ品目がありません。下の「品目を追加」から登録するか、歯科でよく使う消耗品をまとめて追加できます。"),
+        el("button", { type: "button", class: "primary", onclick: addStarter }, "よく使う消耗品を12件追加")));
+      return;
+    }
+    const q = query.trim().toLowerCase();
+    const shown = items.filter(i => !q || i.name.toLowerCase().includes(q) || (i.cat || "").toLowerCase().includes(q));
+    const groups = new Map();
+    for (const it of shown.sort(byName)) {
+      const k = it.cat || "その他";
+      if (!groups.has(k)) groups.set(k, []);
+      groups.get(k).push(it);
+    }
+    if (!shown.length) list.append(el("p", { class: "note", style: "margin-top:12px" }, "一致する品目がありません。"));
+    for (const [cat, rows] of [...groups].sort((a, b) => a[0].localeCompare(b[0], "ja"))) {
+      const shelf = el("div", { class: "shelf" }, el("h3", {}, cat));
+      for (const it of rows) shelf.append(renderRow(it));
+      list.append(shelf);
+    }
+    const cats = [...new Set(items.map(i => i.cat).filter(Boolean))];
+    $("cat-list").replaceChildren(...cats.map(c => el("option", { value: c })));
+  }
+
+  function renderRow(it) {
+    const lv = it.level ?? 3;
+    const d = daysAgo(it.updatedAt);
+    const stale = d === null || d >= STALE_DAYS;
+    const gauge = el("div", { class: "gauge", role: "group", "aria-label": it.name + "の残量" },
+      LEVELS.map(l => el("button", {
+        type: "button", "data-lv": l.lv, "aria-pressed": String(l.lv === lv),
+        onclick: () => setLevel(it, l.lv),
+      }, l.label)));
+    const sub = el("div", { class: "sub" },
+      el("span", { class: stale ? "stale" : "" }, "確認：" + agoText(it.updatedAt) + (stale ? "（そろそろ見てください）" : "")),
+      it.note ? el("span", {}, it.note) : null,
+      it.ordered ? el("span", { class: "pill wait" }, "入荷待ち") : null,
+      el("button", { type: "button", class: "ghost", style: "padding:0 4px;font-size:12px", onclick: () => { editing = editing === it.id ? null : it.id; render(); } }, editing === it.id ? "閉じる" : "編集"));
+    const row = el("div", { class: "row" }, el("div", {}, el("div", { class: "nm" }, it.name), sub), gauge);
+    if (editing === it.id) row.append(renderEdit(it));
+    return row;
+  }
+
+  function renderEdit(it) {
+    const n = el("input", { id: "e-name-" + it.id, value: it.name, maxlength: 60, "aria-label": "品目名" });
+    const c = el("input", { id: "e-cat-" + it.id, value: it.cat || "", maxlength: 30, list: "cat-list", "aria-label": "置き場所・分類" });
+    const m = el("input", { id: "e-note-" + it.id, value: it.note || "", maxlength: 80, "aria-label": "発注先・メモ" });
+    let armed = false;
+    const del = el("button", { type: "button", class: "danger", onclick: () => {
+      if (!armed) { armed = true; del.textContent = "本当に削除する"; return; }
+      editing = null; act(() => store.remove(it.id), `「${it.name}」を削除しました`);
+    } }, "削除");
+    return el("div", { class: "edit edit-box" }, n, c, m,
+      el("div", { class: "acts" }, del,
+        el("button", { type: "button", class: "primary", onclick: () => {
+          const name = n.value.trim(); if (!name) return;
+          editing = null;
+          act(() => store.update(it.id, { name, cat: c.value.trim(), note: m.value.trim() }), "保存しました");
+        } }, "保存")));
+  }
+
+  function render() { renderOrders(); renderList(); }
+
+  async function addStarter() {
+    if (!store) return;
+    const t = now();
+    for (const [name, cat] of STARTER) {
+      if (items.some(i => i.name === name)) continue;
+      await act(() => store.add({ name, cat, note: "", level: 3, ordered: false, orderedAt: null, updatedAt: t }));
+    }
+    toast("よく使う消耗品を追加しました。残量を合わせてください");
+  }
+
+  $("add-form").addEventListener("submit", e => {
+    e.preventDefault();
+    const name = $("add-name").value.trim();
+    if (!name || !store) return;
+    act(() => store.add({ name, cat: $("add-cat").value.trim(), note: $("add-note").value.trim(), level: 3, ordered: false, orderedAt: null, updatedAt: now() }), `「${name}」を追加しました`);
+    $("add-name").value = ""; $("add-note").value = "";
+    $("add-name").focus();
+  });
+  $("q").addEventListener("input", e => { query = e.target.value; renderList(); });
+  $("copy-btn").addEventListener("click", async () => {
+    const lines = items.filter(i => (i.level ?? 3) <= 1 && !i.ordered).sort(byName)
+      .map(i => `・${i.name}（${LABEL[i.level]}）${i.note ? " " + i.note : ""}`);
+    const text = "【発注リスト】\n" + lines.join("\n");
+    try { await navigator.clipboard.writeText(text); toast("発注リストをコピーしました"); }
+    catch { toast("コピーできませんでした。一覧から書き写してください"); }
+  });
+
+  let tt;
+  function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(tt); tt = setTimeout(() => t.hidden = true, 2600); }
+
+  render();
+  boot();
+})();
+</script>
