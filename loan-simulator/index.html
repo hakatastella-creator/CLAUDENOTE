@@ -117,7 +117,7 @@
     margin-top:26px;background:var(--surface);border:1px solid var(--line);
     border-radius:3px;padding:20px 22px 18px;box-shadow:var(--shadow);
     display:grid;gap:22px;
-    grid-template-columns:minmax(0,1.35fr) minmax(0,1fr) minmax(0,.7fr);
+    grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr) minmax(0,1.15fr);
   }
   @media (max-width:820px){.controls{grid-template-columns:1fr}}
   .field label{
@@ -146,6 +146,9 @@
     border:1px solid var(--line);background:var(--surface-2);color:var(--ink-2);
   }
   .chip:hover{border-color:var(--accent);color:var(--accent)}
+  .chip.plan[aria-pressed="true"]{
+    background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:700;
+  }
   .warn{
     grid-column:1/-1;margin:0;font-size:13px;color:var(--brass);font-weight:500;
   }
@@ -291,7 +294,7 @@
   .cmp-bar{min-width:0}
   .cmp-track{height:14px;background:var(--line-soft);border-radius:2px;overflow:hidden}
   .cmp-fill{height:100%;border-radius:0 4px 4px 0;background:var(--chart-b)}
-  .cmp-row.base .cmp-fill{background:var(--chart-a)}
+  .cmp-row.partner .cmp-fill{background:var(--chart-a)}
   .cmp-vals{
     display:flex;gap:10px;align-items:baseline;margin-top:4px;
     font-family:var(--num);font-variant-numeric:tabular-nums;white-space:nowrap;
@@ -362,7 +365,7 @@
       <h1>デンタルローン お支払い早見表</h1>
     </div>
     <div class="rate-badge">
-      <span class="who">アプラス</span>
+      <span class="who" id="badgePlan">アプラス</span>
       <span class="val">実質年率 <span id="badgeRate">5.8</span><small>%</small></span>
     </div>
   </header>
@@ -387,12 +390,16 @@
     </div>
 
     <div class="field small">
-      <label for="rate">実質年率</label>
+      <label for="rate">実質年率（ご提携ローン）</label>
       <div class="money-input">
         <input id="rate" type="text" inputmode="decimal" autocomplete="off" value="5.8">
         <span class="unit">％</span>
       </div>
-      <div class="chips"><button class="chip" type="button" data-rate="5.8">アプラス 5.8%</button></div>
+      <div class="chips" id="planChips">
+        <button class="chip plan" type="button" data-plan="aplus" data-r="5.8" aria-pressed="true">アプラス 5.8%</button>
+        <button class="chip plan" type="button" data-plan="suruga" data-r="5.5" aria-pressed="false">スルガ銀行 5.5%</button>
+        <button class="chip plan" type="button" data-plan="suruga" data-r="3.4" aria-pressed="false">スルガ銀行 3.4%</button>
+      </div>
     </div>
 
     <p class="warn" id="warn" hidden></p>
@@ -433,8 +440,9 @@
     <p class="cmp-lede" id="cmpLede"></p>
     <div class="cmp-rows" id="cmpRows"></div>
     <p class="cmp-note">
-      比較に用いた年率は、国内で一般的とされる水準の目安であり、特定の金融機関・商品の条件を示すものではありません。
-      実際の年率および手数料は、各社の商品内容とお客様の審査結果により異なります。年率の数値は画面上で変更できます。
+      当院ご提携の2社以外の年率は、国内で一般的とされる水準の目安であり、特定の金融機関・商品の条件を示すものではありません。
+      スルガ銀行デンタルローンプラスは保証会社・審査結果により適用金利が異なり、条件によっては上記の範囲を超える場合があります。
+      実際の年率および手数料は、各社の商品内容とお客様の審査結果により決定されます。年率の数値はいずれも画面上で変更できます。
     </p>
   </section>
 
@@ -455,7 +463,7 @@
 
   <p class="note">
     <b>ご注意</b>　本表は元利均等方式による概算です。実際のお支払い回数・金額・手数料は、株式会社アプラスの審査結果およびご契約内容により決定されます。
-    金額は円単位で計算し、端数は初回のお支払いで調整しています。ボーナス併用払いには対応していません。実質年率・取扱回数は変更となる場合がありますので、最新の条件をご確認ください。他社との比較にお示しした年率は一般的な水準の目安です。
+    金額は円単位で計算し、端数は初回のお支払いで調整しています。ボーナス併用払いには対応していません。実質年率・取扱回数は変更となる場合がありますので、最新の条件をご確認ください。スルガ銀行デンタルローンプラスの金利は審査および保証会社により決定されるため、実際の適用金利は異なる場合があります。他社との比較にお示しした年率は一般的な水準の目安です。
   </p>
 </div>
 
@@ -464,11 +472,12 @@
   var REV_TERMS = [12,24,36,48,60,84,120];
   /* 比較用の年率は「一般的とされる水準の目安」。画面上で変更できる */
   var COMPARE = [
-    { key:"aplus", base:true, name:"アプラス",                     desc:"当院ご提携のデンタルローン" },
-    { key:"other", rate:8.0,  name:"他社のデンタルローン・医療ローン", desc:"5〜10%程度が一般的" },
-    { key:"bank",  rate:10.0, name:"銀行のフリーローン・多目的ローン", desc:"5〜14%程度が一般的" },
-    { key:"card",  rate:15.0, name:"クレジットカードの分割払い",       desc:"12〜15%程度が一般的" },
-    { key:"loan",  rate:18.0, name:"カードローン・キャッシング",       desc:"14〜18%程度が一般的" }
+    { key:"aplus",  partner:true, rate:5.8,  short:"アプラス",   name:"アプラス",                       desc:"実質年率 5.8%（固定）" },
+    { key:"suruga", partner:true, rate:5.5,  short:"スルガ銀行", name:"スルガ銀行 デンタルローンプラス", desc:"年 3.4〜5.5%（審査により決定）" },
+    { key:"other",  rate:8.0,  name:"他社のデンタルローン・医療ローン",   desc:"5〜10%程度が一般的" },
+    { key:"bank",   rate:10.0, name:"銀行のフリーローン・多目的ローン",   desc:"5〜14%程度が一般的" },
+    { key:"card",   rate:15.0, name:"クレジットカードの分割払い",         desc:"12〜15%程度が一般的" },
+    { key:"loan",   rate:18.0, name:"カードローン・キャッシング",         desc:"14〜18%程度が一般的" }
   ];
   var STORE = "stella-dental-loan";
 
@@ -478,6 +487,8 @@
     rate: document.getElementById("rate"),
     budget: document.getElementById("budget"),
     badgeRate: document.getElementById("badgeRate"),
+    badgePlan: document.getElementById("badgePlan"),
+    planChips: document.getElementById("planChips"),
     terms: document.getElementById("terms"),
     planN: document.getElementById("planN"),
     monthly: document.getElementById("monthly"),
@@ -495,22 +506,30 @@
   };
 
   var selected = 24;
+  var basePlan = "aplus";
 
   try {
     var saved = JSON.parse(localStorage.getItem(STORE) || "{}");
     if (saved.rate) el.rate.value = saved.rate;
     if (saved.term && TERMS.indexOf(saved.term) > -1) selected = saved.term;
+    if (saved.plan && findPlan(saved.plan)) basePlan = saved.plan;
     if (saved.cmp) COMPARE.forEach(function (c) {
-      if (!c.base && typeof saved.cmp[c.key] === "number") c.rate = saved.cmp[c.key];
+      if (typeof saved.cmp[c.key] === "number") c.rate = saved.cmp[c.key];
     });
   } catch (e) {}
 
   function save() {
     try {
       var cmp = {};
-      COMPARE.forEach(function (c) { if (!c.base) cmp[c.key] = c.rate; });
-      localStorage.setItem(STORE, JSON.stringify({ rate: el.rate.value, term: selected, cmp: cmp }));
+      COMPARE.forEach(function (c) { cmp[c.key] = c.rate; });
+      localStorage.setItem(STORE, JSON.stringify({
+        rate: el.rate.value, term: selected, plan: basePlan, cmp: cmp
+      }));
     } catch (e) {}
+  }
+
+  function findPlan(key) {
+    return COMPARE.filter(function (c) { return c.key === key; })[0];
   }
 
   function yen(v) { return Math.round(v).toLocaleString("ja-JP"); }
@@ -583,14 +602,13 @@
 
   function buildCompare() {
     el.cmpRows.innerHTML = COMPARE.map(function (c) {
-      var rateCell = c.base
-        ? '<span class="fixed" data-fixed></span><span class="pc">%</span>'
-        : '<input type="text" inputmode="decimal" autocomplete="off" data-key="' + c.key +
-          '" value="' + c.rate.toFixed(1) + '" aria-label="' + c.name + ' の実質年率"><span class="pc">%</span>';
-      return '<div class="cmp-row' + (c.base ? ' base' : '') + '">' +
-        '<div class="cmp-name">' + (c.base ? '<span class="tag">当院ご提携</span>' : '') +
+      return '<div class="cmp-row' + (c.partner ? ' partner' : '') + '">' +
+        '<div class="cmp-name">' + (c.partner ? '<span class="tag">当院ご提携</span>' : '') +
           '<b>' + c.name + '</b><span>' + c.desc + '</span></div>' +
-        '<div class="cmp-rate">' + rateCell + '</div>' +
+        '<div class="cmp-rate">' +
+          '<input type="text" inputmode="decimal" autocomplete="off" data-key="' + c.key +
+          '" value="' + c.rate.toFixed(1) + '" aria-label="' + c.name + ' の実質年率">' +
+          '<span class="pc">%</span></div>' +
         '<div class="cmp-monthly" data-monthly></div>' +
         '<div class="cmp-bar"><div class="cmp-track"><div class="cmp-fill" data-fill style="width:0"></div></div>' +
           '<div class="cmp-vals"><span class="fee" data-fee></span><span class="tot" data-tot></span></div></div>' +
@@ -601,7 +619,7 @@
     cmpRefs = Array.prototype.map.call(el.cmpRows.children, function (row) {
       return {
         row: row,
-        fixed: row.querySelector("[data-fixed]"),
+        input: row.querySelector("input[data-key]"),
         monthly: row.querySelector("[data-monthly]"),
         fill: row.querySelector("[data-fill]"),
         fee: row.querySelector("[data-fee]"),
@@ -616,23 +634,26 @@
       var c = COMPARE.filter(function (x) { return x.key === input.dataset.key; })[0];
       var v = parseFloat((input.value || "").replace(/[^0-9.]/g, ""));
       c.rate = isFinite(v) && v >= 0 ? v : 0;
+      if (c.key === basePlan) el.rate.value = input.value;
       render();
     });
   }
 
   function updateCompare(gross, down, P, rate) {
     var results = COMPARE.map(function (c) {
-      var r = c.base ? rate : c.rate;
-      var pl = plan(P, r, selected);
-      return { c: c, r: r, pl: pl };
+      if (c.key === basePlan) c.rate = rate;
+      var pl = plan(P, c.rate, selected);
+      return { c: c, r: c.rate, pl: pl };
     });
 
     var maxFee = Math.max.apply(null, results.map(function (x) { return x.pl.fee; }));
-    var baseFee = results[0].pl.fee;
+    var baseFee = results.filter(function (x) { return x.c.key === basePlan; })[0].pl.fee;
 
     results.forEach(function (x, i) {
       var ref = cmpRefs[i];
-      if (ref.fixed) ref.fixed.textContent = x.r.toString();
+      var isBase = x.c.key === basePlan;
+      ref.row.classList.toggle("base", isBase);
+      if (document.activeElement !== ref.input) ref.input.value = x.r.toFixed(1);
       ref.monthly.innerHTML = yen(x.pl.rest) + "<small>円／月</small>";
       ref.fill.style.width = (maxFee > 0 ? (x.pl.fee / maxFee) * 100 : 0).toFixed(2) + "%";
       ref.fee.innerHTML = yen(x.pl.fee) + "<small>円</small>";
@@ -641,7 +662,7 @@
         yen(x.pl.rest) + "円（" + selected + "回）";
 
       var d = x.pl.fee - baseFee;
-      if (x.c.base) {
+      if (isBase) {
         ref.diff.innerHTML = '<span class="pill zero">基準</span>';
       } else if (d > 0) {
         ref.diff.innerHTML = '<span class="pill">+' + yen(d) + '円</span>';
@@ -653,19 +674,20 @@
     });
 
     var card = results.filter(function (x) { return x.c.key === "card"; })[0];
+    var baseName = findPlan(basePlan).name;
     var gap = card.pl.fee - baseFee;
     if (P <= 0) {
       el.cmpLede.textContent = "治療費を入力すると、他社でお借りした場合の手数料と比べられます。";
     } else if (gap > 0) {
       el.cmpLede.innerHTML =
         "治療費 <b>" + yen(gross) + "円</b> を <b>" + selected + "回</b> でお支払いの場合、" +
-        "アプラス（年率 " + rate.toFixed(1) + "%）の分割払手数料は <b>" + yen(baseFee) + "円</b>。" +
+        baseName + "（年率 " + rate.toFixed(1) + "%）の分割払手数料は <b>" + yen(baseFee) + "円</b>。" +
         "同じ回数をクレジットカードの分割払い（年率 " + card.r + "%）でお支払いになると <b>" +
         yen(card.pl.fee) + "円</b> かかり、その差は <span class=\"gap\">" + yen(gap) + "円</span> です。";
     } else {
       el.cmpLede.innerHTML =
         "治療費 <b>" + yen(gross) + "円</b> を <b>" + selected + "回</b> でお支払いの場合、" +
-        "アプラス（年率 " + rate.toFixed(1) + "%）の分割払手数料は <b>" + yen(baseFee) + "円</b> です。";
+        baseName + "（年率 " + rate.toFixed(1) + "%）の分割払手数料は <b>" + yen(baseFee) + "円</b> です。";
     }
   }
 
@@ -682,6 +704,11 @@
 
     var P = Math.max(0, gross - down);
     el.badgeRate.textContent = rate.toString();
+    el.badgePlan.textContent = findPlan(basePlan).short;
+    Array.prototype.forEach.call(el.planChips.children, function (b) {
+      b.setAttribute("aria-pressed",
+        b.dataset.plan === basePlan && parseFloat(b.dataset.r) === rate ? "true" : "false");
+    });
 
     /* 早見表 */
     el.terms.innerHTML = TERMS.map(function (n) {
@@ -743,8 +770,12 @@
     render();
   });
 
-  document.querySelector('[data-rate]').addEventListener("click", function () {
-    el.rate.value = "5.8";
+  el.planChips.addEventListener("click", function (ev) {
+    var b = ev.target.closest(".chip.plan");
+    if (!b) return;
+    basePlan = b.dataset.plan;
+    el.rate.value = b.dataset.r;
+    findPlan(basePlan).rate = parseFloat(b.dataset.r);
     render();
   });
 
