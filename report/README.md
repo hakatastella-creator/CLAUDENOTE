@@ -6,6 +6,7 @@
 
 **アプリ**: https://claude.ai/artifact/St9NAWan1niW27azwX2HRK
 **使いかたページ**: https://claude.ai/artifact/RJkWetZmdpHfdRiW2rrSZ4 （`guide.html`）
+**アラート設定ガイド**: https://claude.ai/artifact/CweWmphywZgZ35US4Sjzrn （`alert-setup.html`）
 
 以前の「受付メモ」と同じアーティファクトを作り替えたものなので、
 ホーム画面に置いたアイコンや古いリンク（`claude.ai/code/artifact/d1988dc7-…`）からも
@@ -109,6 +110,9 @@ db を使うページは同じ組織のメンバーしか開けないという�
 2. この環境の環境変数に `GMAIL_CLIENT_ID` / `GMAIL_CLIENT_SECRET` / `GMAIL_REFRESH_TOKEN`
    （GitHub Actions に入っているものと同じ）を設定する。タスクは自動で
    [`tools/notify_unconfirmed.py`](../tools/notify_unconfirmed.py) を使うようになります
+
+手順は [アラート設定ガイド](https://claude.ai/artifact/CweWmphywZgZ35US4Sjzrn)（`alert-setup.html`）に
+画面つきでまとめてあります。方法Aのプロンプトもそこからコピーできます。
 
 `tools/notify_unconfirmed.py` は単体でも動きます。本文の確認だけなら送信せずに試せます。
 
