@@ -1,0 +1,23 @@
+{
+  "_note": "受付メモアプリ（2026-08〜2026-10）の最終データ。報告システムへの切り替え前に退避したもの。アプリ本体は git 履歴のコミット 1ba7fab にあります。",
+  "_savedAt": "2026-10-17",
+  "updatedAt": 1788235163900,
+  "folders": [
+    { "id": "todo", "name": "やること", "color": "teal", "monthly": false, "order": 0, "updatedAt": 1787649943258 },
+    { "id": "boss", "name": "院長から", "color": "rose", "monthly": false, "order": 1, "updatedAt": 1787649943258 },
+    { "id": "monthly", "name": "毎月やること", "color": "indigo", "monthly": true, "order": 2, "updatedAt": 1787649943258 },
+    { "id": "buy", "name": "買うもの", "color": "olive", "monthly": false, "order": 3, "updatedAt": 1787649943258 }
+  ],
+  "items": [
+    { "id": "mt724vhudct6j", "text": "ポップ作り", "folder": "todo", "done": true, "createdAt": 1787565147762, "updatedAt": 1787632808002, "doneAt": 1787632808002 },
+    { "id": "mt7253sce0pt9", "text": "動画編集", "folder": "todo", "done": false, "createdAt": 1787565158508, "updatedAt": 1787632756611, "doneAt": 0 },
+    { "id": "mt86ee80eiebs", "text": "売り上げ目標作る", "folder": "boss", "done": false, "createdAt": 1787632776576, "updatedAt": 1787632776576, "doneAt": 0 },
+    { "id": "mt86fedwnm4cr", "text": "受付物品ショーケース改善", "folder": "todo", "done": false, "createdAt": 1787632823444, "updatedAt": 1787632823444, "doneAt": 0 },
+    { "id": "mt8fx2w3viv75", "text": "毎月15日➡キャンペーン決める", "folder": "monthly", "done": false, "createdAt": 1787648764899, "updatedAt": 1787649943258, "doneAt": 0 },
+    { "id": "mt8fxkbxks84q", "text": "毎月7日➡勤怠締め切り", "folder": "monthly", "done": false, "createdAt": 1787648787501, "updatedAt": 1787649943258, "doneAt": 0 },
+    { "id": "mt8fy0y6vxngj", "text": "毎月20日➡シフト送る", "folder": "monthly", "done": false, "createdAt": 1787648809038, "updatedAt": 1787649943258, "doneAt": 0 },
+    { "id": "mthzyrhn1u5xj", "text": "ホワイトニング集計", "folder": "monthly", "done": true, "createdAt": 1788226631339, "updatedAt": 1788235162496, "doneAt": 1788235162496 }
+  ],
+  "deleted": [],
+  "deletedFolders": []
+}
