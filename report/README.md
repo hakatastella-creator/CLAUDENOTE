@@ -4,7 +4,8 @@
 やり取りするためのシステムです。受付がその場で上げた報告に院長が返し、
 1日の終わりにその日のまとめを残します。
 
-**公開URL**: https://claude.ai/artifact/St9NAWan1niW27azwX2HRK
+**アプリ**: https://claude.ai/artifact/St9NAWan1niW27azwX2HRK
+**使いかたページ**: https://claude.ai/artifact/RJkWetZmdpHfdRiW2rrSZ4 （`guide.html`）
 
 以前の「受付メモ」と同じアーティファクトを作り替えたものなので、
 ホーム画面に置いたアイコンや古いリンク（`claude.ai/code/artifact/d1988dc7-…`）からも
@@ -110,6 +111,9 @@ db を使うページは同じ組織のメンバーしか開けないという�
 戻したい、または別のURLで並行して使いたい場合は言ってください。
 
 ## 開発メモ
+
+`index.html` がアプリ本体、`guide.html` が3人に渡す使いかたページです。
+アプリの挙動を変えたときは `guide.html` も合わせて直してください。
 
 `index.html` が本体です（1ファイル完結、外部依存は Google Fonts のみ）。
 状態はページ内の `<script id="app-state">` に JSON で埋め込まれ、保存時はページ自身の

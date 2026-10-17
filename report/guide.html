@@ -1,0 +1,468 @@
+<title>受付報告 はじめかた</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Zen+Maru+Gothic:wght@500;700&display=swap">
+
+<style>
+  /* One column, 620px: a masthead, three numbered setup steps (a real
+     sequence), then reference blocks that borrow the app's own chips and
+     pills so the page and the app read as one thing. */
+  :root {
+    --ground:      #F2F5F3;
+    --surface:     #FFFFFF;
+    --surface-2:   #E9EFEC;
+    --ink:         #16211E;
+    --ink-2:       #566662;
+    --ink-3:       #8B9A96;
+    --line:        #DBE4E0;
+    --accent:      #12635B;
+    --accent-ink:  #FFFFFF;
+    --alert:       #8E5A14;
+    --tint-accent: #DCEDE9;
+    --tint-alert:  #F5ECDC;
+    --m-teal:      #12635B;
+    --m-rose:      #A33B4F;
+    --m-indigo:    #33518A;
+    --shadow-card: 0 1px 1px rgba(20,45,38,.04);
+    --display: "Zen Maru Gothic", "Noto Sans JP", -apple-system, sans-serif;
+    --body: "Noto Sans JP", -apple-system, "Hiragino Sans", "Yu Gothic UI", sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:      #0E1412;
+      --surface:     #172520;
+      --surface-2:   #1E2E29;
+      --ink:         #E7EEEA;
+      --ink-2:       #A2B2AD;
+      --ink-3:       #778783;
+      --line:        #26332F;
+      --accent:      #57B9AC;
+      --accent-ink:  #06211E;
+      --alert:       #DBA75F;
+      --tint-accent: #12302C;
+      --tint-alert:  #2C2314;
+      --m-teal:      #57B9AC;
+      --m-rose:      #E5849A;
+      --m-indigo:    #92ACE6;
+      --shadow-card: 0 1px 1px rgba(0,0,0,.18);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground:      #0E1412;
+    --surface:     #172520;
+    --surface-2:   #1E2E29;
+    --ink:         #E7EEEA;
+    --ink-2:       #A2B2AD;
+    --ink-3:       #778783;
+    --line:        #26332F;
+    --accent:      #57B9AC;
+    --accent-ink:  #06211E;
+    --alert:       #DBA75F;
+    --tint-accent: #12302C;
+    --tint-alert:  #2C2314;
+    --m-teal:      #57B9AC;
+    --m-rose:      #E5849A;
+    --m-indigo:    #92ACE6;
+    --shadow-card: 0 1px 1px rgba(0,0,0,.18);
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 16px;
+    line-height: 1.75;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  .page {
+    max-width: 620px;
+    margin: 0 auto;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 26px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+  }
+
+  /* ---------- masthead ---------- */
+  .eyebrow {
+    font-family: var(--display);
+    font-size: 11.5px;
+    letter-spacing: .16em;
+    color: var(--ink-3);
+    margin: 0;
+  }
+  h1 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: clamp(26px, 7vw, 32px);
+    line-height: 1.25;
+    margin: 3px 0 0;
+    text-wrap: balance;
+  }
+  .lede {
+    margin: 10px 0 0;
+    color: var(--ink-2);
+    font-size: 15px;
+  }
+  .open {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 18px;
+    background: var(--accent);
+    color: var(--accent-ink);
+    text-decoration: none;
+    font-family: var(--display);
+    font-size: 15px;
+    font-weight: 500;
+    padding: 11px 20px;
+    border-radius: 999px;
+  }
+  .open svg { width: 15px; height: 15px; }
+
+  h2 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 18px;
+    line-height: 1.4;
+    margin: 0 0 12px;
+    text-wrap: balance;
+  }
+  section > p:first-of-type { margin-top: 0; }
+
+  /* ---------- numbered steps ---------- */
+  ol.steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+    counter-reset: step;
+  }
+  ol.steps > li {
+    counter-increment: step;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    box-shadow: var(--shadow-card);
+    padding: 13px 15px 13px 14px;
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    gap: 12px;
+    align-items: start;
+  }
+  ol.steps > li::before {
+    content: counter(step);
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--accent-ink);
+    font-family: var(--display);
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-variant-numeric: tabular-nums;
+  }
+  ol.steps .st { min-width: 0; }
+  ol.steps strong {
+    display: block;
+    font-family: var(--display);
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 1.5;
+  }
+  ol.steps p {
+    margin: 3px 0 0;
+    font-size: 14px;
+    color: var(--ink-2);
+    line-height: 1.7;
+  }
+
+  .names {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-top: 9px;
+  }
+  .name {
+    font-family: var(--display);
+    font-size: 13.5px;
+    font-weight: 500;
+    padding: 5px 14px;
+    border-radius: 999px;
+    border: 1.5px solid var(--c);
+    color: var(--c);
+  }
+  .n-inchou   { --c: var(--m-rose); }
+  .n-abiru    { --c: var(--m-teal); }
+  .n-katayama { --c: var(--m-indigo); }
+
+  /* ---------- cards ---------- */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    box-shadow: var(--shadow-card);
+    padding: 14px 16px;
+  }
+  .card + .card { margin-top: 11px; }
+  .card h3 {
+    font-family: var(--display);
+    font-weight: 500;
+    font-size: 15.5px;
+    margin: 0 0 7px;
+    color: var(--c, var(--ink));
+  }
+  .card ul {
+    margin: 0;
+    padding-left: 1.15em;
+    font-size: 14.5px;
+    color: var(--ink-2);
+  }
+  .card li + li { margin-top: 5px; }
+  .card li b { color: var(--ink); font-weight: 500; }
+  .card.r { --c: var(--m-teal); border-left: 3px solid var(--m-teal); }
+  .card.d { --c: var(--m-rose); border-left: 3px solid var(--m-rose); }
+
+  /* ---------- buttons / pills reference ---------- */
+  dl.legend {
+    margin: 0;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 10px 13px;
+    align-items: baseline;
+  }
+  dl.legend dt { min-width: 0; }
+  dl.legend dd {
+    margin: 0;
+    font-size: 14.5px;
+    color: var(--ink-2);
+    min-width: 0;
+  }
+  .btn {
+    display: inline-block;
+    font-family: var(--display);
+    font-size: 12.5px;
+    font-weight: 500;
+    padding: 5px 13px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    color: var(--ink-2);
+    white-space: nowrap;
+  }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .pill {
+    display: inline-block;
+    font-family: var(--display);
+    font-size: 11.5px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 999px;
+    letter-spacing: .03em;
+    white-space: nowrap;
+  }
+  .pill.wait { background: var(--tint-alert); color: var(--alert); }
+  .pill.fresh { background: var(--tint-accent); color: var(--accent); }
+  .pill.done { background: var(--surface-2); color: var(--ink-3); }
+
+  /* ---------- callout ---------- */
+  .callout {
+    background: var(--tint-alert);
+    border-radius: 14px;
+    padding: 13px 16px;
+    font-size: 14.5px;
+    line-height: 1.75;
+    color: var(--ink);
+  }
+  .callout strong {
+    display: block;
+    font-family: var(--display);
+    font-weight: 500;
+    color: var(--alert);
+    margin-bottom: 2px;
+  }
+
+  /* ---------- trouble list ---------- */
+  .qa { display: flex; flex-direction: column; gap: 14px; }
+  .qa .q {
+    font-family: var(--display);
+    font-weight: 500;
+    font-size: 15px;
+    margin: 0 0 2px;
+  }
+  .qa .a { margin: 0; font-size: 14.5px; color: var(--ink-2); }
+
+  .foot {
+    border-top: 1px solid var(--line);
+    padding-top: 16px;
+    font-size: 13px;
+    color: var(--ink-3);
+  }
+
+  a { color: var(--accent); }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+</style>
+
+<div class="page">
+
+  <header>
+    <p class="eyebrow">博多ステラ歯科</p>
+    <h1>受付報告 はじめかた</h1>
+    <p class="lede">
+      受付で気づいたこと、院長に確認したいことを、その場でスマホから送るためのページです。
+      院長は同じページで見て返事をします。院長・阿比留さん・片山さんの3人で使います。
+    </p>
+    <a class="open" href="https://claude.ai/artifact/St9NAWan1niW27azwX2HRK">
+      アプリを開く
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+    </a>
+  </header>
+
+  <section>
+    <h2>最初に1回だけ</h2>
+    <ol class="steps">
+      <li>
+        <div class="st">
+          <strong>自分のスマホでリンクを開く</strong>
+          <p>上の「アプリを開く」から。3人とも同じリンク、同じアカウントです。</p>
+        </div>
+      </li>
+      <li>
+        <div class="st">
+          <strong>自分の名前を選ぶ</strong>
+          <p>「この端末はどなたですか？」と出るので、自分をタップします。</p>
+          <div class="names">
+            <span class="name n-inchou">院長</span>
+            <span class="name n-abiru">阿比留</span>
+            <span class="name n-katayama">片山</span>
+          </div>
+          <p>この端末に覚えるので、次からは聞かれません。選び間違えても右上のボタンで直せます。</p>
+        </div>
+      </li>
+      <li>
+        <div class="st">
+          <strong>ホーム画面に追加する</strong>
+          <p>ブラウザの「共有」→「ホーム画面に追加」。次からアイコン1タップで開きます。</p>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>送りかた</h2>
+    <p>下の入力欄に打って、右の ↑ を押すだけです。打った名前で残ります。</p>
+    <div class="callout">
+      <strong>返事がほしいときはチェックを入れる</strong>
+      入力欄の上の「返事がほしい」（院長は「対応してほしい」）を押してから送ると、
+      相手の<b>要対応</b>に入ります。入れずに送ったものは、ただの報告として届きます。
+    </div>
+  </section>
+
+  <section>
+    <h2>カードのボタン</h2>
+    <dl class="legend">
+      <dt><span class="btn primary">確認</span></dt>
+      <dd>読みました、という合図。相手の画面が「確認済み」に変わります。</dd>
+      <dt><span class="btn">返信</span></dt>
+      <dd>その場で返事を書きます。やり取りはカードの中に積み重なります。</dd>
+      <dt><span class="btn">完了</span></dt>
+      <dd>この件は終わり。要対応から消えます。「戻す」で開き直せます。</dd>
+    </dl>
+  </section>
+
+  <section>
+    <h2>「要対応」に入るもの</h2>
+    <p>いま自分が動くべきものだけが数えられます。ここだけ覚えれば大丈夫です。</p>
+
+    <div class="card r">
+      <h3>受付（阿比留さん・片山さん）</h3>
+      <ul>
+        <li><b>院長からの指示</b> — おふたりとも要対応に入ります。どちらかが「完了」を押せば、両方から消えます。</li>
+        <li><b>自分の相談に院長が返事をくれたとき</b> — 読んで「完了」を押すまで残ります。</li>
+      </ul>
+    </div>
+
+    <div class="card d">
+      <h3>院長</h3>
+      <ul>
+        <li><b>受付からの報告で、まだ確認していないもの</b></li>
+        <li><b>「返事がほしい」が付いていて、まだ返していないもの</b> — 返信した時点で消えます。</li>
+      </ul>
+    </div>
+
+    <div class="callout" style="margin-top:11px">
+      <strong>受付どうしは肩代わりしません</strong>
+      阿比留さんの相談への返事は、阿比留さんの要対応にだけ入ります。
+      片山さんの画面には出ないので、自分あての返事だけを見ていれば大丈夫です。
+    </div>
+  </section>
+
+  <section>
+    <h2>バッジの意味</h2>
+    <dl class="legend">
+      <dt><span class="pill wait">未読</span></dt>
+      <dd>相手がまだ見ていない。</dd>
+      <dt><span class="pill done">確認済み</span></dt>
+      <dd>相手が「確認」を押した。</dd>
+      <dt><span class="pill wait">要返事</span></dt>
+      <dd>返事がほしい、と付けて送ったもの。</dd>
+      <dt><span class="pill wait">対応おねがい</span></dt>
+      <dd>院長から、やってほしいこととして届いたもの。</dd>
+      <dt><span class="pill wait">返事待ち</span></dt>
+      <dd>まだ返ってきていない。</dd>
+      <dt><span class="pill fresh">返信あり</span></dt>
+      <dd>返事がついた。</dd>
+      <dt><span class="pill done">完了</span></dt>
+      <dd>終わったもの。</dd>
+    </dl>
+  </section>
+
+  <section>
+    <h2>1日のまとめ</h2>
+    <p>
+      「今日」の欄の先頭に <b>＋ 今日のまとめを書く</b> が出ます（受付のみ）。
+      来院数、キャンセル、気づいたことなどを1日の終わりに書いておくと、
+      その日のカードとして残り、院長からも読めます。
+    </p>
+  </section>
+
+  <section>
+    <h2>こまったとき</h2>
+    <div class="qa">
+      <div>
+        <p class="q">名前を間違えて選んだ</p>
+        <p class="a">右上の名前ボタンを押すと選び直せます。すでに送ったものの名前は変わりません。</p>
+      </div>
+      <div>
+        <p class="q">送ったのに相手の画面に出ない</p>
+        <p class="a">相手がページを開いたままなら自動で入れ替わります。出ないときは一度閉じて開き直してもらってください。</p>
+      </div>
+      <div>
+        <p class="q">ヘッダーに「保存できません」と出た</p>
+        <p class="a">電波が届いていません。打った内容はその端末に残っているので、つながってから「再試行」を押せば送られます。</p>
+      </div>
+      <div>
+        <p class="q">まちがえて送った</p>
+        <p class="a">自分が送ったカードには「削除」が出ます。2回押すと消えます。他の人のカードは消せません。</p>
+      </div>
+    </div>
+  </section>
+
+  <p class="foot">
+    困ったことや「ここを変えたい」が出たら、そのまま伝えてください。
+    フォルダや名前の追加、項目の変更はあとからできます。
+  </p>
+
+</div>
