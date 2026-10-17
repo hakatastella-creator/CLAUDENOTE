@@ -76,7 +76,7 @@ def build_message(posts, app_url):
         "確認する → " + app_url,
         "（カードの「確認しました」を押すと、受付の画面に確認済みと出ます）",
     ]
-    return "【受付報告】院長 未確認 %d件" % len(posts), "\n".join(lines)
+    return "📋 受付から 未確認%d件｜確認おねがいします" % len(posts), "\n".join(lines)
 
 
 def send(subject, body, to_addr):
