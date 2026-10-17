@@ -3,7 +3,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Zen+Maru+Gothic:wght@500;700&display=swap">
 
-<script id="app-state" type="application/json">{"v":1,"updatedAt":0,"posts":[],"daily":[],"deleted":[]}</script>
+<script id="app-state" type="application/json">{"v":1,"updatedAt":1792221176476,"posts":[],"daily":[{"date":"2026-10-17","text":"名札発注済み（城戸先生、田原先生、蓑津さん用）","updatedAt":1792220611019}],"deleted":[]}</script>
 
 <style>
   :root {
@@ -229,7 +229,6 @@
     box-shadow: var(--shadow-card);
     padding: 11px 13px 10px;
   }
-  .post.is-closed { opacity: .62; }
 
   .phead {
     display: flex;
@@ -266,9 +265,9 @@
   }
   .pill {
     font-family: "Zen Maru Gothic", "Noto Sans JP", sans-serif;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 500;
-    padding: 2px 9px;
+    padding: 3px 11px;
     border-radius: 999px;
     letter-spacing: .03em;
   }
@@ -429,34 +428,6 @@
     box-shadow: var(--shadow-up);
     padding: 9px 12px calc(10px + env(safe-area-inset-bottom));
   }
-  .toggle-row { padding-bottom: 8px; }
-  .toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    background: none;
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    padding: 5px 12px;
-    font-family: "Zen Maru Gothic", "Noto Sans JP", sans-serif;
-    font-size: 13px;
-    color: var(--ink-2);
-    cursor: pointer;
-  }
-  .toggle .mark {
-    width: 15px; height: 15px;
-    border-radius: 5px;
-    border: 1.5px solid var(--ink-3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex: none;
-  }
-  .toggle .mark svg { width: 10px; height: 10px; opacity: 0; color: var(--accent-ink); }
-  .toggle[aria-pressed="true"] { border-color: var(--alert); color: var(--alert); }
-  .toggle[aria-pressed="true"] .mark { background: var(--alert); border-color: var(--alert); }
-  .toggle[aria-pressed="true"] .mark svg { opacity: 1; color: var(--surface); }
-
   .entry {
     display: flex;
     align-items: flex-end;
@@ -607,12 +578,6 @@
   <main class="feed" id="feed"></main>
 
   <div class="compose" id="compose">
-    <div class="toggle-row">
-      <button class="toggle" id="needs" aria-pressed="false">
-        <span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg></span>
-        <span id="needs-label">返事がほしい</span>
-      </button>
-    </div>
     <div class="entry">
       <textarea id="input" rows="1" placeholder="報告・相談を入力…" aria-label="報告を入力"></textarea>
       <button class="send" id="send" disabled aria-label="送る">
@@ -652,7 +617,6 @@
   }
 
   function sideOf(id) { return member(id).side; }
-  function otherSide(side) { return side === "director" ? "reception" : "director"; }
 
   var WEEK = ["日", "月", "火", "水", "木", "金", "土"];
 
@@ -666,7 +630,6 @@
   var state = { v: 1, updatedAt: 0, posts: [], daily: [], deleted: [] };
   var me = null;            // member id; null until this device says who it is
   var tab = "all";
-  var needsReply = false;
   var openReply = null;     // post id whose reply box is open
   var editingDaily = null;  // date key being edited
   var readOnly = false;
@@ -726,11 +689,10 @@
           id: String(p.id),
           text: p.text,
           by: toMemberId(p.by || p.from),
-          needsReply: !!p.needsReply,
           createdAt: Number(p.createdAt) || 0,
           updatedAt: Number(p.updatedAt) || Number(p.createdAt) || 0,
           ack: Number(p.ack) || 0,
-          closedAt: Number(p.closedAt) || 0,
+          ackBy: p.ackBy ? toMemberId(p.ackBy) : "",
           replies: replies
         });
       });
@@ -768,16 +730,16 @@
       if (!prev) { byId[p.id] = p; return; }
       var win = p.updatedAt > prev.updatedAt ? p : prev;
       var lose = win === p ? prev : p;
+      // a confirmation is never taken back, so the earlier one still counts
+      var ackWin = (lose.ack && (!win.ack || lose.ack < win.ack)) ? lose : win;
       byId[p.id] = {
         id: win.id,
         text: win.text,
         by: win.by,
-        needsReply: win.needsReply,
         createdAt: win.createdAt,
         updatedAt: win.updatedAt,
-        // a confirmation is never taken back, so the earlier one still counts
-        ack: Math.max(win.ack, lose.ack),
-        closedAt: win.closedAt,
+        ack: ackWin.ack,
+        ackBy: ackWin.ackBy,
         replies: unionReplies(win.replies, lose.replies)
       };
     });
@@ -815,41 +777,30 @@
   /* ---------- status model ---------- */
   function mySide() { return me ? member(me).side : null; }
 
-  function hasReplyFromSide(p, side) {
-    return p.replies.some(function (r) { return sideOf(r.by) === side; });
+  /* Who is expected to confirm this post — the other side of the desk. */
+  function waitingOn(p) {
+    return sideOf(p.by) === "reception" ? "院長" : "受付";
   }
 
   function statusOf(p) {
-    if (p.closedAt) return { label: "完了", kind: "done" };
-    var side = sideOf(p.by);
-    if (p.needsReply) {
-      if (!hasReplyFromSide(p, otherSide(side))) {
-        return { label: side === "reception" ? "返事待ち" : "未対応", kind: "wait" };
-      }
-      return { label: "返信あり", kind: "fresh" };
+    if (p.ack) {
+      var name = p.ackBy ? member(p.ackBy).name : waitingOn(p);
+      return { label: "✓ " + name + " 確認済み", kind: "fresh" };
     }
-    if (!p.ack) return { label: "未読", kind: "wait" };
-    return { label: "確認済み", kind: "done" };
+    return { label: waitingOn(p) + " 未確認", kind: "wait" };
+  }
+
+  function unconfirmed(p) { return !p.ack; }
+
+  /* Can the person looking at this be the one to confirm it? */
+  function canAck(p) {
+    return !!me && !p.ack && sideOf(p.by) !== mySide();
   }
 
   /* Does this post wait on the person looking at it right now?
      A question from the receptionist is settled by the director answering it;
      an instruction from the director is settled by the work being done, so it
      stays on the receptionist's list until someone marks it 完了. */
-  function needsMe(p) {
-    if (p.closedAt || !me) return false;
-    var side = mySide();
-    if (p.by === me) {
-      // my own post: a reply came back and the thread is still open
-      return hasReplyFromSide(p, otherSide(side));
-    }
-    // the other receptionist's report is not mine to answer
-    if (sideOf(p.by) === side) return false;
-    if (p.needsReply) {
-      return side === "reception" ? true : !hasReplyFromSide(p, side);
-    }
-    return !p.ack;
-  }
 
   /* ---------- saving ---------- */
   function getApi() {
@@ -982,11 +933,10 @@
       id: newId(),
       text: text,
       by: me,
-      needsReply: needsReply,
       createdAt: now,
       updatedAt: now,
       ack: 0,
-      closedAt: 0,
+      ackBy: "",
       replies: []
     });
     render();
@@ -1000,7 +950,7 @@
     p.replies.push({ id: newId(), text: text, by: me, at: now });
     p.updatedAt = now;
     // answering the other side is also confirming you saw it
-    if (sideOf(p.by) !== mySide() && !p.ack) p.ack = now;
+    if (sideOf(p.by) !== mySide() && !p.ack) { p.ack = now; p.ackBy = me; }
     render();
     scheduleSave();
   }
@@ -1009,16 +959,8 @@
     var p = findPost(id);
     if (!p || p.ack) return;
     p.ack = Date.now();
+    p.ackBy = me;
     p.updatedAt = p.ack;
-    render();
-    scheduleSave();
-  }
-
-  function closePost(id, closed) {
-    var p = findPost(id);
-    if (!p) return;
-    p.closedAt = closed ? Date.now() : 0;
-    p.updatedAt = Date.now();
     render();
     scheduleSave();
   }
@@ -1077,9 +1019,9 @@
     return base;
   }
 
-  function hhmm(ts) {
+  function shortDate(ts) {
     var d = new Date(ts);
-    return pad(d.getHours()) + ":" + pad(d.getMinutes());
+    return (d.getMonth() + 1) + "/" + d.getDate() + "(" + WEEK[d.getDay()] + ")";
   }
 
   /* ---------- rendering ---------- */
@@ -1100,16 +1042,16 @@
   function renderTabs() {
     var box = document.getElementById("tabs");
     box.innerHTML = "";
-    var mine = state.posts.filter(needsMe).length;
+    var open = state.posts.filter(unconfirmed).length;
     var defs = [
+      { id: "open", label: "未確認", n: open },
       { id: "all", label: "すべて", n: null },
-      { id: "mine", label: "要対応", n: mine },
       { id: "today", label: "今日", n: null }
     ];
     defs.forEach(function (d) {
       var b = document.createElement("button");
       b.type = "button";
-      b.className = "tab" + (d.id === "mine" && mine ? " hot" : "");
+      b.className = "tab" + (d.id === "open" && open ? " hot" : "");
       b.setAttribute("aria-pressed", tab === d.id ? "true" : "false");
       var t = document.createElement("span");
       t.textContent = d.label;
@@ -1128,7 +1070,7 @@
   function postEl(p) {
     var st = statusOf(p);
     var card = document.createElement("article");
-    card.className = "post " + member(p.by).cls + (p.closedAt ? " is-closed" : "");
+    card.className = "post " + member(p.by).cls;
 
     var head = document.createElement("div");
     head.className = "phead";
@@ -1137,7 +1079,7 @@
     who.textContent = member(p.by).name;
     var when = document.createElement("span");
     when.className = "when";
-    when.textContent = hhmm(p.createdAt);
+    when.textContent = shortDate(p.createdAt);
     head.appendChild(who);
     head.appendChild(when);
     card.appendChild(head);
@@ -1149,12 +1091,6 @@
 
     var pills = document.createElement("div");
     pills.className = "pills";
-    if (p.needsReply && !p.closedAt) {
-      var np = document.createElement("span");
-      np.className = "pill wait";
-      np.textContent = sideOf(p.by) === "reception" ? "要返事" : "対応おねがい";
-      pills.appendChild(np);
-    }
     var sp = document.createElement("span");
     sp.className = "pill " + st.kind;
     sp.textContent = st.label;
@@ -1174,7 +1110,7 @@
         rw.textContent = member(r.by).name;
         var rt = document.createElement("span");
         rt.className = "when";
-        rt.textContent = hhmm(r.at);
+        rt.textContent = shortDate(r.at);
         rh.appendChild(rw);
         rh.appendChild(rt);
         var rtx = document.createElement("p");
@@ -1197,19 +1133,14 @@
     var acts = document.createElement("div");
     acts.className = "actions";
 
-    if (!p.closedAt) {
-      if (sideOf(p.by) !== mySide() && !p.ack) {
-        acts.appendChild(button("act primary", "確認", function () { ackPost(p.id); }));
-      }
-      acts.appendChild(button("act", "返信", function () {
-        openReply = p.id;
-        ssSet(SS_REPLY, { id: p.id, text: "" });
-        render();
-      }));
-      acts.appendChild(button("act", "完了", function () { closePost(p.id, true); }));
-    } else {
-      acts.appendChild(button("act", "戻す", function () { closePost(p.id, false); }));
+    if (canAck(p)) {
+      acts.appendChild(button("act primary", "確認しました", function () { ackPost(p.id); }));
     }
+    acts.appendChild(button("act", sideOf(p.by) === mySide() ? "返信" : "ひとこと返す", function () {
+      openReply = p.id;
+      ssSet(SS_REPLY, { id: p.id, text: "" });
+      render();
+    }));
 
     if (p.by === me) {
       var del = button("act ghost", "削除", function () {
@@ -1341,7 +1272,7 @@
 
     var today = dayKey(Date.now());
     var shown = state.posts.filter(function (p) {
-      if (tab === "mine") return needsMe(p);
+      if (tab === "open") return unconfirmed(p);
       if (tab === "today") return dayKey(p.createdAt) === today;
       return true;
     });
@@ -1349,7 +1280,7 @@
     // today sits at the top, so its summary box goes first even on a day
     // that has no reports yet
     var hasToday = shown.some(function (p) { return dayKey(p.createdAt) === today; });
-    if (tab !== "mine" && !hasToday) {
+    if (tab !== "open" && !hasToday) {
       var todayBox = dailyEl(today);
       if (todayBox) {
         feed.appendChild(daypillEl(today));
@@ -1362,9 +1293,9 @@
       e.className = "empty";
       var h = document.createElement("strong");
       var sub = "";
-      if (tab === "mine") {
-        h.textContent = "対応することはありません";
-        sub = "返事待ちも未確認もゼロです。";
+      if (tab === "open") {
+        h.textContent = "未確認はありません";
+        sub = "送ったものは全部、相手が確認済みです。";
       } else if (tab === "today") {
         h.textContent = "今日の報告はまだありません";
         sub = "下の入力欄からどうぞ。";
@@ -1393,7 +1324,7 @@
 
       order.forEach(function (k) {
         feed.appendChild(daypillEl(k));
-        if (tab !== "mine") {
+        if (tab !== "open") {
           var d = dailyEl(k);
           if (d) feed.appendChild(d);
         }
@@ -1403,13 +1334,12 @@
 
     var dir = mySide() === "director";
     document.getElementById("compose").style.display = (readOnly || !me) ? "none" : "";
-    document.getElementById("needs-label").textContent = dir ? "対応してほしい" : "返事がほしい";
-    document.getElementById("input").placeholder = dir ? "指示・連絡を入力…" : "報告・相談を入力…";
+    document.getElementById("input").placeholder = dir ? "指示・連絡を入力…" : "報告を入力…";
     document.getElementById("hint").textContent = readOnly
       ? ""
       : (dir
-          ? "「対応してほしい」を付けると、受付の要対応に入ります"
-          : "「返事がほしい」を付けると、院長の要対応に入ります");
+          ? "「確認しました」を押すと、受付の画面に確認済みと出ます"
+          : "送ると院長の未確認に入ります。確認されると表示が変わります");
   }
 
   function daypillEl(key) {
@@ -1496,7 +1426,6 @@
   /* ---------- compose ---------- */
   var input = document.getElementById("input");
   var send = document.getElementById("send");
-  var needsBtn = document.getElementById("needs");
 
   function syncEntry() {
     input.style.height = "44px";
@@ -1511,8 +1440,6 @@
     addPost(text);
     input.value = "";
     ssSet(SS_DRAFT, null);
-    needsReply = false;
-    needsBtn.setAttribute("aria-pressed", "false");
     syncEntry();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -1526,10 +1453,6 @@
     }
   });
   send.addEventListener("click", submit);
-  needsBtn.addEventListener("click", function () {
-    needsReply = !needsReply;
-    needsBtn.setAttribute("aria-pressed", needsReply ? "true" : "false");
-  });
 
   function savePrefs() {
     lsSet(LS_PREFS, { me: me, tab: tab });
@@ -1543,7 +1466,7 @@
   var prefs = lsGet(LS_PREFS);
   if (prefs) {
     if (BY_ID[prefs.me]) me = prefs.me;
-    if (prefs.tab === "all" || prefs.tab === "mine" || prefs.tab === "today") tab = prefs.tab;
+    if (prefs.tab === "all" || prefs.tab === "open" || prefs.tab === "today") tab = prefs.tab;
   }
 
   var draft = ssGet(SS_DRAFT);
