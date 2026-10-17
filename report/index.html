@@ -3,7 +3,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Zen+Maru+Gothic:wght@500;700&display=swap">
 
-<script id="app-state" type="application/json">{"v":1,"updatedAt":1792221614386,"posts":[],"daily":[{"date":"2026-10-17","text":"名札発注済み（城戸先生、田原先生、蓑津さん用）","updatedAt":1792221327393}],"deleted":[],"deletedReplies":[]}</script>
+<script id="app-state" type="application/json">{"v":1,"updatedAt":1792224339059,"posts":[{"id":"mvc2keheegrrq","text":"名札（田原先生、城戸先生、蓑津さん用）注文済み","by":"katayama","createdAt":1792221767762,"updatedAt":1792221767762,"ack":0,"ackBy":"","files":[],"replies":[]}],"daily":[{"date":"2026-10-17","text":"","updatedAt":1792221743116}],"deleted":[],"deletedReplies":[]}</script>
 
 <style>
   :root {
@@ -487,6 +487,108 @@
     text-align: center;
   }
 
+  /* ---------- attachments ---------- */
+  .clip {
+    flex: none;
+    width: 42px; height: 44px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    background: var(--ground);
+    color: var(--ink-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .clip svg { width: 19px; height: 19px; }
+  .clip:disabled { opacity: .4; cursor: default; }
+
+  .pending {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 2px 2px 9px;
+  }
+  .pitem {
+    position: relative;
+    width: 56px; height: 56px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: var(--surface-2);
+    overflow: hidden;
+  }
+  .pitem img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .pitem .doc {
+    width: 100%; height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Zen Maru Gothic", "Noto Sans JP", sans-serif;
+    font-size: 11px;
+    color: var(--ink-2);
+  }
+  .pitem .x {
+    position: absolute;
+    top: -1px; right: -1px;
+    width: 20px; height: 20px;
+    border: 0;
+    border-radius: 0 10px 0 10px;
+    background: var(--ink);
+    color: var(--ground);
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .files {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 9px;
+  }
+  .files .shot {
+    width: 92px; height: 92px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: var(--surface-2);
+    object-fit: cover;
+    cursor: zoom-in;
+    display: block;
+  }
+  .files .doc {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 13px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: var(--surface-2);
+    color: var(--ink);
+    text-decoration: none;
+    font-size: 13.5px;
+    max-width: 100%;
+  }
+  .files .doc svg { width: 15px; height: 15px; flex: none; color: var(--ink-3); }
+  .files .doc span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    background: rgba(0,0,0,.92);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    cursor: zoom-out;
+  }
+  .lightbox img {
+    max-width: 96vw;
+    max-height: 92dvh;
+    object-fit: contain;
+  }
+
   /* ---------- role sheet ---------- */
   .scrim {
     position: fixed;
@@ -590,7 +692,12 @@
   <main class="feed" id="feed"></main>
 
   <div class="compose" id="compose">
+    <div class="pending" id="pending" hidden></div>
     <div class="entry">
+      <input type="file" id="file" accept="image/*,application/pdf,video/mp4,video/webm" multiple hidden>
+      <button class="clip" id="clip" aria-label="写真やPDFを貼る">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21.4 11.1l-8.9 8.9a5.5 5.5 0 0 1-7.8-7.8l8.9-8.9a3.7 3.7 0 0 1 5.2 5.2l-8.9 8.9a1.8 1.8 0 0 1-2.6-2.6l8.2-8.2"></path></svg>
+      </button>
       <textarea id="input" rows="1" placeholder="報告・相談を入力…" aria-label="報告を入力"></textarea>
       <button class="send" id="send" disabled aria-label="送る">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"></path></svg>
@@ -651,6 +758,9 @@
   var saveTimer = null;
   var api = null;
   var apiPromise = null;
+  var assetsPromise = null;
+  var pending = [];         // files picked but not sent yet
+  var sending = false;
 
   /* ---------- storage helpers (never throw) ---------- */
   function lsGet(key) {
@@ -697,6 +807,17 @@
           });
         }
         replies.sort(function (a, b) { return a.at - b.at; });
+        var files = [];
+        if (Array.isArray(p.files)) {
+          p.files.forEach(function (f) {
+            if (!f || !f.id) return;
+            files.push({
+              id: String(f.id),
+              type: String(f.type || "image/jpeg"),
+              name: String(f.name || "")
+            });
+          });
+        }
         s.posts.push({
           id: String(p.id),
           text: p.text,
@@ -705,6 +826,7 @@
           updatedAt: Number(p.updatedAt) || Number(p.createdAt) || 0,
           ack: Number(p.ack) || 0,
           ackBy: p.ackBy ? toMemberId(p.ackBy) : "",
+          files: files,
           replies: replies
         });
       });
@@ -758,6 +880,8 @@
         updatedAt: win.updatedAt,
         ack: ackWin.ack,
         ackBy: ackWin.ackBy,
+        // attachments are fixed when the report is sent, so the winner's list stands
+        files: win.files.length ? win.files : lose.files,
         replies: unionReplies(win.replies, lose.replies)
       };
     });
@@ -845,6 +969,18 @@
       return api;
     }, function () { return null; });
     return apiPromise;
+  }
+
+  function getAssets() {
+    if (assetsPromise) return assetsPromise;
+    if (!window.claude || typeof window.claude.use !== "function") {
+      assetsPromise = Promise.resolve(null);
+      return assetsPromise;
+    }
+    assetsPromise = window.claude.use("assets").then(function (ns) {
+      return ns || null;
+    }, function () { return null; });
+    return assetsPromise;
   }
 
   function setStatus(kind, text) {
@@ -958,7 +1094,7 @@
     return found;
   }
 
-  function addPost(text) {
+  function addPost(text, files) {
     var now = Date.now();
     state.posts.push({
       id: newId(),
@@ -968,6 +1104,7 @@
       updatedAt: now,
       ack: 0,
       ackBy: "",
+      files: files || [],
       replies: []
     });
     render();
@@ -1009,16 +1146,26 @@
   }
 
   function deletePost(id) {
+    var gone = null;
     var keep = [];
-    var hit = false;
     state.posts.forEach(function (p) {
-      if (p.id === id) hit = true; else keep.push(p);
+      if (p.id === id) gone = p; else keep.push(p);
     });
-    if (!hit) return;
+    if (!gone) return;
     state.posts = keep;
     state.deleted.push({ id: id, at: Date.now() });
     render();
     scheduleSave();
+
+    // the report is going for good, so its photos go with it
+    if (gone.files.length) {
+      getAssets().then(function (ns) {
+        if (!ns) return;
+        gone.files.forEach(function (f) {
+          ns.delete(f.id).catch(function () {});
+        });
+      });
+    }
   }
 
   /* An emptied summary keeps its row with a fresh timestamp, so the deletion
@@ -1103,6 +1250,57 @@
     return b;
   }
 
+  function blobUrl(id) { return "_blob/" + id; }
+  function isImage(type) { return /^image\//.test(type || ""); }
+
+  var DOC_ICON = '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>' +
+                 '<path d="M14 2v6h6"></path>';
+
+  function openLightbox(src) {
+    var box = document.createElement("div");
+    box.className = "lightbox";
+    var im = document.createElement("img");
+    im.src = src;
+    im.alt = "";
+    box.appendChild(im);
+    function close() {
+      box.remove();
+      document.removeEventListener("keydown", onKey);
+    }
+    function onKey(e) { if (e.key === "Escape") close(); }
+    box.addEventListener("click", close);
+    document.addEventListener("keydown", onKey);
+    document.getElementById("app").appendChild(box);
+  }
+
+  function filesEl(p) {
+    var wrap = document.createElement("div");
+    wrap.className = "files";
+    p.files.forEach(function (f) {
+      if (isImage(f.type)) {
+        var im = document.createElement("img");
+        im.className = "shot";
+        im.src = blobUrl(f.id);
+        im.alt = f.name || "添付の写真";
+        im.loading = "lazy";
+        im.addEventListener("click", function () { openLightbox(blobUrl(f.id)); });
+        wrap.appendChild(im);
+      } else {
+        var a = document.createElement("a");
+        a.className = "doc";
+        a.href = blobUrl(f.id);
+        a.target = "_blank";
+        a.rel = "noopener";
+        a.innerHTML = icon(DOC_ICON, 1.9);
+        var sp = document.createElement("span");
+        sp.textContent = f.name || (f.type.indexOf("pdf") >= 0 ? "PDF" : "ファイル");
+        a.appendChild(sp);
+        wrap.appendChild(a);
+      }
+    });
+    return wrap;
+  }
+
   function renderTabs() {
     var box = document.getElementById("tabs");
     box.innerHTML = "";
@@ -1148,10 +1346,14 @@
     head.appendChild(when);
     card.appendChild(head);
 
-    var text = document.createElement("p");
-    text.className = "ptext";
-    text.textContent = p.text;
-    card.appendChild(text);
+    if (p.text) {
+      var text = document.createElement("p");
+      text.className = "ptext";
+      text.textContent = p.text;
+      card.appendChild(text);
+    }
+
+    if (p.files.length) card.appendChild(filesEl(p));
 
     var pills = document.createElement("div");
     pills.className = "pills";
@@ -1491,22 +1693,179 @@
   /* ---------- compose ---------- */
   var input = document.getElementById("input");
   var send = document.getElementById("send");
+  var fileInput = document.getElementById("file");
+  var clip = document.getElementById("clip");
+  var pendingBox = document.getElementById("pending");
+  var MAX_FILES = 4;
+  var hintTimer = null;
+
+  function flashHint(msg) {
+    var h = document.getElementById("hint");
+    clearTimeout(hintTimer);
+    h.textContent = msg;
+    hintTimer = setTimeout(render, 4000);
+  }
 
   function syncEntry() {
     input.style.height = "44px";
     input.style.height = Math.min(input.scrollHeight + 2, 148) + "px";
-    send.disabled = !input.value.trim();
+    send.disabled = sending || !(input.value.trim() || pending.length);
+    clip.disabled = sending || pending.length >= MAX_FILES;
     ssSet(SS_DRAFT, input.value);
   }
 
-  function submit() {
-    var text = input.value.trim();
-    if (!text || !me) return;
-    addPost(text);
+  function renderPending() {
+    pendingBox.innerHTML = "";
+    pendingBox.hidden = !pending.length;
+    pending.forEach(function (it, i) {
+      var cell = document.createElement("div");
+      cell.className = "pitem";
+      if (isImage(it.type)) {
+        var im = document.createElement("img");
+        im.src = it.preview;
+        im.alt = "";
+        cell.appendChild(im);
+      } else {
+        var d = document.createElement("div");
+        d.className = "doc";
+        d.textContent = it.type.indexOf("pdf") >= 0 ? "PDF" : "動画";
+        cell.appendChild(d);
+      }
+      var x = document.createElement("button");
+      x.type = "button";
+      x.className = "x";
+      x.textContent = "×";
+      x.setAttribute("aria-label", "この添付をやめる");
+      x.addEventListener("click", function () {
+        if (it.preview) URL.revokeObjectURL(it.preview);
+        pending.splice(i, 1);
+        renderPending();
+        syncEntry();
+      });
+      cell.appendChild(x);
+      pendingBox.appendChild(cell);
+    });
+  }
+
+  /* Phone photos run 3-5MB each and the artifact's storage is shared, so a
+     long edge over 1600px is redrawn smaller before it is uploaded. */
+  function shrinkImage(file) {
+    return new Promise(function (resolve) {
+      if (!/^image\/(jpeg|png|webp)$/.test(file.type) || file.size < 300 * 1024) {
+        resolve(file);
+        return;
+      }
+      var url = URL.createObjectURL(file);
+      var img = new Image();
+      img.onload = function () {
+        var scale = Math.min(1, 1600 / Math.max(img.width, img.height));
+        var w = Math.round(img.width * scale);
+        var h = Math.round(img.height * scale);
+        var c = document.createElement("canvas");
+        c.width = w;
+        c.height = h;
+        c.getContext("2d").drawImage(img, 0, 0, w, h);
+        URL.revokeObjectURL(url);
+        c.toBlob(function (blob) {
+          resolve(blob && blob.size < file.size ? blob : file);
+        }, "image/jpeg", 0.82);
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); resolve(file); };
+      img.src = url;
+    });
+  }
+
+  clip.addEventListener("click", function () { fileInput.click(); });
+
+  fileInput.addEventListener("change", function () {
+    var picked = Array.prototype.slice.call(fileInput.files || []);
+    fileInput.value = "";
+    if (!picked.length) return;
+    var room = MAX_FILES - pending.length;
+    if (room <= 0) {
+      flashHint("貼れるのは1件につき" + MAX_FILES + "つまでです");
+      return;
+    }
+    picked.slice(0, room).forEach(function (file) {
+      shrinkImage(file).then(function (blob) {
+        var type = blob.type || file.type;
+        pending.push({
+          blob: blob,
+          type: type,
+          name: file.name || "",
+          preview: isImage(type) ? URL.createObjectURL(blob) : ""
+        });
+        renderPending();
+        syncEntry();
+      });
+    });
+  });
+
+  function uploadMessage(err) {
+    var code = (err && err.code) || "upstream_error";
+    if (code === "too_large") return "ファイルが大きすぎます（1つ20MBまで）";
+    if (code === "unsupported_type") return "この種類は貼れません。写真・PDF・動画のみです";
+    if (code === "quota_or_state") return "保存容量がいっぱいです。古い添付を消してください";
+    if (code === "rate_limited") return "続けて貼りすぎです。少し待ってからどうぞ";
+    if (code === "not_granted" || code === "capability_disabled") return "この画面では写真を貼れません";
+    return "送れませんでした。もう一度お試しください";
+  }
+
+  function finishPost(text, files) {
+    addPost(text, files);
     input.value = "";
     ssSet(SS_DRAFT, null);
     syncEntry();
     window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function submit() {
+    var text = input.value.trim();
+    if (sending || !me || (!text && !pending.length)) return;
+
+    if (!pending.length) {
+      finishPost(text, []);
+      return;
+    }
+
+    sending = true;
+    syncEntry();
+    setStatus("saving", "添付を送っています…");
+
+    getAssets().then(function (ns) {
+      if (!ns) {
+        sending = false;
+        syncEntry();
+        setStatus("saved", "保存済み");
+        flashHint("この画面では写真を貼れません");
+        return;
+      }
+      var queue = pending.slice();
+      var done = [];
+      (function step(i) {
+        if (i >= queue.length) {
+          pending.forEach(function (it) { if (it.preview) URL.revokeObjectURL(it.preview); });
+          pending = [];
+          renderPending();
+          sending = false;
+          finishPost(text, done);
+          return;
+        }
+        ns.upload(queue[i].blob, { type: queue[i].type }).then(function (res) {
+          done.push({
+            id: res.id,
+            type: res.contentType || queue[i].type,
+            name: queue[i].name
+          });
+          step(i + 1);
+        }, function (err) {
+          sending = false;
+          syncEntry();
+          setStatus("saved", "保存済み");
+          flashHint(uploadMessage(err));
+        });
+      })(0);
+    });
   }
 
   input.addEventListener("input", syncEntry);
