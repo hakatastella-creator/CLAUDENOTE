@@ -18,8 +18,9 @@
     --accent-ink:  #FFFFFF;
     --danger:      #A33B4F;
     --scrim:       rgba(12,30,26,.44);
-    --reception:   #12635B;
-    --director:    #A33B4F;
+    --m-teal:      #12635B;
+    --m-rose:      #A33B4F;
+    --m-indigo:    #33518A;
     --alert:       #8E5A14;
     --tint-accent: #DCEDE9;
     --tint-alert:  #F5ECDC;
@@ -40,8 +41,9 @@
       --accent-ink:  #06211E;
       --danger:      #E5849A;
       --scrim:       rgba(0,0,0,.62);
-      --reception:   #57B9AC;
-      --director:    #E5849A;
+      --m-teal:      #57B9AC;
+      --m-rose:      #E5849A;
+      --m-indigo:    #92ACE6;
       --alert:       #DBA75F;
       --tint-accent: #12302C;
       --tint-alert:  #2C2314;
@@ -61,8 +63,9 @@
     --accent-ink:  #06211E;
     --danger:      #E5849A;
     --scrim:       rgba(0,0,0,.62);
-    --reception:   #57B9AC;
-    --director:    #E5849A;
+    --m-teal:      #57B9AC;
+    --m-rose:      #E5849A;
+    --m-indigo:    #92ACE6;
     --alert:       #DBA75F;
     --tint-accent: #12302C;
     --tint-alert:  #2C2314;
@@ -70,8 +73,9 @@
     --shadow-card: 0 1px 1px rgba(0,0,0,.18);
   }
 
-  .r-reception { --role: var(--reception); }
-  .r-director  { --role: var(--director); }
+  .c-teal   { --role: var(--m-teal); }
+  .c-rose   { --role: var(--m-rose); }
+  .c-indigo { --role: var(--m-indigo); }
 
   * { box-sizing: border-box; }
 
@@ -623,10 +627,33 @@
 (function () {
   "use strict";
 
-  var ROLES = {
-    reception: { name: "受付", cls: "r-reception" },
-    director:  { name: "院長", cls: "r-director" }
-  };
+  /* All three share one Google account, so the page cannot tell them apart on
+     its own — each device says who it belongs to, once. */
+  var MEMBERS = [
+    { id: "inchou",   name: "院長",   side: "director",  cls: "c-rose",
+      desc: "受付からの報告を確認して返事する。指示を出す。" },
+    { id: "abiru",    name: "阿比留", side: "reception", cls: "c-teal",
+      desc: "院長に報告・相談を上げる。指示に対応する。" },
+    { id: "katayama", name: "片山",   side: "reception", cls: "c-indigo",
+      desc: "院長に報告・相談を上げる。指示に対応する。" }
+  ];
+  var BY_ID = {};
+  MEMBERS.forEach(function (m) { BY_ID[m.id] = m; });
+  var UNKNOWN = { id: "", name: "だれか", side: "reception", cls: "c-teal" };
+
+  function member(id) { return BY_ID[id] || UNKNOWN; }
+
+  /* The first version of this page knew only 受付 / 院長. Anything written then
+     still has to read correctly. */
+  function toMemberId(v) {
+    if (BY_ID[v]) return v;
+    if (v === "director") return "inchou";
+    return "";                        // an unnamed receptionist
+  }
+
+  function sideOf(id) { return member(id).side; }
+  function otherSide(side) { return side === "director" ? "reception" : "director"; }
+
   var WEEK = ["日", "月", "火", "水", "木", "金", "土"];
 
   var LS_STATE = "stella-report/state/v1";
@@ -637,7 +664,7 @@
   var TICK = '<path d="M20 6L9 17l-5-5"></path>';
 
   var state = { v: 1, updatedAt: 0, posts: [], daily: [], deleted: [] };
-  var role = null;          // null until the viewer says who they are
+  var me = null;            // member id; null until this device says who it is
   var tab = "all";
   var needsReply = false;
   var openReply = null;     // post id whose reply box is open
@@ -689,7 +716,7 @@
             replies.push({
               id: String(r.id),
               text: r.text,
-              from: ROLES[r.from] ? r.from : "reception",
+              by: toMemberId(r.by || r.from),
               at: Number(r.at) || 0
             });
           });
@@ -698,7 +725,7 @@
         s.posts.push({
           id: String(p.id),
           text: p.text,
-          from: ROLES[p.from] ? p.from : "reception",
+          by: toMemberId(p.by || p.from),
           needsReply: !!p.needsReply,
           createdAt: Number(p.createdAt) || 0,
           updatedAt: Number(p.updatedAt) || Number(p.createdAt) || 0,
@@ -744,7 +771,7 @@
       byId[p.id] = {
         id: win.id,
         text: win.text,
-        from: win.from,
+        by: win.by,
         needsReply: win.needsReply,
         createdAt: win.createdAt,
         updatedAt: win.updatedAt,
@@ -786,17 +813,18 @@
   }
 
   /* ---------- status model ---------- */
-  function other(r) { return r === "reception" ? "director" : "reception"; }
+  function mySide() { return me ? member(me).side : null; }
 
-  function hasReplyFrom(p, who) {
-    return p.replies.some(function (r) { return r.from === who; });
+  function hasReplyFromSide(p, side) {
+    return p.replies.some(function (r) { return sideOf(r.by) === side; });
   }
 
   function statusOf(p) {
     if (p.closedAt) return { label: "完了", kind: "done" };
+    var side = sideOf(p.by);
     if (p.needsReply) {
-      if (!hasReplyFrom(p, other(p.from))) {
-        return { label: p.from === "reception" ? "返事待ち" : "未対応", kind: "wait" };
+      if (!hasReplyFromSide(p, otherSide(side))) {
+        return { label: side === "reception" ? "返事待ち" : "未対応", kind: "wait" };
       }
       return { label: "返信あり", kind: "fresh" };
     }
@@ -809,13 +837,16 @@
      an instruction from the director is settled by the work being done, so it
      stays on the receptionist's list until someone marks it 完了. */
   function needsMe(p) {
-    if (p.closedAt || !role) return false;
-    if (p.from === role) {
+    if (p.closedAt || !me) return false;
+    var side = mySide();
+    if (p.by === me) {
       // my own post: a reply came back and the thread is still open
-      return hasReplyFrom(p, other(role));
+      return hasReplyFromSide(p, otherSide(side));
     }
+    // the other receptionist's report is not mine to answer
+    if (sideOf(p.by) === side) return false;
     if (p.needsReply) {
-      return role === "reception" ? true : !hasReplyFrom(p, role);
+      return side === "reception" ? true : !hasReplyFromSide(p, side);
     }
     return !p.ack;
   }
@@ -950,7 +981,7 @@
     state.posts.push({
       id: newId(),
       text: text,
-      from: role,
+      by: me,
       needsReply: needsReply,
       createdAt: now,
       updatedAt: now,
@@ -966,9 +997,10 @@
     var p = findPost(id);
     if (!p) return;
     var now = Date.now();
-    p.replies.push({ id: newId(), text: text, from: role, at: now });
+    p.replies.push({ id: newId(), text: text, by: me, at: now });
     p.updatedAt = now;
-    if (p.from !== role && !p.ack) p.ack = now;   // replying is also confirming
+    // answering the other side is also confirming you saw it
+    if (sideOf(p.by) !== mySide() && !p.ack) p.ack = now;
     render();
     scheduleSave();
   }
@@ -1096,13 +1128,13 @@
   function postEl(p) {
     var st = statusOf(p);
     var card = document.createElement("article");
-    card.className = "post " + ROLES[p.from].cls + (p.closedAt ? " is-closed" : "");
+    card.className = "post " + member(p.by).cls + (p.closedAt ? " is-closed" : "");
 
     var head = document.createElement("div");
     head.className = "phead";
     var who = document.createElement("span");
     who.className = "who";
-    who.textContent = ROLES[p.from].name;
+    who.textContent = member(p.by).name;
     var when = document.createElement("span");
     when.className = "when";
     when.textContent = hhmm(p.createdAt);
@@ -1120,7 +1152,7 @@
     if (p.needsReply && !p.closedAt) {
       var np = document.createElement("span");
       np.className = "pill wait";
-      np.textContent = p.from === "reception" ? "要返事" : "対応おねがい";
+      np.textContent = sideOf(p.by) === "reception" ? "要返事" : "対応おねがい";
       pills.appendChild(np);
     }
     var sp = document.createElement("span");
@@ -1134,12 +1166,12 @@
       rs.className = "replies";
       p.replies.forEach(function (r) {
         var rb = document.createElement("div");
-        rb.className = "reply " + ROLES[r.from].cls;
+        rb.className = "reply " + member(r.by).cls;
         var rh = document.createElement("div");
         rh.className = "rhead";
         var rw = document.createElement("span");
         rw.className = "who";
-        rw.textContent = ROLES[r.from].name;
+        rw.textContent = member(r.by).name;
         var rt = document.createElement("span");
         rt.className = "when";
         rt.textContent = hhmm(r.at);
@@ -1155,7 +1187,7 @@
       card.appendChild(rs);
     }
 
-    if (readOnly || !role) return card;
+    if (readOnly || !me) return card;
 
     if (openReply === p.id) {
       card.appendChild(replyBox(p));
@@ -1166,7 +1198,7 @@
     acts.className = "actions";
 
     if (!p.closedAt) {
-      if (p.from !== role && !p.ack) {
+      if (sideOf(p.by) !== mySide() && !p.ack) {
         acts.appendChild(button("act primary", "確認", function () { ackPost(p.id); }));
       }
       acts.appendChild(button("act", "返信", function () {
@@ -1179,7 +1211,7 @@
       acts.appendChild(button("act", "戻す", function () { closePost(p.id, false); }));
     }
 
-    if (p.from === role) {
+    if (p.by === me) {
       var del = button("act ghost", "削除", function () {
         if (del.classList.contains("confirm")) { deletePost(p.id); return; }
         del.classList.add("confirm");
@@ -1201,7 +1233,7 @@
     wrap.className = "replybox";
     var ta = document.createElement("textarea");
     ta.setAttribute("aria-label", "返信を入力");
-    ta.placeholder = role === "director" ? "返事・指示を入力…" : "返信を入力…";
+    ta.placeholder = mySide() === "director" ? "返事・指示を入力…" : "返信を入力…";
     var stash = ssGet(SS_REPLY);
     if (stash && stash.id === p.id) ta.value = stash.text || "";
     ta.addEventListener("input", function () {
@@ -1277,7 +1309,7 @@
       tx.textContent = rec.text;
       filled.appendChild(l2);
       filled.appendChild(tx);
-      if (!readOnly && role) {
+      if (!readOnly && me) {
         var acts = document.createElement("div");
         acts.className = "actions";
         acts.appendChild(button("act", "書き直す", function () { editingDaily = key; render(); }));
@@ -1288,7 +1320,7 @@
 
     // writing the day's summary is the receptionist's job; the director only
     // sees it once there is something to read
-    if (isToday && !readOnly && role === "reception") {
+    if (isToday && !readOnly && mySide() === "reception") {
       var add = document.createElement("div");
       add.className = "daily";
       add.appendChild(button("dadd", "＋ 今日のまとめを書く", function () {
@@ -1338,7 +1370,7 @@
         sub = "下の入力欄からどうぞ。";
       } else if (!state.posts.length) {
         h.textContent = "まだ報告はありません";
-        sub = role === "director"
+        sub = mySide() === "director"
           ? "受付からの報告がここに並びます。"
           : "院長に伝えたいことを、その場で。";
       } else {
@@ -1369,14 +1401,13 @@
       });
     }
 
-    document.getElementById("compose").style.display = (readOnly || !role) ? "none" : "";
-    document.getElementById("needs-label").textContent =
-      role === "director" ? "対応してほしい" : "返事がほしい";
-    document.getElementById("input").placeholder =
-      role === "director" ? "指示・連絡を入力…" : "報告・相談を入力…";
+    var dir = mySide() === "director";
+    document.getElementById("compose").style.display = (readOnly || !me) ? "none" : "";
+    document.getElementById("needs-label").textContent = dir ? "対応してほしい" : "返事がほしい";
+    document.getElementById("input").placeholder = dir ? "指示・連絡を入力…" : "報告・相談を入力…";
     document.getElementById("hint").textContent = readOnly
       ? ""
-      : (role === "director"
+      : (dir
           ? "「対応してほしい」を付けると、受付の要対応に入ります"
           : "「返事がほしい」を付けると、院長の要対応に入ります");
   }
@@ -1391,8 +1422,8 @@
   /* ---------- role ---------- */
   function renderRoleChip() {
     var chip = document.getElementById("rolechip");
-    chip.className = "rolechip" + (role ? " " + ROLES[role].cls : "");
-    document.getElementById("rolename").textContent = role ? ROLES[role].name : "だれ？";
+    chip.className = "rolechip" + (me ? " " + member(me).cls : "");
+    document.getElementById("rolename").textContent = me ? member(me).name : "だれ？";
   }
 
   function openRoleSheet(forced) {
@@ -1408,29 +1439,26 @@
     sheet.appendChild(grip);
 
     var h2 = document.createElement("h2");
-    h2.textContent = forced ? "どちらですか？" : "使う人を切り替える";
+    h2.textContent = forced ? "この端末はどなたですか？" : "使う人を切り替える";
     var p = document.createElement("p");
-    p.textContent = "この端末での表示が変わります。ボタンや「要対応」の中身が、受付と院長で入れ替わります。";
+    p.textContent = "選んだ名前で報告が残ります。この端末だけの設定なので、一度選べば次からは聞かれません。";
     sheet.appendChild(h2);
     sheet.appendChild(p);
 
     var pick = document.createElement("div");
     pick.className = "rolepick";
-    [
-      { id: "reception", desc: "院長に報告・相談を上げる。院長からの指示に対応する。" },
-      { id: "director",  desc: "受付からの報告を確認して返事する。指示を出す。" }
-    ].forEach(function (o) {
+    MEMBERS.forEach(function (o) {
       var b = document.createElement("button");
       b.type = "button";
-      b.className = "rolebtn " + ROLES[o.id].cls;
-      b.setAttribute("aria-pressed", role === o.id ? "true" : "false");
+      b.className = "rolebtn " + o.cls;
+      b.setAttribute("aria-pressed", me === o.id ? "true" : "false");
       var mark = document.createElement("span");
       mark.className = "mark";
       mark.innerHTML = icon(TICK, 3.4);
       var txt = document.createElement("span");
       var nm = document.createElement("div");
       nm.className = "rname";
-      nm.textContent = ROLES[o.id].name;
+      nm.textContent = o.name;
       var ds = document.createElement("div");
       ds.className = "rdesc";
       ds.textContent = o.desc;
@@ -1439,7 +1467,7 @@
       b.appendChild(mark);
       b.appendChild(txt);
       b.addEventListener("click", function () {
-        role = o.id;
+        me = o.id;
         savePrefs();
         close();
       });
@@ -1479,7 +1507,7 @@
 
   function submit() {
     var text = input.value.trim();
-    if (!text || !role) return;
+    if (!text || !me) return;
     addPost(text);
     input.value = "";
     ssSet(SS_DRAFT, null);
@@ -1504,7 +1532,7 @@
   });
 
   function savePrefs() {
-    lsSet(LS_PREFS, { role: role, tab: tab });
+    lsSet(LS_PREFS, { me: me, tab: tab });
   }
 
   /* ---------- boot ---------- */
@@ -1514,7 +1542,7 @@
 
   var prefs = lsGet(LS_PREFS);
   if (prefs) {
-    if (ROLES[prefs.role]) role = prefs.role;
+    if (BY_ID[prefs.me]) me = prefs.me;
     if (prefs.tab === "all" || prefs.tab === "mine" || prefs.tab === "today") tab = prefs.tab;
   }
 
@@ -1528,7 +1556,7 @@
   render();
   syncEntry();
 
-  if (!role) openRoleSheet(true);
+  if (!me) openRoleSheet(true);
 
   getApi().then(function (ns) {
     if (!ns) { canSave = false; setStatus("local", "この端末のみ"); }
