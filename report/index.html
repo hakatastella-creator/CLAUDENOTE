@@ -3,7 +3,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Zen+Maru+Gothic:wght@500;700&display=swap">
 
-<script id="app-state" type="application/json">{"v":1,"updatedAt":1792221176476,"posts":[],"daily":[{"date":"2026-10-17","text":"名札発注済み（城戸先生、田原先生、蓑津さん用）","updatedAt":1792220611019}],"deleted":[]}</script>
+<script id="app-state" type="application/json">{"v":1,"updatedAt":1792221614386,"posts":[],"daily":[{"date":"2026-10-17","text":"名札発注済み（城戸先生、田原先生、蓑津さん用）","updatedAt":1792221327393}],"deleted":[],"deletedReplies":[]}</script>
 
 <style>
   :root {
@@ -319,7 +319,19 @@
     cursor: pointer;
   }
   .act.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-  .act.ghost { margin-left: auto; color: var(--ink-3); }
+  .act.ghost { margin-left: auto; }
+  .rdel {
+    margin-left: 8px;
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    font-family: "Zen Maru Gothic", "Noto Sans JP", sans-serif;
+    font-size: 11px;
+    color: var(--ink-3);
+    white-space: nowrap;
+  }
+  .rdel.confirm { color: var(--danger); font-weight: 700; }
   .act.confirm { color: var(--danger); border-color: var(--danger); font-weight: 700; }
 
   .replybox {
@@ -627,7 +639,7 @@
   var TOMBSTONE_MS = 60 * 24 * 60 * 60 * 1000;
   var TICK = '<path d="M20 6L9 17l-5-5"></path>';
 
-  var state = { v: 1, updatedAt: 0, posts: [], daily: [], deleted: [] };
+  var state = { v: 1, updatedAt: 0, posts: [], daily: [], deleted: [], deletedReplies: [] };
   var me = null;            // member id; null until this device says who it is
   var tab = "all";
   var openReply = null;     // post id whose reply box is open
@@ -665,7 +677,7 @@
 
   /* ---------- state shape ---------- */
   function normalize(raw) {
-    var s = { v: 1, updatedAt: 0, posts: [], daily: [], deleted: [] };
+    var s = { v: 1, updatedAt: 0, posts: [], daily: [], deleted: [], deletedReplies: [] };
     if (!raw || typeof raw !== "object") return s;
     s.updatedAt = Number(raw.updatedAt) || 0;
 
@@ -705,11 +717,13 @@
       });
     }
 
-    if (Array.isArray(raw.deleted)) {
-      raw.deleted.forEach(function (d) {
-        if (d && d.id) s.deleted.push({ id: String(d.id), at: Number(d.at) || 0 });
+    [["deleted", "deleted"], ["deletedReplies", "deletedReplies"]].forEach(function (pair) {
+      var src = raw[pair[0]];
+      if (!Array.isArray(src)) return;
+      src.forEach(function (d) {
+        if (d && d.id) s[pair[1]].push({ id: String(d.id), at: Number(d.at) || 0 });
       });
-    }
+    });
     return s;
   }
 
@@ -722,6 +736,10 @@
     var tombs = {};
     a.deleted.concat(b.deleted).forEach(function (d) {
       if (!tombs[d.id] || d.at > tombs[d.id].at) tombs[d.id] = d;
+    });
+    var replyTombs = {};
+    a.deletedReplies.concat(b.deletedReplies).forEach(function (d) {
+      if (!replyTombs[d.id] || d.at > replyTombs[d.id].at) replyTombs[d.id] = d;
     });
 
     var byId = {};
@@ -748,6 +766,8 @@
     Object.keys(byId).forEach(function (id) {
       var p = byId[id];
       if (tombs[id] && tombs[id].at >= p.updatedAt) return;
+      // a reply the other copy still carries stays deleted
+      p.replies = p.replies.filter(function (r) { return !replyTombs[r.id]; });
       posts.push(p);
     });
     posts.sort(function (x, y) { return x.createdAt - y.createdAt; });
@@ -763,8 +783,19 @@
     Object.keys(tombs).forEach(function (id) {
       if (tombs[id].at >= cutoff) deleted.push(tombs[id]);
     });
+    var deletedReplies = [];
+    Object.keys(replyTombs).forEach(function (id) {
+      if (replyTombs[id].at >= cutoff) deletedReplies.push(replyTombs[id]);
+    });
 
-    return { v: 1, updatedAt: Math.max(a.updatedAt, b.updatedAt), posts: posts, daily: daily, deleted: deleted };
+    return {
+      v: 1,
+      updatedAt: Math.max(a.updatedAt, b.updatedAt),
+      posts: posts,
+      daily: daily,
+      deleted: deleted,
+      deletedReplies: deletedReplies
+    };
   }
 
   function unionReplies(x, y) {
@@ -965,6 +996,18 @@
     scheduleSave();
   }
 
+  function deleteReply(postId, replyId) {
+    var p = findPost(postId);
+    if (!p) return;
+    var keep = p.replies.filter(function (r) { return r.id !== replyId; });
+    if (keep.length === p.replies.length) return;
+    p.replies = keep;
+    p.updatedAt = Date.now();
+    state.deletedReplies.push({ id: replyId, at: Date.now() });
+    render();
+    scheduleSave();
+  }
+
   function deletePost(id) {
     var keep = [];
     var hit = false;
@@ -978,16 +1021,17 @@
     scheduleSave();
   }
 
+  /* An emptied summary keeps its row with a fresh timestamp, so the deletion
+     wins the merge against a device that still holds the old text. */
   function setDaily(date, text) {
     var hit = null;
     state.daily.forEach(function (d) { if (d.date === date) hit = d; });
-    if (!text.trim()) {
-      if (hit) state.daily = state.daily.filter(function (d) { return d.date !== date; });
-    } else if (hit) {
-      hit.text = text;
+    var body = text.trim() ? text : "";
+    if (hit) {
+      hit.text = body;
       hit.updatedAt = Date.now();
-    } else {
-      state.daily.push({ date: date, text: text, updatedAt: Date.now() });
+    } else if (body) {
+      state.daily.push({ date: date, text: body, updatedAt: Date.now() });
     }
     render();
     scheduleSave();
@@ -995,7 +1039,7 @@
 
   function dailyOf(date) {
     var hit = null;
-    state.daily.forEach(function (d) { if (d.date === date) hit = d; });
+    state.daily.forEach(function (d) { if (d.date === date && d.text) hit = d; });
     return hit;
   }
 
@@ -1036,6 +1080,26 @@
     b.className = cls;
     b.textContent = label;
     b.addEventListener("click", onClick);
+    return b;
+  }
+
+  /* Deleting takes two taps: the first one arms the button and says so, and it
+     disarms itself if nobody follows through. */
+  function confirmButton(cls, label, armedLabel, onConfirm) {
+    var timer = null;
+    var b = button(cls, label, function () {
+      if (b.classList.contains("confirm")) {
+        clearTimeout(timer);
+        onConfirm();
+        return;
+      }
+      b.classList.add("confirm");
+      b.textContent = armedLabel;
+      timer = setTimeout(function () {
+        b.classList.remove("confirm");
+        b.textContent = label;
+      }, 3000);
+    });
     return b;
   }
 
@@ -1113,6 +1177,11 @@
         rt.textContent = shortDate(r.at);
         rh.appendChild(rw);
         rh.appendChild(rt);
+        if (!readOnly && r.by === me) {
+          rh.appendChild(confirmButton("rdel", "削除", "もう一度", function () {
+            deleteReply(p.id, r.id);
+          }));
+        }
         var rtx = document.createElement("p");
         rtx.className = "rtext";
         rtx.textContent = r.text;
@@ -1143,16 +1212,9 @@
     }));
 
     if (p.by === me) {
-      var del = button("act ghost", "削除", function () {
-        if (del.classList.contains("confirm")) { deletePost(p.id); return; }
-        del.classList.add("confirm");
-        del.textContent = "もう一度で削除";
-        setTimeout(function () {
-          del.classList.remove("confirm");
-          del.textContent = "削除";
-        }, 3000);
-      });
-      acts.appendChild(del);
+      acts.appendChild(confirmButton("act ghost", "削除", "もう一度で削除", function () {
+        deletePost(p.id);
+      }));
     }
 
     card.appendChild(acts);
@@ -1244,6 +1306,9 @@
         var acts = document.createElement("div");
         acts.className = "actions";
         acts.appendChild(button("act", "書き直す", function () { editingDaily = key; render(); }));
+        acts.appendChild(confirmButton("act ghost", "削除", "もう一度で削除", function () {
+          setDaily(key, "");
+        }));
         filled.appendChild(acts);
       }
       return filled;
