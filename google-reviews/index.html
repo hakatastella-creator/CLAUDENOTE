@@ -352,7 +352,7 @@
       <input type="text" name="patientNo" inputmode="numeric" placeholder="12345" autocomplete="off">
     </label>
     <label>患者名
-      <input type="text" name="name" placeholder="山田 花子" autocomplete="off">
+      <input type="text" name="name" placeholder="山田 花子（不明なら空欄のまま）" autocomplete="off">
     </label>
     <label>Google上の表示名 <span class="opt">（任意）</span>
       <input type="text" name="reviewer" placeholder="H.Y" autocomplete="off">
@@ -670,7 +670,7 @@
         '<span class="idx">' + String(i + 1).padStart(2, "0") + "</span>" +
         (isExample ? '<span class="badge-example">記入例</span>' : "") +
         '<span class="pno">No.' + esc(e.patientNo || "―") + "</span>" +
-        '<h3 class="pname">' + esc(e.name || "（氏名未入力）") +
+        '<h3 class="pname">' + esc(e.name || "（氏名不明）") +
           (e.reviewer ? "<span>Google表示名：" + esc(e.reviewer) + "</span>" : "") + "</h3>" +
         (starStr(e.stars) ? '<span class="stars" aria-label="評価' + esc(e.stars) + '">' + starStr(e.stars) + "</span>" : "") +
         '<span class="posted">' + esc(dateLabel(e.postedAt) || "") + "</span>" +
@@ -886,7 +886,9 @@
     var list = monthEntries();
     var lines = ["【" + monthLabelLong(view.month) + " Google口コミ】 全" + list.length + "件", ""];
     list.forEach(function(e, i){
-      lines.push((i + 1) + ". No." + (e.patientNo || "―") + " " + (e.name || "") + " 様" +
+      lines.push((i + 1) + ". No." + (e.patientNo || "―") + " " +
+        (e.name ? e.name + " 様" : "（氏名不明）") +
+        (e.reviewer ? "（Google表示名：" + e.reviewer + "）" : "") +
         (starStr(e.stars) ? " " + starStr(e.stars) : ""));
       if(e.content) lines.push("   「" + e.content.replace(/\n/g, " ") + "」");
       lines.push("");
