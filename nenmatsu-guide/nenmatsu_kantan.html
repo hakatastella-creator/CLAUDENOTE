@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><title>年末調整かんたんガイド</title>
+<style>
+@page{size:A4;margin:12mm 12mm}
+:root{--ink:#222;--main:#1f5fa8;--soft:#eaf2fb;--ok:#2e8b57;--okbg:#e9f6ee;--warn:#c0392b;--warnbg:#fdecea;--yel:#fff6d6}
+*{box-sizing:border-box}
+body{font-family:"IPAPGothic","IPAGothic",sans-serif;color:var(--ink);font-size:10.3pt;line-height:1.5;margin:0;background:#fff}
+h1{font-size:24pt;margin:0 0 4px;color:var(--main)}
+h2{font-size:16pt;color:#fff;background:var(--main);padding:6px 12px;border-radius:8px;margin:12px 0 8px}
+h3{font-size:12.5pt;margin:12px 0 6px;border-left:6px solid var(--main);padding-left:8px}
+.page{page-break-after:always}
+.page:last-child{page-break-after:auto}
+.box{border:2px solid var(--main);border-radius:10px;padding:10px 14px;margin:8px 0;background:var(--soft)}
+.ok{border-color:var(--ok);background:var(--okbg)}
+.warn{border-color:var(--warn);background:var(--warnbg)}
+.yel{border-color:#d4a400;background:var(--yel)}
+.big{font-size:14pt;font-weight:bold}
+.red{color:var(--warn);font-weight:bold}
+.mark{background:linear-gradient(transparent 55%,#ffe27a 55%);font-weight:bold}
+table{border-collapse:collapse;width:100%;margin:6px 0;font-size:10pt}
+th,td{border:1px solid #9bb3cf;padding:4px 6px;vertical-align:top}
+th{background:var(--soft)}
+td.n{text-align:right;white-space:nowrap}
+.cards{display:flex;gap:8px}
+.card{flex:1;border:2px solid var(--main);border-radius:10px;padding:8px 10px;background:#fff}
+.card .tag{display:inline-block;width:34px;height:34px;border-radius:50%;background:var(--main);color:#fff;font-weight:bold;text-align:center;line-height:34px;font-size:14pt;margin-right:6px}
+.step{display:flex;gap:10px;margin:4px 0;align-items:flex-start}
+.num{flex:none;width:28px;height:28px;border-radius:50%;background:var(--main);color:#fff;font-weight:bold;text-align:center;line-height:28px}
+.step div.t{flex:1}
+.flow{border:2px dashed #8aa;border-radius:10px;padding:8px 12px;margin:8px 0}
+.q{font-weight:bold}
+.chk li{list-style:none;margin:3px 0}
+.chk li:before{content:"□ ";font-size:13pt}
+ul{margin:4px 0 4px 1.2em;padding:0}
+.small{font-size:9pt;color:#555}
+.sub{color:#555;margin:0 0 10px}
+</style></head><body>
+
+<!-- ===== 1ページ目 ===== -->
+<section class="page">
+<h1>年末調整 かんたんガイド</h1>
+<p class="sub">令和8年（2026年）分　〜はじめてでも迷わない書き方〜</p>
+
+<div class="box ok"><span class="big">年末調整とは？</span><br>
+毎月の給料から引かれている所得税の、<b>1年分の答え合わせ</b>です。<br>
+家族や保険のことを紙に書いて会社に出す → 払いすぎていた税金が<b>戻ってくる</b>（足りなければ少し引かれる）。</div>
+
+<h2>出す紙は3枚だけ</h2>
+<div class="cards">
+ <div class="card"><span class="tag">扶</span><b>扶養控除等（異動）申告書</b><br><span class="red">全員出す</span><br>自分と家族のことを書く紙</div>
+ <div class="card"><span class="tag">基</span><b>基礎控除申告書 兼 配偶者控除等申告書 兼…</b>（4つが1枚になった紙）<br><span class="red">ほぼ全員出す</span><br>自分の所得を書く紙</div>
+ <div class="card"><span class="tag">保</span><b>保険料控除申告書</b><br><b>保険に入っている人だけ</b><br>生命保険・地震保険など</div>
+</div>
+
+<h2>書く前に、これを手元に用意</h2>
+<ul class="chk">
+ <li>今年の<b>給与明細</b>（または去年の源泉徴収票）… 年収の見込みを出すため</li>
+ <li>家族の<b>生年月日・マイナンバー</b>・今年の<b>年収の見込み</b></li>
+ <li>10〜11月ごろハガキで届く<b>「保険料控除証明書」</b>（生命保険・地震保険）</li>
+ <li>自分で払った<b>国民年金・iDeCo</b>の証明書（ある人だけ）</li>
+ <li>会社名・会社の住所（用紙の一番上に書く）</li>
+</ul>
+
+<h2>令和8年はココが変わった！</h2>
+<div class="box warn">
+<ul>
+ <li>家族を扶養に入れられる上限が <span class="mark">所得58万円 → 62万円</span> に上がった<br>（パート・アルバイトなら <b>年収136万円まで</b>OK）</li>
+ <li><b>基礎控除</b>（全員が受けられる控除）が増えた：所得489万円以下なら <span class="mark">104万円</span></li>
+ <li>給料から自動で引ける額（給与所得控除）の最低額が <b>74万円</b> に</li>
+ <li>19〜22歳の子の年収が高めでも使える<b>「特定親族特別控除」</b>がある（所得62万円超〜123万円）</li>
+</ul>
+<span class="small">※ 上がった分は毎月の給料ではなく、年末調整でまとめて戻ってきます。</span>
+</div>
+
+<h3>ひと目でわかる！「年収」と「所得」の関係</h3>
+<p>用紙には「<b>所得</b>」を書く欄が多いです。給料だけの人は、<span class="mark">年収 − 74万円 ≒ 所得</span>（年収219万円まで）と覚えればOK。</p>
+<table>
+<tr><th>家族の給与年収</th><th>所得</th><th>どうなる？</th></tr>
+<tr><td>136万円以下</td><td class="n">62万円以下</td><td>扶養親族・配偶者控除の対象になれる</td></tr>
+<tr><td>136万円超〜約197万円</td><td class="n">62万円超〜123万円</td><td>19〜22歳の子→特定親族特別控除／配偶者→配偶者特別控除</td></tr>
+<tr><td>約201万円超</td><td class="n">133万円超</td><td>配偶者特別控除も使えない</td></tr>
+</table>
+</section>
+
+<!-- ===== 2ページ目：扶 ===== -->
+<section class="page">
+<h2>① 扶養控除等（異動）申告書　〈扶〉</h2>
+<p>「自分」と「養っている家族」のことを書く紙です。<b>独身で扶養家族がいない人は、一番上の欄だけ書けばOK！</b></p>
+
+<h3>ステップ1　一番上の欄（全員）</h3>
+<div class="step"><div class="num">1</div><div class="t"><b>給与の支払者の名称・所在地</b>…会社名と会社の住所。<b>法人番号は書かなくてOK</b>（会社が書く）</div></div>
+<div class="step"><div class="num">2</div><div class="t"><b>所轄税務署長／市区町村長</b>…会社の住所の税務署名、自分の住所の市区町村名。分からなければ会社に聞く</div></div>
+<div class="step"><div class="num">3</div><div class="t"><b>あなたの氏名・フリガナ・生年月日・住所・マイナンバー</b></div></div>
+<div class="step"><div class="num">4</div><div class="t"><b>世帯主の氏名・あなたとの続柄</b>…自分が世帯主なら「本人」。親が世帯主なら親の名前と「父」など</div></div>
+<div class="step"><div class="num">5</div><div class="t"><b>配偶者の有無</b>…結婚していれば「有」に○</div></div>
+<div class="step"><div class="num">6</div><div class="t"><b>従たる給与…</b>…副業先にも同じ紙を出している人だけ○（普通は空欄）</div></div>
+
+<div class="box ok">家族を扶養していない・障害者や寡婦などにも当たらない人は、<span class="mark">ここまでで完了！</span></div>
+
+<h3>ステップ2　家族の欄（扶養している人だけ）</h3>
+<table>
+<tr><th style="width:24%">欄</th><th>誰を書く？</th></tr>
+<tr><td><b>A 源泉控除対象配偶者</b></td><td>配偶者の所得が<b>95万円以下</b>（給与年収 約169万円以下）。※自分の所得が900万円以下の場合のみ</td></tr>
+<tr><td><b>B 控除対象扶養親族</b><br>（16歳以上）</td><td>生計が同じで、所得<b>62万円以下</b>（年収136万円以下）の家族。<br>19〜22歳で所得62万円超〜100万円以下の子もここに書く</td></tr>
+<tr><td><b>C 障害者・寡婦・ひとり親・勤労学生</b></td><td>当てはまる人だけ□にチェック</td></tr>
+<tr><td><b>D 他の所得者が控除を受ける…</b></td><td>例：同じ子どもを夫の方で扶養する場合など。普通は空欄</td></tr>
+<tr><td><b>住民税に関する事項</b>（一番下）</td><td><span class="red">16歳未満の子</span>はここに書く（上のBには書かない！）</td></tr>
+</table>
+
+<h3>家族の欄の書き方</h3>
+<ul>
+ <li>氏名・フリガナ・続柄（妻、子、父 など）・生年月日・マイナンバー</li>
+ <li><b>令和8年中の所得の見積額</b>…年収ではなく<b>所得</b>（年収−74万円）を書く。収入がなければ「0」</li>
+ <li>70歳以上の親と同居 → 「同居老親等」に✓ ／ 19〜22歳 → 「特定扶養親族」に✓</li>
+ <li>海外に住んでいる家族 → 「非居住者」欄に○（送金の証明書などが必要）</li>
+ <li><b>異動月日及び事由</b>…年の途中で結婚・出産などがあった時だけ（例：「8年6月1日 結婚」）</li>
+</ul>
+<div class="box yel">💡 今年から条件が上がったことで<b>新しく扶養に入れる家族</b>がいたら、異動事由に<b>「令和8年12月1日 改正」</b>と書いて出し直します。</div>
+</section>
+
+<!-- ===== 3ページ目：基 ===== -->
+<section class="page">
+<h2>② 基礎控除申告書 兼 配偶者控除等申告書 兼 特定親族特別控除申告書 兼 所得金額調整控除申告書</h2>
+<p>長い名前ですが<b>1枚の紙</b>です。左上（基礎控除）は<b>ほぼ全員</b>書きます。他の欄は当てはまる人だけ。</p>
+
+<h3>ステップ1　一番上…会社名・自分の名前・住所（扶の紙と同じ）</h3>
+
+<h3>ステップ2　基礎控除（左上の欄）</h3>
+<div class="step"><div class="num">1</div><div class="t">今年の<b>給料の総額（年収）見込み</b>を書く。12月分・ボーナスも含めた<b>税金などが引かれる前</b>の金額</div></div>
+<div class="step"><div class="num">2</div><div class="t">下の表で<b>所得</b>に変えて書く</div></div>
+<table>
+<tr><th>給料の年収（A）</th><th>所得（給与所得）</th></tr>
+<tr><td>74万999円以下</td><td class="n">0円</td></tr>
+<tr><td>74万1千円 〜 219万999円</td><td class="n">A − 74万円</td></tr>
+<tr><td>219万1千円 〜 219万9,999円</td><td class="n">145.1万〜145.6万円（用紙の表を見る）</td></tr>
+<tr><td>220万円 〜 359万9,999円</td><td class="n">A × 70% − 8万円 ※</td></tr>
+<tr><td>360万円 〜 659万9,999円</td><td class="n">A × 80% − 44万円 ※</td></tr>
+<tr><td>660万円 〜 849万9,999円</td><td class="n">A × 90% − 110万円</td></tr>
+<tr><td>850万円以上</td><td class="n">A − 195万円（子育て等の調整がある人は別）</td></tr>
+</table>
+<p class="small">※ 220万〜660万円はAを4で割って千円未満を切り捨ててから計算します（用紙の計算表どおり）。<br>例：年収400万円 → 400万×80%−44万 ＝ <b>276万円</b></p>
+<div class="step"><div class="num">3</div><div class="t">給料以外の所得（副業・年金など）がある人は足して<b>合計所得金額</b>に。なければ給与所得と同じ数字</div></div>
+<div class="step"><div class="num">4</div><div class="t">「判定」欄の当てはまる所に✓、<b>基礎控除の額</b>を書く</div></div>
+<table>
+<tr><th>合計所得金額</th><th>基礎控除の額</th><th>区分Ⅰ</th></tr>
+<tr><td>489万円以下</td><td class="n"><b>104万円</b></td><td rowspan="3">900万円以下→<b>A</b><br>900万超〜950万→<b>B</b><br>950万超〜1,000万→<b>C</b><br>（配偶者控除を受ける人だけ記入）</td></tr>
+<tr><td>489万円超〜655万円以下</td><td class="n">67万円</td></tr>
+<tr><td>655万円超〜2,350万円以下</td><td class="n">62万円</td></tr>
+</table>
+<p class="small">※ 2,350万円超はさらに減ります（用紙の表で確認）。</p>
+
+<div class="box ok">独身・扶養なし・年収850万円以下の人は、<span class="mark">基礎控除の欄だけ書けば完了！</span></div>
+</section>
+
+<!-- ===== 4ページ目：基のつづき ===== -->
+<section class="page">
+<h2>② のつづき（当てはまる人だけ）</h2>
+
+<h3>配偶者控除等（右上の欄）… 結婚していて、配偶者の年収が約201万円以下の人</h3>
+<div class="step"><div class="num">1</div><div class="t">配偶者の名前・マイナンバー・生年月日</div></div>
+<div class="step"><div class="num">2</div><div class="t">配偶者の<b>年収 → 所得</b>を書く（上と同じ表で計算）</div></div>
+<div class="step"><div class="num">3</div><div class="t">判定欄に✓して区分Ⅱ（①〜④）を書く → 「控除額の計算」表で<b>区分Ⅰ×区分Ⅱ</b>の交わる金額を書く</div></div>
+<div class="box">例：自分の所得 約697万（区分Ⅰ＝A）、妻の年収124万 → 所得50万（62万以下）→ <b>配偶者控除 38万円</b></div>
+<p class="small">配偶者の所得62万円以下＝配偶者控除／62万円超〜133万円以下＝配偶者特別控除（所得が増えるほど控除額は減る）。夫婦で互いにかけ合うことはできません。</p>
+
+<h3>特定親族特別控除 … 19〜22歳の子の年収が136万円超〜約197万円のとき</h3>
+<ul>
+ <li>子の名前・マイナンバー・続柄・生年月日を書く</li>
+ <li>子の所得見積額を書き、表に当てはめて控除額を書く</li>
+</ul>
+<table>
+<tr><th>子の所得</th><th>控除額</th><th>子の所得</th><th>控除額</th></tr>
+<tr><td>62万超〜85万以下</td><td class="n">63万円</td><td>105万超〜110万</td><td class="n">21万円</td></tr>
+<tr><td>85万超〜90万</td><td class="n">61万円</td><td>110万超〜115万</td><td class="n">11万円</td></tr>
+<tr><td>90万超〜95万</td><td class="n">51万円</td><td>115万超〜120万</td><td class="n">6万円</td></tr>
+<tr><td>95万超〜100万</td><td class="n">41万円</td><td>120万超〜123万</td><td class="n">3万円</td></tr>
+<tr><td>100万超〜105万</td><td class="n">31万円</td><td colspan="2" class="small">記載例：所得100万→41万円</td></tr>
+</table>
+<p class="small">※ 控除額は申告書の計算表で必ず確認してください。</p>
+
+<h3>所得金額調整控除（一番下）… 年収850万円超の人だけ</h3>
+<p>さらに「本人が特別障害者」「23歳未満の扶養家族がいる」「特別障害者の家族がいる」のどれかに当てはまる時に、要件に✓して家族の名前などを書きます。<b>年収850万円以下なら空欄</b>でOK。</p>
+</section>
+
+<!-- ===== 5ページ目：保 ===== -->
+<section class="page">
+<h2>③ 保険料控除申告書　〈保〉</h2>
+<p>保険料を払っている人だけ。<b>届いた「控除証明書」を見ながら写す</b>のがコツ。証明書は<b>紙の裏などに貼って一緒に出す</b>。</p>
+
+<h3>生命保険料（左の欄）</h3>
+<div class="step"><div class="num">1</div><div class="t">証明書を見て、<b>一般・介護医療・個人年金</b>のどれかの欄に、会社名・種類・期間・契約者・受取人を書く</div></div>
+<div class="step"><div class="num">2</div><div class="t"><b>新・旧</b>に○（証明書に書いてある）。金額は<b>「申告額（12月までの見込み）」</b>を書く</div></div>
+<div class="step"><div class="num">3</div><div class="t">新・旧ごとに合計して、下の式で控除額を出す</div></div>
+<table>
+<tr><th colspan="2">新契約（2012年以降）</th><th colspan="2">旧契約（2011年以前）</th></tr>
+<tr><td>2万円以下</td><td class="n">全額</td><td>2.5万円以下</td><td class="n">全額</td></tr>
+<tr><td>2万超〜4万円</td><td class="n">÷2 ＋1万円</td><td>2.5万超〜5万円</td><td class="n">÷2 ＋1.25万円</td></tr>
+<tr><td>4万超〜8万円</td><td class="n">÷4 ＋2万円</td><td>5万超〜10万円</td><td class="n">÷4 ＋2.5万円</td></tr>
+<tr><td>8万円超</td><td class="n">一律 4万円</td><td>10万円超</td><td class="n">一律 5万円</td></tr>
+</table>
+<div class="box">一般・介護医療・個人年金<b>それぞれ最高4万円</b>（旧だけなら5万円）、<b>3つの合計は最高12万円</b>。<br>
+<b>23歳未満の扶養家族がいる人</b>は、一般の新契約が「計算式Ⅱ」（3万以下全額／6万まで÷2＋1.5万／12万まで÷4＋3万／12万超 6万）で<b>最高6万円</b>。☆欄にその家族を書く。</div>
+<p class="small">例：一般(新) 8万円 → 8万÷4＋2万＝<b>4万円</b></p>
+
+<h3>地震保険料（右上の欄）</h3>
+<ul><li>証明書の「地震保険料」の金額を書く。<b>最高5万円</b>（払った額が5万円以下なら全額）</li>
+<li>古い長期損害保険（旧長期）がある人は別計算（最高1.5万円、合計で最高5万円）</li></ul>
+
+<h3>社会保険料（右の真ん中）</h3>
+<p>自分で払った<b>国民年金・国民健康保険</b>（家族の分も含む）。<span class="red">給料から引かれている社会保険料は書かない！</span></p>
+
+<h3>小規模企業共済等掛金（右下）</h3>
+<p><b>iDeCo</b>を自分で払っている人など。給料から天引きされている分は書かない。</p>
+</section>
+
+<!-- ===== 6ページ目：チェック ===== -->
+<section class="page">
+<h2>出す前の最終チェック</h2>
+<ul class="chk">
+ <li>3枚とも<b>一番上に会社名・自分の名前・住所</b>を書いた</li>
+ <li>家族の欄には「年収」ではなく<b>「所得」</b>（年収−74万円）を書いた</li>
+ <li>扶養の条件は<b>所得62万円以下（年収136万円以下）</b>で考えた（令和8年の新ルール）</li>
+ <li>16歳未満の子は<b>一番下の「住民税に関する事項」</b>に書いた</li>
+ <li>基礎控除の額は <b>104万円</b>（所得489万円以下の場合）にした</li>
+ <li>保険料は<b>控除証明書の「申告額」</b>を写し、<b>証明書を添付</b>した</li>
+ <li>給料から天引きされている社会保険料・iDeCoは<b>書いていない</b></li>
+ <li>マイナンバーは、会社が「書かなくてよい」と言っていなければ書いた</li>
+</ul>
+
+<h2>よくある疑問</h2>
+<p class="q">Q. 共働きで、夫も妻も相手を配偶者控除に入れていい？</p>
+<p>A. ダメです。<b>どちらか一方だけ</b>。子どもの扶養も、夫か妻どちらか一方にします。</p>
+<p class="q">Q. 家族の年収がまだ確定していない…</p>
+<p>A. <b>見込み</b>でOK。12月分まで含めたおよその金額を書きます。</p>
+<p class="q">Q. 住宅ローン控除・医療費控除は？</p>
+<p>A. 住宅ローン控除は2年目以降なら<b>別の紙（住宅借入金等特別控除申告書）</b>を会社に出します。医療費控除・ふるさと納税（ワンストップ以外）は年末調整ではできないので<b>確定申告</b>で。</p>
+<p class="q">Q. 途中で入社した</p>
+<p>A. 前の会社の<b>源泉徴収票</b>を今の会社に出してください。</p>
+<p class="q">Q. 書き間違えた</p>
+<p>A. 二重線で消して横に書き直せばOK（会社のルールがあればそれに従う）。</p>
+
+<div class="box ok"><span class="big">迷ったら…</span><br>
+まずは<b>会社の担当者</b>に聞くのが一番早いです。<br>国税庁ホームページ「年末調整がよくわかるページ」にも詳しい説明があります。</div>
+
+<p class="small">※ このガイドは、令和8年分の国税庁の申告書・記載例をもとに、分かりやすさを優先して要約したものです。細かな条件・例外は省略しています。最終的には申告書の裏面の説明と会社の指示に従ってください。</p>
+</section>
+</body></html>
