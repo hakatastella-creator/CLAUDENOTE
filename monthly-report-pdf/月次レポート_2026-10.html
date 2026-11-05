@@ -1,0 +1,144 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<title>月次レポート_2026-10</title>
+<style>
+@page { size: A4; margin: 12mm 11mm; }
+:root { --gold:#B08A2E; --gold-d:#7A5C12; --gold-l:#E9D9AE; --cream:#FBF6E9; --th:#F6EFDC;
+        --line:#E3D6B4; --ink:#2F2a1E; --ink2:#5A5243; --muted:#8C826C; }
+* { box-sizing: border-box; }
+body { margin:0; font-family:"Noto Sans CJK JP","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+       color:var(--ink); background:#fff; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+.page { width:100%; }
+.hd { border-bottom:3px solid var(--gold); padding-bottom:8px; margin-bottom:14px; }
+.clinic { font-size:12px; color:var(--ink2); }
+.title { font-size:22px; font-weight:800; margin:1px 0; }
+.month { font-size:15px; font-weight:700; color:var(--gold-d); }
+.kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:18px; }
+.kpi { border:1px solid var(--line); border-top:4px solid var(--gold); border-radius:10px; padding:10px 12px;
+       background:linear-gradient(180deg,var(--cream) 0%,#fff 70%); }
+.kl { font-size:10.5px; font-weight:700; color:var(--ink2); }
+.kv { font-size:21px; font-weight:800; color:var(--gold-d); line-height:1.25; margin:2px 0 1px;
+      font-variant-numeric:tabular-nums; white-space:nowrap; }
+.ks { font-size:9.5px; color:var(--muted); }
+.prog { position:relative; height:5px; background:#EFE6CC; border-radius:3px; margin:3px 0 4px; }
+.prog div { height:100%; background:var(--gold); border-radius:3px; }
+.prog i { position:absolute; top:-2px; width:1.5px; height:9px; background:var(--gold-d); }
+.sec { margin:0 0 16px; break-inside:avoid; }
+.sec.split { break-inside:auto; }
+.sec h3 { font-size:13.5px; font-weight:700; color:var(--gold-d); border-left:4px solid var(--gold);
+          padding-left:8px; margin:0 0 8px; }
+.sec h3 span { font-size:10px; font-weight:400; color:var(--muted); margin-left:8px; }
+.cols { display:grid; grid-template-columns:1.25fr 1fr; gap:16px; align-items:start; }
+table.rep { width:100%; border-collapse:collapse; font-size:11px; }
+table.rep.half { width:52%; }
+table.rep th, table.rep td { border:1px solid var(--line); padding:3px 6px; }
+table.rep thead th { background:var(--th); color:var(--ink2); text-align:right; font-weight:700; }
+table.rep thead th.lab { text-align:left; }
+table.rep th.lab { background:var(--th); text-align:left; font-weight:600; color:var(--ink2); white-space:nowrap; }
+table.rep th.ind { font-weight:400; padding-left:12px; background:#FBF8EF; }
+table.rep td { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+table.rep td.b { font-weight:700; }
+table.rep td.dim { color:var(--ink2); }
+table.rep td.warn { color:#9A5B12; font-weight:700; }
+.kj { font-size:8.5px; color:var(--muted); font-weight:400; margin-left:2px; }
+table.rep tr.sub th, table.rep tr.sub td { background:#F8F1DE; font-weight:700; }
+table.rep tr.total th, table.rep tr.total td { background:var(--gold-l); font-weight:800; color:var(--ink); }
+table.rep tr.sp td { border:none; height:6px; padding:0; }
+.ct { font-size:10.5px; color:var(--muted); margin:8px 0 3px; }
+.ct:first-child { margin-top:0; }
+.bars { display:flex; flex-direction:column; gap:4px; }
+.bar { display:grid; grid-template-columns:128px 1fr 92px; align-items:center; gap:6px; font-size:10px; }
+.bl { color:var(--ink2); text-align:right; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.bt { height:11px; }
+.bf { height:11px; background:var(--gold); border-radius:0 3px 3px 0; }
+.bar.pair .bt { height:auto; display:flex; flex-direction:column; gap:2px; }
+.bar.pair .bf { height:8px; }
+.bf.prev, .sw.prev { background:#DCCB9A; }
+.sw { display:inline-block; width:9px; height:9px; background:var(--gold); margin:0 3px 0 10px; vertical-align:-1px; }
+.pl { font-size:9.5px; color:var(--muted); text-align:right; margin-bottom:2px; }
+.bv { font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.bv small { font-weight:400; color:var(--muted); margin-left:4px; }
+.bar.pair .bv { font-size:9px; line-height:1.15; }
+.big { margin-top:12px; padding:9px 10px; border:1px solid var(--line); border-radius:8px; background:var(--cream);
+       font-size:13px; font-weight:800; color:var(--gold-d); text-align:center; }
+.note { font-size:9.5px; color:var(--muted); margin-top:4px; }
+.empty { font-size:10px; color:var(--muted); }
+ul.memo { margin:0; padding-left:18px; font-size:11px; line-height:1.7; }
+.ft { margin-top:10px; padding-top:6px; border-top:1px solid var(--line); font-size:9px; color:var(--muted); }
+</style></head><body><div class="page">
+  <div class="hd"><div class="clinic">博多ステラ歯科</div><div class="title">月次レポート</div>
+    <div class="month">2026年10月</div></div>
+  <div class="kpis"><div class="kpi"><div class="kl">月売上</div><div class="kv">¥11,053,540</div><div class="ks">約1,105万4千円</div></div><div class="kpi"><div class="kl">目標達成率</div><div class="kv">110.5%</div><div class="prog"><div style="width:73.7%"></div><i style="left:66.7%"></i></div><div class="ks">目標 1,000万円／+105万4千円</div></div><div class="kpi"><div class="kl">新患</div><div class="kv">33 人</div><div class="ks">診療日数 27日・平均点数 1,264点</div></div><div class="kpi"><div class="kl">キャンセル率</div><div class="kv">13.4%</div><div class="ks">前月 12.6%（+0.8pt）</div></div></div>
+
+  <div class="sec"><h3>売上 <span>月売上 ＝ 合計点数×10 ＋ 自費請求額 ＋ 販売品目</span></h3>
+    <div class="cols"><div>
+    <table class="rep">
+      <thead><tr><th class="lab">項目</th><th>数量</th><th>金額</th></tr></thead>
+      <tbody>
+        <tr><th class="lab">保険（合計点数×10）</th><td>474,089 点</td><td class="">¥4,740,890<span class="kj">（約474万1千円）</span></td></tr>
+        <tr><th class="lab">自費（個人別 自費請求額）</th><td></td><td class="">¥6,102,050<span class="kj">（約610万2千円）</span></td></tr>
+        <tr><th class="lab">販売品目</th><td></td><td class="">¥210,600<span class="kj">（約21万1千円）</span></td></tr>
+        <tr class="total"><th class="lab">月売上 合計</th><td></td><td class="b">¥11,053,540<span class="kj">（約1,105万4千円）</span></td></tr>
+        <tr class="sp"><td colspan="3"></td></tr>
+        <tr><th class="lab">月目標</th><td></td><td class="">¥10,000,000<span class="kj">（約1,000万円）</span></td></tr>
+        <tr><th class="lab">目標との差</th><td></td><td class="">¥1,053,540<span class="kj">（約105万4千円）</span></td></tr>
+        <tr class="sub"><th class="lab">達成率</th><td></td><td class="b">110.5%</td></tr>
+        <tr><th class="lab">1日あたり売上（27日）</th><td></td><td class="">¥409,390<span class="kj">（約40万9千円）</span></td></tr>
+      </tbody>
+    </table></div>
+      <div><div class="ct">売上構成</div><div class="bars"><div class="bar"><div class="bl">保険</div><div class="bt"><div class="bf" style="width:77.7%"></div></div><div class="bv">¥4,740,890<small>42.9%</small></div></div><div class="bar"><div class="bl">自費</div><div class="bt"><div class="bf" style="width:100.0%"></div></div><div class="bv">¥6,102,050<small>55.2%</small></div></div><div class="bar"><div class="bl">販売品目</div><div class="bt"><div class="bf" style="width:3.5%"></div></div><div class="bv">¥210,600<small>1.9%</small></div></div></div>
+        <div class="big">¥11,053,540（約1,105万4千円）</div></div></div></div>
+
+  <div class="sec split"><h3>自費の内訳</h3>
+    <div class="cols"><div><table class="rep"><thead><tr><th class="lab">項目</th><th>件数</th><th>金額</th></tr></thead><tbody><tr><th class="lab ind">オールセラミッククラウン imp</th><td>14 件</td><td class="">¥1,701,700<span class="kj">（約170万2千円）</span></td></tr><tr><th class="lab ind">ジルコニアクラウン imp</th><td>8 件</td><td class="">¥717,750<span class="kj">（約71万8千円）</span></td></tr><tr><th class="lab ind">スーパーエナメル imp</th><td>5 件</td><td class="">¥467,500<span class="kj">（約46万8千円）</span></td></tr><tr><th class="lab ind">ジルコニアインレー imp</th><td>9 件</td><td class="">¥413,898<span class="kj">（約41万4千円）</span></td></tr><tr><th class="lab ind">ジルコニアグラデーション</th><td>2 件</td><td class="">¥187,000<span class="kj">（約18万7千円）</span></td></tr><tr><th class="lab ind">プロビジョナル</th><td>2 件</td><td class="">¥5,500<span class="kj">（約6千円）</span></td></tr><tr class="sub"><th class="lab">補綴 計</th><td>40 件</td><td class="b">¥3,493,348<span class="kj">（約349万3千円）</span></td></tr><tr class="sp"><td colspan="3"></td></tr><tr><th class="lab ind">インビザライン モデレート</th><td>4 件</td><td class="">¥2,191,200<span class="kj">（約219万1千円）</span></td></tr><tr><th class="lab ind">マウスピースリテーナー（当院）</th><td>7 件</td><td class="">¥99,000<span class="kj">（約9万9千円）</span></td></tr><tr><th class="lab ind">プレオルソ</th><td></td><td class="">¥77,000<span class="kj">（約7万7千円）</span></td></tr><tr><th class="lab ind">矯正検査</th><td>3 件</td><td class="">¥66,000<span class="kj">（約6万6千円）</span></td></tr><tr><th class="lab ind">マウスピースリテーナー（他院）</th><td>1 件</td><td class="">¥44,000<span class="kj">（約4万4千円）</span></td></tr><tr><th class="lab ind">リンガルリテーナー</th><td></td><td class="">¥5,500<span class="kj">（約6千円）</span></td></tr><tr><th class="lab ind">追加アライナースキャン 2回目</th><td></td><td class="">¥5,500<span class="kj">（約6千円）</span></td></tr><tr><th class="lab ind">追加アライナースキャン 3回目</th><td></td><td class="">¥5,500<span class="kj">（約6千円）</span></td></tr><tr class="sub"><th class="lab">矯正 計</th><td>15 件</td><td class="b">¥2,493,700<span class="kj">（約249万4千円）</span></td></tr><tr class="sp"><td colspan="3"></td></tr><tr><th class="lab ind">自費書き換え</th><td></td><td class="">¥77,002<span class="kj">（約7万7千円）</span></td></tr><tr><th class="lab ind">ボトックス</th><td>3 件</td><td class="">¥63,800<span class="kj">（約6万4千円）</span></td></tr><tr><th class="lab ind">キャンセル料</th><td>16 件</td><td class="">¥16,000<span class="kj">（約1万6千円）</span></td></tr><tr class="sub"><th class="lab">その他 計</th><td>19 件</td><td class="b">¥156,802<span class="kj">（約15万7千円）</span></td></tr><tr class="sp"><td colspan="3"></td></tr><tr class="total"><th class="lab">自費項目別 合計</th><td></td><td class="b">¥6,143,850<span class="kj">（約614万4千円）</span></td></tr><tr><th class="lab">個人別 自費請求額（売上に計上）</th><td></td><td class="">¥6,102,050<span class="kj">（約610万2千円）</span></td></tr><tr><th class="lab">差額（値引・訂正と推定）</th><td></td><td class="">¥41,800<span class="kj">（約4万2千円）</span></td></tr></tbody></table></div><div><div class="ct">区分別</div><div class="bars"><div class="bar"><div class="bl">補綴</div><div class="bt"><div class="bf" style="width:100.0%"></div></div><div class="bv">¥3,493,348<small>56.9%</small></div></div><div class="bar"><div class="bl">矯正</div><div class="bt"><div class="bf" style="width:71.4%"></div></div><div class="bv">¥2,493,700<small>40.6%</small></div></div><div class="bar"><div class="bl">その他</div><div class="bt"><div class="bf" style="width:4.5%"></div></div><div class="bv">¥156,802<small>2.6%</small></div></div></div><div class="ct">補綴 内訳</div><div class="bars"><div class="bar"><div class="bl">オールセラミッククラウン imp</div><div class="bt"><div class="bf" style="width:100.0%"></div></div><div class="bv">¥1,701,700</div></div><div class="bar"><div class="bl">ジルコニアクラウン imp</div><div class="bt"><div class="bf" style="width:42.2%"></div></div><div class="bv">¥717,750</div></div><div class="bar"><div class="bl">スーパーエナメル imp</div><div class="bt"><div class="bf" style="width:27.5%"></div></div><div class="bv">¥467,500</div></div><div class="bar"><div class="bl">ジルコニアインレー imp</div><div class="bt"><div class="bf" style="width:24.3%"></div></div><div class="bv">¥413,898</div></div><div class="bar"><div class="bl">ジルコニアグラデーション</div><div class="bt"><div class="bf" style="width:11.0%"></div></div><div class="bv">¥187,000</div></div><div class="bar"><div class="bl">プロビジョナル</div><div class="bt"><div class="bf" style="width:1.5%"></div></div><div class="bv">¥5,500</div></div></div><div class="ct">矯正 内訳</div><div class="bars"><div class="bar"><div class="bl">インビザライン モデレート</div><div class="bt"><div class="bf" style="width:100.0%"></div></div><div class="bv">¥2,191,200</div></div><div class="bar"><div class="bl">マウスピースリテーナー（当院）</div><div class="bt"><div class="bf" style="width:4.5%"></div></div><div class="bv">¥99,000</div></div><div class="bar"><div class="bl">プレオルソ</div><div class="bt"><div class="bf" style="width:3.5%"></div></div><div class="bv">¥77,000</div></div><div class="bar"><div class="bl">矯正検査</div><div class="bt"><div class="bf" style="width:3.0%"></div></div><div class="bv">¥66,000</div></div><div class="bar"><div class="bl">マウスピースリテーナー（他院）</div><div class="bt"><div class="bf" style="width:2.0%"></div></div><div class="bv">¥44,000</div></div><div class="bar"><div class="bl">リンガルリテーナー</div><div class="bt"><div class="bf" style="width:1.5%"></div></div><div class="bv">¥5,500</div></div></div><div class="ct">その他 内訳</div><div class="bars"><div class="bar"><div class="bl">自費書き換え</div><div class="bt"><div class="bf" style="width:100.0%"></div></div><div class="bv">¥77,002</div></div><div class="bar"><div class="bl">ボトックス</div><div class="bt"><div class="bf" style="width:82.9%"></div></div><div class="bv">¥63,800</div></div><div class="bar"><div class="bl">キャンセル料</div><div class="bt"><div class="bf" style="width:20.8%"></div></div><div class="bv">¥16,000</div></div></div></div></div></div>
+
+  <div class="sec"><h3>エアフロー</h3>
+    <div class="cols"><div>
+    <table class="rep">
+      <tbody>
+        <tr><th class="lab">件数（販売品目）</th><td class="b">15 件</td></tr>
+        <tr><th class="lab">売上</th><td class="b">¥49,500<span class="kj">（約5万円）</span></td></tr>
+        <tr><th class="lab">単価</th><td class="">¥3,300<span class="kj">（約3千円）</span></td></tr>
+        <tr class="sub"><th class="lab">物販（販売品目）に占める割合</th><td class="b">23.5%</td></tr>
+        <tr class="sp"><td colspan="2"></td></tr>
+        <tr><th class="lab">Apotool イベント登録</th><td>2 件</td></tr>
+        <tr><th class="lab">未登録（販売件数 − 登録件数）</th><td class="warn">13 件</td></tr>
+      </tbody>
+    </table></div><div><div class="ct">物販（販売品目）の内訳</div><div class="bars"><div class="bar"><div class="bl">エアフロー</div><div class="bt"><div class="bf" style="width:30.7%"></div></div><div class="bv">¥49,500<small>23.5%</small></div></div><div class="bar"><div class="bl">その他物販</div><div class="bt"><div class="bf" style="width:100.0%"></div></div><div class="bv">¥161,100<small>76.5%</small></div></div></div><div class="ct">件数：販売 vs Apotool登録</div><div class="bars"><div class="bar"><div class="bl">販売品目</div><div class="bt"><div class="bf" style="width:100.0%"></div></div><div class="bv">15 件</div></div><div class="bar"><div class="bl">Apotool登録</div><div class="bt"><div class="bf" style="width:13.3%"></div></div><div class="bv">2 件</div></div></div></div></div></div>
+
+  <div class="sec"><h3>予約・キャンセル（Apotool）</h3>
+    <div class="cols"><div>
+    <table class="rep">
+      <thead><tr><th class="lab">項目</th><th>9月</th><th>10月</th><th>増減</th></tr></thead>
+      <tbody>
+        <tr class=""><th class="lab">総予約件数</th><td>904 件</td><td>962 件</td><td class="dim">+58件</td></tr>
+        <tr class=""><th class="lab">来院件数</th><td>790 件</td><td>833 件</td><td class="dim">+43件</td></tr>
+        <tr class=""><th class="lab">キャンセル数</th><td>114 件</td><td>129 件</td><td class="dim">+15件</td></tr>
+        <tr class="sub"><th class="lab">キャンセル率</th><td>12.6%</td><td>13.4%</td><td class="dim">+0.8pt</td></tr>
+        <tr class="sp"><td colspan="4"></td></tr>
+        <tr class=""><th class="lab">事前キャンセル</th><td>31 件</td><td>60 件</td><td class="dim">+29件</td></tr>
+        <tr class=""><th class="lab">当日キャンセル</th><td>27 件</td><td>27 件</td><td class="dim">±0件</td></tr>
+        <tr class=""><th class="lab">無断キャンセル</th><td>15 件</td><td>9 件</td><td class="dim">-6件</td></tr>
+      </tbody>
+    </table>
+    <div class="note">キャンセル率 ＝ キャンセル数 ÷（来院件数＋キャンセル数）。来院件数 ＝ 総予約件数 − キャンセル数。</div></div><div><div class="ct">キャンセル内訳（件）</div><div class="bars"><div class="pl"><span class="sw prev"></span>9月<span class="sw cur"></span>10月</div><div class="bar pair"><div class="bl">事前</div><div class="bt"><div class="bf prev" style="width:51.7%"></div><div class="bf" style="width:100.0%"></div></div><div class="bv">31<br>60</div></div><div class="bar pair"><div class="bl">当日</div><div class="bt"><div class="bf prev" style="width:45.0%"></div><div class="bf" style="width:45.0%"></div></div><div class="bv">27<br>27</div></div><div class="bar pair"><div class="bl">無断</div><div class="bt"><div class="bf prev" style="width:25.0%"></div><div class="bf" style="width:15.0%"></div></div><div class="bv">15<br>9</div></div></div></div></div></div>
+
+  <div class="sec"><h3>定期検診・中断（Apotool）</h3>
+    <div class="cols"><div>
+    <table class="rep">
+      <thead><tr><th class="lab">項目</th><th>9月</th><th>10月</th><th>増減</th></tr></thead>
+      <tbody>
+        <tr class="sub"><th class="lab">定期検診来院率</th><td>90.5%</td><td>91.7%</td><td class="dim">+1.2pt</td></tr>
+        <tr class=""><th class="lab">中断患者数</th><td>102 人</td><td>130 人</td><td class="dim">+28人</td></tr>
+      </tbody>
+    </table></div><div><div class="ct">中断患者数（人）</div><div class="bars"><div class="pl"><span class="sw prev"></span>9月<span class="sw cur"></span>10月</div><div class="bar pair"><div class="bl">中断患者</div><div class="bt"><div class="bf prev" style="width:78.5%"></div><div class="bf" style="width:100.0%"></div></div><div class="bv">102<br>130</div></div></div></div></div></div>
+
+  
+        <div class="sec"><h3>参考：ホワイトニング（株式会社ステラ）</h3>
+          <table class="rep half"><tbody>
+            <tr><th class="lab">10月 合計</th><td class="b">¥287,940<span class="kj">（約28万8千円）</span></td></tr>
+          </tbody></table>
+          <div class="note">別法人のため、月売上・達成率には含めていません。</div>
+        </div>
+  <div class="sec"><h3>所見</h3><ul class="memo"><li>月売上は約1,105万4千円で、目標1,000万円を達成（達成率110.5%）。自費が売上の55.2%を占める。</li><li>自費は補綴（約349万3千円）と矯正（約249万4千円）が中心。インビザライン モデレート4件で約219万1千円。</li><li>自費項目別の合計¥6,143,850と個人別の自費請求額¥6,102,050の差¥41,800は値引・訂正と推定。売上は個人別の金額で計算。</li><li>エアフローは販売15件に対しApotoolのイベント登録は2件。13件が未登録のため、登録ルールの徹底が必要。</li><li>キャンセル率は12.6%→13.4%に上昇。事前キャンセルが31→60件とほぼ倍増した一方、無断キャンセルは15→9件に減少。</li><li>中断患者数が102→130人に増加。定期検診来院率は90.5%→91.7%に改善。</li></ul></div>
+  <div class="ft">出典：レセコン 日計業務（個人別・自費項目別・販売品目別）／Apotool。金額は千円単位で四捨五入して漢字表記を併記。未収金は含みません。</div>
+</div></body></html>
