@@ -51,50 +51,60 @@ def esc(s):
 
 
 # ---------------------------------------------------------------- 部品
-def amount_cell(x, bold=False):
+def amt(x, bold=False):
     k = kanji(x)
     sub = f'<span class="kj">（{k}）</span>' if k else ""
     return f'<td class="{"b" if bold else ""}">{yen(x)}{sub}</td>'
 
 
-def bars(rows, fmt=yen, color=None, max_v=None):
-    """rows: [(label, value, sub)]  横棒グラフ（SVGを使わずCSSで描画）"""
+def cnt(n, unit="件"):
+    return f"{n:,} {unit}" if n else ""
+
+
+def bars(rows, fmt=yen):
+    """rows: [(label, value)]  参考レポートと同じ横棒（値は棒の右）"""
     rows = [r for r in rows if r[1]]
     if not rows:
         return '<div class="empty">データなし</div>'
-    m = max_v or max(r[1] for r in rows)
+    m = max(r[1] for r in rows)
     out = []
+    for label, v in rows:
+        w = max(1.0, v / m * 72)
+        out.append(
+            f'<div class="bar"><div class="bl">{esc(label)}</div><div class="bt">'
+            f'<div class="bf" style="width:{w:.1f}%"></div><span class="bv">{fmt(v)}</span></div></div>'
+        )
+    return '<div class="bars">' + "".join(out) + "</div>"
+
+
+def table3(rows, head=("項目", "件数", "金額")):
+    """rows: [label, cnt_html, amount_td_html, cls] / "sp" """
+    body = []
     for r in rows:
-        label, v = r[0], r[1]
-        sub = r[2] if len(r) > 2 and r[2] else ""
-        w = max(1.5, v / m * 100)
-        style = f"width:{w:.1f}%" + (f";background:{color}" if color else "")
-        out.append(
-            f'<div class="bar"><div class="bl">{esc(label)}</div>'
-            f'<div class="bt"><div class="bf" style="{style}"></div></div>'
-            f'<div class="bv">{fmt(v)}{f"<small>{esc(sub)}</small>" if sub else ""}</div></div>'
-        )
-    return '<div class="bars">' + "".join(out) + "</div>"
+        if r == "sp":
+            body.append('<tr class="sp"><td colspan="3"></td></tr>')
+            continue
+        label, c, a_td, cls = (list(r) + [""])[:4]
+        body.append(f'<tr class="{cls}"><th class="lab">{esc(label)}</th><td>{c}</td>{a_td}</tr>')
+    h = "".join(f'<th class="{"lab" if i == 0 else ""}">{esc(x)}</th>' for i, x in enumerate(head))
+    return f'<table class="rep"><thead><tr>{h}</tr></thead><tbody>{"".join(body)}</tbody></table>'
 
 
-def pair_bars(rows, prev_label, cur_label, fmt):
-    """前月・当月の比較棒"""
-    m = max(max(p, c) for _, p, c in rows) or 1
-    out = [f'<div class="pl"><span class="sw prev"></span>{esc(prev_label)}'
-           f'<span class="sw cur"></span>{esc(cur_label)}</div>']
-    for label, p, c in rows:
-        out.append(
-            f'<div class="bar pair"><div class="bl">{esc(label)}</div><div class="bt">'
-            f'<div class="bf prev" style="width:{max(1.5, p / m * 100):.1f}%"></div>'
-            f'<div class="bf" style="width:{max(1.5, c / m * 100):.1f}%"></div></div>'
-            f'<div class="bv">{fmt(p)}<br>{fmt(c)}</div></div>'
-        )
-    return '<div class="bars">' + "".join(out) + "</div>"
+def kv(rows):
+    """rows: [label, value, cls] / "sp" """
+    body = []
+    for r in rows:
+        if r == "sp":
+            body.append('<tr class="sp"><td colspan="2"></td></tr>')
+            continue
+        label, v, cls = (list(r) + [""])[:3]
+        body.append(f'<tr class="{cls}"><th class="lab">{esc(label)}</th><td>{v}</td></tr>')
+    return f'<table class="rep"><tbody>{"".join(body)}</tbody></table>'
 
 
-def kpi(label, value, sub="", extra=""):
+def kpi(label, value, sub=""):
     return (f'<div class="kpi"><div class="kl">{label}</div><div class="kv">{value}</div>'
-            f'{extra}<div class="ks">{sub}</div></div>')
+            f'<div class="ks">{sub}</div></div>')
 
 
 def diff_n(d, unit=""):
@@ -106,165 +116,133 @@ def diff_pt(d):
     return ("+" if v > 0 else "±" if v == 0 else "") + f"{v:.1f}pt"
 
 
+def sec(title, left, right):
+    return (f'<div class="sec"><h3>{title}</h3><div class="cols"><div>{left}</div>'
+            f'<div class="chart">{right}</div></div></div>')
+
+
 # ---------------------------------------------------------------- 本体
 def build(d):
     r = d["rececon"]
+    s = d["sales"]
     hoken = r["points"] * 10
-    jihi = r["jihi"]
+    jihi = r["jihi"]           # 個人別 自費請求額（売上に計上）
     hanbai = r["hanbai"]
-    sales = hoken + jihi + hanbai
+    total = hoken + jihi + hanbai
     goal = d.get("goal", 10_000_000)
-    rate = sales / goal
-    per_day = sales / r["days"]
+    rate = total / goal
 
-    # 自費内訳
-    cats = d["jihi_items"]
-    cat_tot = {c: sum(i[2] for i in items) for c, items in cats.items()}
-    item_total = sum(cat_tot.values())
-    jdiff = item_total - jihi
+    ky = s["矯正"]
+    jh = s["自費"]
+    cn_n, cn_amt = s["キャンセル料"]
+    ky_sum = sum(i[2] for i in ky)
+    jh_sum = sum(i[2] for i in jh)
+    ky_n = sum(i[1] or 0 for i in ky)
+    jh_n = sum(i[1] or 0 for i in jh)
+    jihi_items = ky_sum + jh_sum + cn_amt          # 自費総額（項目別）
+    adj = jihi - jihi_items                        # 値引・訂正（推定）
 
-    # エアフロー
-    af = d["airflow"]
-    af_unit = af["amount"] / af["count"] if af["count"] else 0
-    af_share = af["amount"] / hanbai if hanbai else 0
-    af_gap = af["count"] - af["apotool"]
-
-    # Apotool
     a = d["apotool"]
     pm, cm = d["prev_label"], d["cur_label"]
+    raiin = [a["yoyaku"][i] - a["cancel"][i] for i in (0, 1)]
+    crate = [a["cancel"][i] / (raiin[i] + a["cancel"][i]) for i in (0, 1)]
 
-    def raiin(i):
-        return a["yoyaku"][i] - a["cancel"][i]
-
-    def crate(i):
-        return a["cancel"][i] / (raiin(i) + a["cancel"][i])
-
-    cr_p, cr_c = crate(0), crate(1)
+    starts = d.get("ortho_start", [])
+    start_n = sum(n for _, n in starts)
+    start_sub = "・".join(f"{k}{n}" for k, n in starts) or "内訳なし"
 
     # ---- KPI
-    gap = sales - goal
-    prog = min(rate, 1.5) / 1.5 * 100
     kpis = "".join([
-        kpi("月売上", yen(sales), kanji(sales)),
-        kpi("目標達成率", pct(rate),
-            f"目標 {kanji(goal).replace('約', '')}／{'+' if gap >= 0 else '−'}{kanji(abs(gap)).replace('約', '')}",
-            f'<div class="prog"><div style="width:{prog:.1f}%"></div><i style="left:{100 / 1.5:.1f}%"></i></div>'),
-        kpi("新患", f"{r['shinkan']:,} 人", f"診療日数 {r['days']}日・平均点数 {r['avg_points']:,}点"),
-        kpi("キャンセル率", pct(cr_c), f"前月 {pct(cr_p)}（{diff_pt(cr_c - cr_p)}）"),
+        kpi("合計売上高", yen(total), f"{kanji(total)}・達成率 {pct(rate)}"),
+        kpi("来院件数", f"{raiin[1]:,} 件", f"新患 {r['shinkan']:,}・診療日数 {r['days']}日"),
+        kpi("キャンセル率", pct(crate[1]), f"前月 {pct(crate[0])}（{diff_pt(crate[1] - crate[0])}）"),
+        kpi("矯正開始", f"{start_n:,} 件", start_sub),
     ])
 
     # ---- 売上
-    sales_tbl = f"""
-    <table class="rep">
-      <thead><tr><th class="lab">項目</th><th>数量</th><th>金額</th></tr></thead>
-      <tbody>
-        <tr><th class="lab">保険（合計点数×10）</th><td>{r['points']:,} 点</td>{amount_cell(hoken)}</tr>
-        <tr><th class="lab">自費（個人別 自費請求額）</th><td></td>{amount_cell(jihi)}</tr>
-        <tr><th class="lab">販売品目</th><td></td>{amount_cell(hanbai)}</tr>
-        <tr class="total"><th class="lab">月売上 合計</th><td></td>{amount_cell(sales, True)}</tr>
-        <tr class="sp"><td colspan="3"></td></tr>
-        <tr><th class="lab">月目標</th><td></td>{amount_cell(goal)}</tr>
-        <tr><th class="lab">目標との差</th><td></td>{amount_cell(gap)}</tr>
-        <tr class="sub"><th class="lab">達成率</th><td></td><td class="b">{pct(rate)}</td></tr>
-        <tr><th class="lab">1日あたり売上（{r['days']}日）</th><td></td>{amount_cell(per_day)}</tr>
-      </tbody>
-    </table>"""
-    sales_chart = bars([
-        ("保険", hoken, pct(hoken / sales)),
-        ("自費", jihi, pct(jihi / sales)),
-        ("販売品目", hanbai, pct(hanbai / sales)),
-    ])
-
-    # ---- 自費内訳
-    rows = []
-    for c, items in cats.items():
-        for name, n, amt in items:
-            rows.append(f'<tr><th class="lab ind">{esc(name)}</th><td>{f"{n:,} 件" if n else ""}</td>{amount_cell(amt)}</tr>')
-        cn = sum(i[1] or 0 for i in items)
-        rows.append(f'<tr class="sub"><th class="lab">{esc(c)} 計</th><td>{cn:,} 件</td>{amount_cell(cat_tot[c], True)}</tr>')
-        rows.append('<tr class="sp"><td colspan="3"></td></tr>')
-    rows.append(f'<tr class="total"><th class="lab">自費項目別 合計</th><td></td>{amount_cell(item_total, True)}</tr>')
-    rows.append(f'<tr><th class="lab">個人別 自費請求額（売上に計上）</th><td></td>{amount_cell(jihi)}</tr>')
-    rows.append(f'<tr><th class="lab">差額（値引・訂正と推定）</th><td></td>{amount_cell(jdiff)}</tr>')
-    jihi_tbl = ('<table class="rep"><thead><tr><th class="lab">項目</th><th>件数</th><th>金額</th></tr></thead><tbody>'
-                + "".join(rows) + "</tbody></table>")
-    jihi_chart = (
-        '<div class="ct">区分別</div>'
-        + bars([(c, v, pct(v / item_total)) for c, v in cat_tot.items()])
-        + "".join(
-            f'<div class="ct">{esc(c)} 内訳</div>' + bars([(i[0], i[2]) for i in items][:6])
-            for c, items in cats.items()
-        )
+    rows = [["保険点数（売上）", f"{r['points']:,} 点", amt(hoken)], "sp"]
+    rows += [[n, cnt(c), amt(v)] for n, c, v, _ in ky]
+    rows += [["矯正 計", cnt(ky_n), amt(ky_sum, True), "sub"], "sp"]
+    rows += [[n, cnt(c), amt(v)] for n, c, v, _ in jh]
+    rows += [["自費 計", cnt(jh_n), amt(jh_sum, True), "sub"], "sp"]
+    rows += [["キャンセル料", cnt(cn_n), amt(cn_amt)], "sp"]
+    rows += [["自費総額（項目別）", "", amt(jihi_items, True), "sub"],
+             ["値引・訂正（推定）", "", amt(adj)],
+             ["自費請求額（個人別）", "", amt(jihi, True), "sub"], "sp"]
+    rows += [["物販（販売品目）", cnt(r.get("hanbai_n")), amt(hanbai)], "sp"]
+    rows += [["合計売上高", "", amt(total, True), "total"],
+             ["月目標", "", amt(goal)],
+             ["達成率", "", f'<td class="b">{pct(rate)}</td>', "sub"]]
+    sales_tbl = table3(rows)
+    sales_chart = (
+        '<div class="ct">売上構成（カテゴリ別）</div>'
+        + bars([("保険点数", hoken), ("矯正", ky_sum), ("自費", jh_sum), ("キャンセル料", cn_amt), ("物販", hanbai)])
+        + '<div class="ct">矯正 内訳</div>' + bars([(i[3], i[2]) for i in ky])
+        + '<div class="ct">自費 内訳</div>' + bars([(i[3], i[2]) for i in jh])
+        + '<div class="note">合計売上高 ＝ 保険点数×10 ＋ 自費請求額（個人別） ＋ 物販。未収金は含みません。</div>'
     )
 
     # ---- エアフロー
-    af_tbl = f"""
-    <table class="rep">
-      <tbody>
-        <tr><th class="lab">件数（販売品目）</th><td class="b">{af['count']:,} 件</td></tr>
-        <tr><th class="lab">売上</th>{amount_cell(af['amount'], True)}</tr>
-        <tr><th class="lab">単価</th>{amount_cell(af_unit)}</tr>
-        <tr class="sub"><th class="lab">物販（販売品目）に占める割合</th><td class="b">{pct(af_share)}</td></tr>
-        <tr class="sp"><td colspan="2"></td></tr>
-        <tr><th class="lab">Apotool イベント登録</th><td>{af['apotool']:,} 件</td></tr>
-        <tr><th class="lab">未登録（販売件数 − 登録件数）</th><td class="warn">{af_gap:,} 件</td></tr>
-      </tbody>
-    </table>"""
-    af_chart = '<div class="ct">物販（販売品目）の内訳</div>' + bars([
-        ("エアフロー", af["amount"], pct(af_share)),
-        ("その他物販", hanbai - af["amount"], pct(1 - af_share)),
-    ]) + '<div class="ct">件数：販売 vs Apotool登録</div>' + bars(
-        [("販売品目", af["count"]), ("Apotool登録", af["apotool"])], fmt=lambda v: f"{v:,} 件")
+    af = d["airflow"]
+    af_unit = af["amount"] / af["count"] if af["count"] else 0
+    af_share = af["amount"] / hanbai if hanbai else 0
+    af_tbl = kv([
+        ["件数（販売品目）", f"{af['count']:,} 件"],
+        ["売上", f"{yen(af['amount'])}<span class='kj'>（{kanji(af['amount'])}）</span>"],
+        ["単価", yen(af_unit)],
+        ["物販に占める割合", pct(af_share), "sub"],
+        "sp",
+        ["Apotool イベント登録", f"{af['apotool']:,} 件"],
+        ["未登録（販売 − 登録）", f"{af['count'] - af['apotool']:,} 件", "sub"],
+    ])
+    af_chart = ('<div class="ct">物販 内訳</div>'
+                + bars([("エアフロー", af["amount"]), ("その他物販", hanbai - af["amount"])])
+                + '<div class="ct">件数（販売・Apotool登録）</div>'
+                + bars([("販売", af["count"]), ("Apotool登録", af["apotool"])], fmt=lambda v: f"{v:,}"))
 
-    # ---- 予約・キャンセル
-    def trow(label, p, c, fmt, dfmt, cls=""):
-        return (f'<tr class="{cls}"><th class="lab">{label}</th><td>{fmt(p)}</td><td>{fmt(c)}</td>'
-                f'<td class="dim">{dfmt(c, p)}</td></tr>')
+    # ---- 予約・来院／キャンセル
+    def r3(label, i, fmt, cls=""):
+        return f'<tr class="{cls}"><th class="lab">{label}</th><td>{fmt(i[0])}</td><td>{fmt(i[1])}</td></tr>'
 
-    n = lambda u: (lambda v: f"{v:,} {u}")
-    dn = lambda u: (lambda c, p: diff_n(c - p, u))
-    dp = lambda c, p: diff_pt(c - p)
-    apo_tbl = f"""
-    <table class="rep">
-      <thead><tr><th class="lab">項目</th><th>{pm}</th><th>{cm}</th><th>増減</th></tr></thead>
-      <tbody>
-        {trow("総予約件数", a['yoyaku'][0], a['yoyaku'][1], n("件"), dn("件"))}
-        {trow("来院件数", raiin(0), raiin(1), n("件"), dn("件"))}
-        {trow("キャンセル数", a['cancel'][0], a['cancel'][1], n("件"), dn("件"))}
-        {trow("キャンセル率", cr_p, cr_c, pct, dp, "sub")}
-        <tr class="sp"><td colspan="4"></td></tr>
-        {trow("事前キャンセル", a['jizen'][0], a['jizen'][1], n("件"), dn("件"))}
-        {trow("当日キャンセル", a['toujitsu'][0], a['toujitsu'][1], n("件"), dn("件"))}
-        {trow("無断キャンセル", a['mudan'][0], a['mudan'][1], n("件"), dn("件"))}
-      </tbody>
-    </table>
-    <div class="note">キャンセル率 ＝ キャンセル数 ÷（来院件数＋キャンセル数）。来院件数 ＝ 総予約件数 − キャンセル数。</div>"""
-    apo_chart = '<div class="ct">キャンセル内訳（件）</div>' + pair_bars(
-        [("事前", *a["jizen"]), ("当日", *a["toujitsu"]), ("無断", *a["mudan"])],
-        pm, cm, lambda v: f"{v:,}")
+    nk = lambda u: (lambda v: f"{v:,} {u}")
+    yoyaku_tbl = f"""<table class="rep"><thead><tr><th class="lab">項目</th><th>{pm}</th><th>{cm}</th></tr></thead><tbody>
+      {r3("総予約件数", a['yoyaku'], nk("件"))}
+      {r3("来院件数", raiin, nk("件"))}
+      <tr class="sp"><td colspan="3"></td></tr>
+      {r3("キャンセル数", a['cancel'], nk("件"))}
+      {r3("事前キャンセル", a['jizen'], nk("件"))}
+      {r3("当日キャンセル", a['toujitsu'], nk("件"))}
+      {r3("無断キャンセル", a['mudan'], nk("件"))}
+      {r3("キャンセル率", crate, pct, "sub")}
+    </tbody></table>
+    <div class="note">キャンセル率 ＝ キャンセル数 ÷（来院件数＋キャンセル数）／来院件数 ＝ 総予約件数 − キャンセル数</div>"""
+    shin_tbl = kv([["新患", f"{r['shinkan']:,} 人"], ["平均点数", f"{r['avg_points']:,} 点"],
+                   ["診療日数", f"{r['days']} 日"]])
+    yoyaku_chart = ('<div class="ct">キャンセル内訳（件・' + cm + '）</div>'
+                    + bars([("事前", a["jizen"][1]), ("当日", a["toujitsu"][1]), ("無断", a["mudan"][1])],
+                           fmt=lambda v: f"{v:,}")
+                    + '<div class="ct">新患・診療</div>' + shin_tbl)
 
-    recall_tbl = f"""
-    <table class="rep">
-      <thead><tr><th class="lab">項目</th><th>{pm}</th><th>{cm}</th><th>増減</th></tr></thead>
-      <tbody>
-        {trow("定期検診来院率", a['teiki'][0], a['teiki'][1], pct, dp, "sub")}
-        {trow("中断患者数", a['chudan'][0], a['chudan'][1], n("人"), dn("人"))}
-      </tbody>
-    </table>"""
-    recall_chart = '<div class="ct">中断患者数（人）</div>' + pair_bars(
-        [("中断患者", *a["chudan"])], pm, cm, lambda v: f"{v:,}")
+    # ---- 矯正
+    oc = d.get("ortho_counts", [])
+    ortho_tbl = kv([["矯正開始（フル・モデ・ライト・EX）", f"{start_n:,} 件", "sub"]]
+                   + [[k, f"{n:,} 件"] for k, n in oc])
+    ortho_chart = '<div class="ct">矯正 件数（種類別）</div>' + bars(oc, fmt=lambda v: f"{v:,}")
 
-    # ---- 参考・所見
+    # ---- リコール（定期検診・中断）
+    recall_tbl = f"""<table class="rep"><thead><tr><th class="lab">項目</th><th>{pm}</th><th>{cm}</th></tr></thead><tbody>
+      {r3("定期検診来院率", a['teiki'], pct, "sub")}
+      {r3("中断患者数", a['chudan'], nk("人"))}
+    </tbody></table>"""
+    recall_chart = ('<div class="ct">中断患者数（人）</div>'
+                    + bars([(pm, a["chudan"][0]), (cm, a["chudan"][1])], fmt=lambda v: f"{v:,}"))
+
     wh = d.get("whitening")
     ref = ""
     if wh:
-        ref = f"""
-        <div class="sec"><h3>参考：ホワイトニング（株式会社ステラ）</h3>
-          <table class="rep half"><tbody>
-            <tr><th class="lab">{cm} 合計</th>{amount_cell(wh, True)}</tr>
-          </tbody></table>
-          <div class="note">別法人のため、月売上・達成率には含めていません。</div>
-        </div>"""
+        ref = (f'<div class="sec"><h3>参考：ホワイトニング（株式会社ステラ）</h3>'
+               + '<div class="cols"><div>' + kv([[f"{cm} 合計", f"{yen(wh)}<span class='kj'>（{kanji(wh)}）</span>"]])
+               + '</div><div class="note" style="margin-top:6px">別法人のため合計売上高・達成率には含めていません。</div></div></div>')
     memo = "".join(f"<li>{esc(m)}</li>" for m in d.get("memo", []))
     memo_sec = f'<div class="sec"><h3>所見</h3><ul class="memo">{memo}</ul></div>' if memo else ""
 
@@ -274,95 +252,61 @@ def build(d):
   <div class="hd"><div class="clinic">{esc(d['clinic'])}</div><div class="title">月次レポート</div>
     <div class="month">{esc(d['label'])}</div></div>
   <div class="kpis">{kpis}</div>
-
-  <div class="sec"><h3>売上 <span>月売上 ＝ 合計点数×10 ＋ 自費請求額 ＋ 販売品目</span></h3>
-    <div class="cols"><div>{sales_tbl}</div>
-      <div><div class="ct">売上構成</div>{sales_chart}
-        <div class="big">{yen_k(sales)}</div></div></div></div>
-
-  <div class="sec split"><h3>自費の内訳</h3>
-    <div class="cols"><div>{jihi_tbl}</div><div>{jihi_chart}</div></div></div>
-
-  <div class="sec"><h3>エアフロー</h3>
-    <div class="cols"><div>{af_tbl}</div><div>{af_chart}</div></div></div>
-
-  <div class="sec"><h3>予約・キャンセル（Apotool）</h3>
-    <div class="cols"><div>{apo_tbl}</div><div>{apo_chart}</div></div></div>
-
-  <div class="sec"><h3>定期検診・中断（Apotool）</h3>
-    <div class="cols"><div>{recall_tbl}</div><div>{recall_chart}</div></div></div>
-
+  {sec("売上", sales_tbl, sales_chart)}
+  {sec("エアフロー", af_tbl, af_chart)}
+  {sec("予約・来院／キャンセル", yoyaku_tbl, yoyaku_chart)}
+  {sec("矯正", ortho_tbl, ortho_chart)}
+  {sec("リコール（定期検診・中断）", recall_tbl, recall_chart)}
   {ref}
   {memo_sec}
-  <div class="ft">出典：レセコン 日計業務（個人別・自費項目別・販売品目別）／Apotool。金額は千円単位で四捨五入して漢字表記を併記。未収金は含みません。</div>
+  <div class="ft">出典：レセコン 日計業務（個人別・自費項目別・販売品目別）／Apotool（クリニックデータ）。金額の（約〜）は千円単位で四捨五入。未収金は含みません。患者個人情報は含みません。</div>
 </div></body></html>"""
 
 
 CSS = """
-@page { size: A4; margin: 12mm 11mm; }
-:root { --gold:#1f8a5b; --gold-d:#176c47; --gold-l:#f2f7f4; --cream:#f6faf8; --th:#eef4fb;
-        --series:#2a78d6; --series-l:#a9c9ef;
-        --line:#d5dce3; --ink:#1f2933; --ink2:#52514e; --muted:#898781; }
-* { box-sizing: border-box; }
+@page { size: A4; margin: 12mm 12mm; }
+:root { --green:#1f8a5b; --green-d:#176c47; --line:#d5dce3; --ink:#1f2933; --ink2:#52514e;
+        --muted:#898781; --series:#2a78d6; --th:#eef4fb; --sub:#f7fafc; --total:#f2f7f4; }
+* { box-sizing:border-box; }
 body { margin:0; font-family:"Noto Sans CJK JP","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
-       color:var(--ink); background:#fff; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-.page { width:100%; }
-.hd { border-bottom:3px solid var(--gold); padding-bottom:8px; margin-bottom:14px; }
+       color:var(--ink); background:#fff; line-height:1.5; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+.hd { border-bottom:3px solid var(--green); padding-bottom:10px; margin-bottom:16px; }
 .clinic { font-size:12px; color:var(--ink2); }
-.title { font-size:22px; font-weight:800; margin:1px 0; }
-.month { font-size:15px; font-weight:700; color:var(--gold-d); }
-.kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:18px; }
-.kpi { border:1px solid var(--line); border-top:4px solid var(--gold); border-radius:12px; padding:10px 12px;
-       background:linear-gradient(180deg,var(--cream) 0%,#fff 60%); box-shadow:0 1px 3px rgba(0,0,0,.05); }
-.kl { font-size:10.5px; font-weight:700; color:var(--ink2); }
-.kv { font-size:21px; font-weight:800; color:var(--gold-d); line-height:1.25; margin:2px 0 1px;
+.title { font-size:21px; font-weight:800; margin:2px 0; }
+.month { font-size:14px; font-weight:700; color:var(--green-d); }
+.kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:18px; }
+.kpi { border:1px solid var(--line); border-top:4px solid var(--green); border-radius:12px; padding:10px 13px;
+       background:linear-gradient(180deg,#f6faf8 0%,#fff 60%); box-shadow:0 1px 3px rgba(0,0,0,.05); }
+.kl { font-size:10.5px; font-weight:600; color:var(--ink2); }
+.kv { font-size:21px; font-weight:800; color:var(--green-d); line-height:1.2; margin:2px 0 1px;
       font-variant-numeric:tabular-nums; white-space:nowrap; }
 .ks { font-size:9.5px; color:var(--muted); }
-.prog { position:relative; height:5px; background:#e3ece8; border-radius:3px; margin:3px 0 4px; }
-.prog div { height:100%; background:var(--gold); border-radius:3px; }
-.prog i { position:absolute; top:-2px; width:1.5px; height:9px; background:var(--gold-d); }
-.sec { margin:0 0 16px; break-inside:avoid; }
-.sec.split { break-inside:auto; }
-.sec h3 { font-size:13.5px; font-weight:700; color:var(--gold-d); border-left:4px solid var(--gold);
+.sec { margin:0 0 18px; break-inside:avoid; }
+.sec h3 { font-size:13.5px; font-weight:700; color:var(--green-d); border-left:4px solid var(--green);
           padding-left:8px; margin:0 0 8px; }
-.sec h3 span { font-size:10px; font-weight:400; color:var(--muted); margin-left:8px; }
-.cols { display:grid; grid-template-columns:1.25fr 1fr; gap:16px; align-items:start; }
+.cols { display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:start; }
 table.rep { width:100%; border-collapse:collapse; font-size:11px; }
-table.rep.half { width:52%; }
-table.rep th, table.rep td { border:1px solid var(--line); padding:3px 6px; }
-table.rep thead th { background:var(--th); color:var(--ink2); text-align:right; font-weight:700; }
-table.rep thead th.lab { text-align:left; }
-table.rep th.lab { background:var(--th); text-align:left; font-weight:600; color:var(--ink2); white-space:nowrap; }
-table.rep th.ind { font-weight:400; padding-left:12px; }
+table.rep th, table.rep td { border:1px solid var(--line); padding:3.5px 8px; }
+table.rep th { background:var(--th); text-align:left; font-weight:600; color:var(--ink2); white-space:nowrap; }
+table.rep thead th { text-align:right; } table.rep thead th.lab { text-align:left; }
 table.rep td { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
 table.rep td.b { font-weight:700; }
-table.rep td.dim { color:var(--ink2); }
-table.rep td.warn { color:#b5761f; font-weight:700; }
+table.rep tr.sub th, table.rep tr.sub td { background:var(--sub); font-weight:700; }
+table.rep tr.total th, table.rep tr.total td { background:var(--total); font-weight:700; }
+table.rep tr.sp td { border:none; height:6px; padding:0; background:#fff; }
 .kj { font-size:8.5px; color:var(--muted); font-weight:400; margin-left:2px; }
-table.rep tr.sub th, table.rep tr.sub td { background:#f7fafc; font-weight:700; }
-table.rep tr.total th, table.rep tr.total td { background:var(--gold-l); font-weight:700; color:var(--ink); }
-table.rep tr.sp td { border:none; height:6px; padding:0; }
-.ct { font-size:10.5px; color:var(--muted); margin:8px 0 3px; }
-.ct:first-child { margin-top:0; }
-.bars { display:flex; flex-direction:column; gap:4px; }
-.bar { display:grid; grid-template-columns:128px 1fr 92px; align-items:center; gap:6px; font-size:10px; }
+.ct { font-size:10.5px; color:var(--muted); margin:12px 0 4px; }
+.chart > .ct:first-child { margin-top:0; }
+.bars { display:flex; flex-direction:column; gap:5px; }
+.bar { display:grid; grid-template-columns:84px 1fr; align-items:center; gap:6px; font-size:9.5px; }
 .bl { color:var(--ink2); text-align:right; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.bt { height:11px; }
-.bf { height:11px; background:var(--series); border-radius:0 3px 3px 0; }
-.bar.pair .bt { height:auto; display:flex; flex-direction:column; gap:2px; }
-.bar.pair .bf { height:8px; }
-.bf.prev, .sw.prev { background:var(--series-l); }
-.sw { display:inline-block; width:9px; height:9px; background:var(--series); margin:0 3px 0 10px; vertical-align:-1px; }
-.pl { font-size:9.5px; color:var(--muted); text-align:right; margin-bottom:2px; }
-.bv { font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; }
-.bv small { font-weight:400; color:var(--muted); margin-left:4px; }
-.bar.pair .bv { font-size:9px; line-height:1.15; }
-.big { margin-top:12px; padding:9px 10px; border:1px solid var(--line); border-radius:8px; background:var(--cream);
-       font-size:13px; font-weight:800; color:var(--gold-d); text-align:center; }
-.note { font-size:9.5px; color:var(--muted); margin-top:4px; }
+.bt { display:flex; align-items:center; gap:5px; }
+.bf { height:11px; background:var(--series); border-radius:0 2px 2px 0; }
+.bv { font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; font-size:9.5px; }
+.note { font-size:9.5px; color:var(--muted); margin-top:6px; }
 .empty { font-size:10px; color:var(--muted); }
-ul.memo { margin:0; padding-left:18px; font-size:11px; line-height:1.7; }
-.ft { margin-top:10px; padding-top:6px; border-top:1px solid var(--line); font-size:9px; color:var(--muted); }
+ul.memo { margin:0; padding-left:18px; font-size:11px; line-height:1.75; }
+.ft { margin-top:12px; padding-top:8px; border-top:1px solid var(--line); font-size:9px; color:var(--muted); }
 """
 
 
