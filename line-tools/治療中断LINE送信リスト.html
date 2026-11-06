@@ -1,0 +1,588 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>治療中断 LINE 送信リスト</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap">
+
+<style>
+  /* Layout: centered single column, input → list → generate */
+  :root {
+    --bg: #faf6f3;
+    --surface: #ffffff;
+    --surface2: #f5eee9;
+    --border: #eadfd7;
+    --fg: #2a1f1a;
+    --fg-muted: #8a7468;
+    --accent: #c4561a;
+    --accent-soft: #fdece2;
+    --accent-hover: #a8460f;
+    --danger: #d93636;
+    --danger-soft: #fdf0f0;
+    --warn: #b45c00;
+    --shadow-sm: 0 1px 3px rgba(42,31,26,.07), 0 1px 2px rgba(42,31,26,.04);
+    --radius: 12px;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1a1411;
+      --surface: #261d18;
+      --surface2: #2f241e;
+      --border: #44352c;
+      --fg: #f3e9e2;
+      --fg-muted: #b39b8d;
+      --accent: #f08a4f;
+      --accent-soft: #3a2518;
+      --accent-hover: #f5a271;
+      --danger: #f07070;
+      --danger-soft: #2c1a1a;
+      --warn: #f5a84a;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.3);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1a1411;
+    --surface: #261d18;
+    --surface2: #2f241e;
+    --border: #44352c;
+    --fg: #f3e9e2;
+    --fg-muted: #b39b8d;
+    --accent: #f08a4f;
+    --accent-soft: #3a2518;
+    --accent-hover: #f5a271;
+    --danger: #f07070;
+    --danger-soft: #2c1a1a;
+    --warn: #f5a84a;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,.3);
+    color-scheme: dark;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans JP', 'Hiragino Sans', sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    padding-inline: 16px;
+    padding-block: 28px;
+  }
+
+  .app { max-width: 680px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+
+  .app-header { display: flex; align-items: center; gap: 14px; padding-bottom: 4px; }
+  .app-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: var(--accent); display: flex; align-items: center;
+    justify-content: center; font-size: 22px; flex-shrink: 0;
+  }
+  .app-header h1 { font-size: 18px; font-weight: 700; line-height: 1.3; }
+  .app-header p { font-size: 12px; color: var(--fg-muted); margin-top: 2px; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    padding: 20px;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .card-label {
+    font-size: 11px; font-weight: 700; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--fg-muted);
+  }
+
+  input[type="text"] {
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    color: var(--fg);
+    font-family: inherit; font-size: 14px;
+    padding: 9px 12px;
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+    width: 100%;
+  }
+  input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+
+  .input-row { display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field > label { font-size: 12px; font-weight: 600; color: var(--fg-muted); }
+  .field-num { flex: 0 0 100px; min-width: 80px; }
+  .field-name { flex: 1 1 150px; min-width: 100px; }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    border: none; border-radius: 8px; cursor: pointer;
+    font-family: inherit; font-size: 14px; font-weight: 600;
+    padding: 10px 18px; transition: background .15s, transform .08s;
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-ghost {
+    background: transparent; color: var(--danger);
+    padding: 5px 9px; font-size: 12px; border-radius: 6px;
+  }
+  .btn-ghost:hover { background: var(--danger-soft); }
+  .btn-outline {
+    background: var(--surface2); color: var(--fg);
+    border: 1.5px solid var(--border); font-size: 13px; padding: 8px 14px;
+  }
+  .btn-outline:hover { background: var(--border); }
+  .btn-generate {
+    background: var(--accent); color: #fff;
+    width: 100%; font-size: 15px; padding: 13px;
+    border-radius: 10px; white-space: normal;
+  }
+  .btn-generate:hover { background: var(--accent-hover); }
+
+  .msg-preview {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px 16px;
+    font-size: 13px; line-height: 1.75;
+    white-space: pre-wrap; word-break: break-word;
+  }
+
+  .tab-bar { display: flex; gap: 4px; background: var(--surface2); border-radius: 9px; padding: 3px; }
+  .tab-btn {
+    flex: 1; border: none; border-radius: 7px; cursor: pointer;
+    font-family: inherit; font-size: 13px; font-weight: 600;
+    padding: 8px 10px; background: transparent; color: var(--fg-muted);
+    transition: background .15s, color .15s;
+  }
+  .tab-btn.active { background: var(--surface); color: var(--accent); box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+
+  textarea {
+    background: var(--surface2); border: 1.5px solid var(--border);
+    border-radius: 8px; color: var(--fg);
+    font-family: 'Noto Sans JP', monospace; font-size: 14px;
+    padding: 10px 12px; outline: none; resize: vertical;
+    width: 100%; min-height: 130px; line-height: 1.8;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  textarea::placeholder { color: var(--fg-muted); }
+
+  .list-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+  .count-pill {
+    background: var(--accent-soft); color: var(--accent);
+    font-size: 12px; font-weight: 700; padding: 3px 10px;
+    border-radius: 20px; display: inline-flex; align-items: center; gap: 4px;
+  }
+
+  .patient-list { display: flex; flex-direction: column; gap: 6px; }
+  .patient-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px;
+    animation: slideIn .18s ease;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to   { opacity: 1; transform: none; }
+  }
+  .row-n { font-size: 11px; color: var(--fg-muted); min-width: 22px; text-align: right; font-variant-numeric: tabular-nums; }
+  .p-num { font-size: 13px; font-weight: 700; color: var(--accent); min-width: 38px; font-variant-numeric: tabular-nums; }
+  .p-name { flex: 1; font-size: 14px; min-width: 0; }
+  .p-hint { font-size: 11px; color: var(--fg-muted); display: block; margin-top: 1px; }
+  .p-warn { font-size: 11px; color: var(--warn); display: block; margin-top: 1px; }
+
+  .empty-state {
+    text-align: center; color: var(--fg-muted);
+    font-size: 14px; padding: 36px 0;
+    display: flex; flex-direction: column; gap: 6px; align-items: center;
+  }
+  .empty-state svg { opacity: .35; }
+
+  .hint-text { font-size: 12px; color: var(--fg-muted); line-height: 1.6; }
+
+  .gen-area { display: flex; flex-direction: column; gap: 12px; }
+  .gen-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+  .instruction-box {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px 16px;
+    font-size: 13px; line-height: 1.75;
+    white-space: pre-wrap; word-break: break-word;
+    max-height: 440px; overflow-y: auto;
+    font-family: 'Noto Sans JP', sans-serif;
+  }
+
+  hr { border: none; border-top: 1px solid var(--border); }
+
+  .toast {
+    position: fixed;
+    bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    left: 50%; transform: translateX(-50%) translateY(6px);
+    background: var(--fg); color: var(--bg);
+    font-size: 13px; font-weight: 600;
+    padding: 10px 22px; border-radius: 30px;
+    box-shadow: 0 4px 20px rgba(0,0,0,.22);
+    opacity: 0; transition: opacity .2s, transform .2s;
+    pointer-events: none; white-space: nowrap; z-index: 200;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <div class="app-header">
+    <div class="app-icon">🦷</div>
+    <div>
+      <h1>治療中断 LINE 送信リスト</h1>
+      <p>ステラ歯科 ― 治療中断の患者番号を入力してClaude指示文を生成</p>
+    </div>
+  </div>
+
+  <!-- Message preview -->
+  <div class="card">
+    <div class="card-label">送信する文面（固定）</div>
+    <div class="msg-preview" id="msg-preview"></div>
+  </div>
+
+  <!-- Input -->
+  <div class="card">
+    <div class="card-label">患者を追加</div>
+    <div class="tab-bar">
+      <button class="tab-btn active" id="tab-single" onclick="switchTab('single')">1件ずつ入力</button>
+      <button class="tab-btn" id="tab-bulk" onclick="switchTab('bulk')">まとめて入力</button>
+    </div>
+
+    <div id="pane-single">
+      <div class="input-row">
+        <div class="field field-num">
+          <label for="inp-num">患者番号 <span style="color:var(--danger)">*</span></label>
+          <input type="text" id="inp-num" placeholder="例: 1119" maxlength="12" autocomplete="off">
+        </div>
+        <div class="field field-name">
+          <label for="inp-name">名字（任意）</label>
+          <input type="text" id="inp-name" placeholder="例: 城下" maxlength="20" autocomplete="off">
+        </div>
+        <button class="btn btn-primary" onclick="addPatient()">＋ 追加</button>
+      </div>
+      <p class="hint-text">※ 患者番号が１〜３桁の場合、名字も入れると「番号で出なかった時用」として指示文に反映されます</p>
+    </div>
+
+    <div id="pane-bulk" hidden>
+      <textarea id="bulk-input" placeholder="1119 城下
+1903 岩崎
+1018 ベ
+1136 河合
+
+※ 1行に「番号 名字」を入力（名字は省略可）
+※ アポツールを見ながら番号と名字を入力"></textarea>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="bulkAdd()" style="flex:1;">まとめて追加</button>
+        <button class="btn btn-outline" onclick="document.getElementById('bulk-input').value=''">クリア</button>
+      </div>
+      <p class="hint-text">
+        💡 アポツールの「データ出力」でCSVをダウンロードできる場合は、番号と名字をコピーして貼り付けると速いです
+      </p>
+    </div>
+  </div>
+
+  <!-- List -->
+  <div class="card">
+    <div class="list-header">
+      <div class="card-label">送信対象リスト</div>
+      <div id="count-area"></div>
+    </div>
+    <div class="patient-list" id="patient-list"></div>
+    <div id="list-footer" hidden style="justify-content:flex-end;">
+      <button class="btn btn-outline" onclick="clearAll()">リストを全クリア</button>
+    </div>
+  </div>
+
+  <!-- Generate -->
+  <div class="card">
+    <div class="card-label">Claude指示文を生成</div>
+    <button class="btn btn-generate" onclick="generateInstruction()">📋 この対象リストでClaude指示文を生成する</button>
+    <div id="gen-area" hidden class="gen-area">
+      <hr>
+      <div class="gen-header">
+        <span class="card-label">生成された指示文</span>
+        <button class="btn btn-outline" onclick="copyInstruction()">コピー</button>
+      </div>
+      <div class="instruction-box" id="instruction-box"></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // 定期健診版とは別のキーで保存（リストが混ざらないように）
+  const STORE_KEY = 'stella_line_chudan_list_v1';
+
+  const MSG = `🦷ステラ歯科からのお知らせ🦷
+
+お口の調子はいかがでしょうか？
+まだ完治されていない歯があります💦
+後で痛みが出た場合など、かえって治療が長引き時間も費用も多くかかってしまいます！
+
+歯や歯茎の状態が悪化する前に、早めに治療再開することをお勧めします😥
+ご都合がよろしいお日にちにご予約お願い致します🙇‍♀️`;
+
+  let patients = [];
+
+  function load() {
+    try {
+      const s = localStorage.getItem(STORE_KEY);
+      if (s) patients = JSON.parse(s);
+    } catch(e) {}
+    document.getElementById('msg-preview').textContent = MSG;
+    render();
+  }
+
+  function save() {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(patients)); } catch(e) {}
+  }
+
+  function hideGen() { document.getElementById('gen-area').hidden = true; }
+
+  function addPatient() {
+    const nEl = document.getElementById('inp-num');
+    const mEl = document.getElementById('inp-name');
+    const num = nEl.value.trim();
+    const name = mEl.value.trim();
+    if (!num) { showToast('患者番号を入力してください'); nEl.focus(); return; }
+    if (patients.find(p => p.num === num)) {
+      showToast('患者番号 ' + num + ' はすでに追加済みです');
+      nEl.focus(); nEl.select(); return;
+    }
+    patients.push({ num, name });
+    save(); render(); hideGen();
+    nEl.value = ''; mEl.value = '';
+    nEl.focus();
+  }
+
+  function removePatient(i) {
+    patients.splice(i, 1);
+    save(); render(); hideGen();
+  }
+
+  function clearAll() {
+    if (!confirm('リストを全てクリアしますか？')) return;
+    patients = []; save(); render(); hideGen();
+    showToast('リストをクリアしました');
+  }
+
+  function isShortNum(n) { return /^\d{1,3}$/.test(n); }
+
+  function esc(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function render() {
+    const listEl = document.getElementById('patient-list');
+    const countEl = document.getElementById('count-area');
+    const footer = document.getElementById('list-footer');
+
+    if (patients.length === 0) {
+      listEl.innerHTML = `<div class="empty-state">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="3" y="3" width="18" height="18" rx="3"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="12" y1="8" x2="12" y2="16"/>
+        </svg>
+        <span>患者番号を入力して追加してください</span>
+      </div>`;
+      countEl.innerHTML = '';
+      footer.hidden = true;
+      footer.style.display = '';
+      return;
+    }
+
+    countEl.innerHTML = `<span class="count-pill">👤 ${patients.length}件</span>`;
+    footer.hidden = false;
+    footer.style.display = 'flex';
+
+    listEl.innerHTML = patients.map((p, i) => {
+      let hint;
+      if (isShortNum(p.num) && p.name) {
+        hint = `<span class="p-hint">まず「${esc(p.num)}」で検索 → 出なければ「${esc(p.num)} ${esc(p.name)}」で検索</span>`;
+      } else if (isShortNum(p.num)) {
+        hint = `<span class="p-warn">⚠ 名字未入力 — 番号で出なかった場合の検索名が不明</span>`;
+      } else {
+        hint = `<span class="p-hint">リスト表記で検索</span>`;
+      }
+      return `<div class="patient-row">
+        <span class="row-n">${i+1}</span>
+        <span class="p-num">${esc(p.num)}</span>
+        <span class="p-name">
+          ${p.name ? esc(p.name) : '<span style="color:var(--fg-muted);font-style:italic;font-size:12px">名字なし</span>'}
+          ${hint}
+        </span>
+        <button class="btn btn-ghost" onclick="removePatient(${i})" aria-label="削除">✕</button>
+      </div>`;
+    }).join('');
+  }
+
+  function generateInstruction() {
+    if (patients.length === 0) { showToast('患者を1人以上追加してください'); return; }
+
+    const listLines = patients.map((p, i) => {
+      if (isShortNum(p.num) && p.name) {
+        return `${i+1}. 患者番号 ${p.num}（${p.name}）→ まず「${p.num}」で検索、出なければ「${p.num} ${p.name}」で検索`;
+      } else if (isShortNum(p.num)) {
+        return `${i+1}. 患者番号 ${p.num} → まず「${p.num}」で検索、出なければ番号＋名字で検索（名字未入力のため確認を）`;
+      } else {
+        return `${i+1}. ${p.num}${p.name ? '（' + p.name + '）' : ''} → リスト表記で検索`;
+      }
+    }).join('\n');
+
+    const text = `下記の対象患者リスト（治療中断の患者さん）を、隣のタブのLINEのチャットで検索して、定型文をLINEで送ってください。
+送信を始める前に、まず「送信者リスト」と「送信する文面プレビュー」を提示して確認を取ってください。
+
+━━━━━━━━━━━━━━━━━━━━━━━
+【対象患者リスト（${patients.length}件）】
+━━━━━━━━━━━━━━━━━━━━━━━
+${listLines}
+
+━━━━━━━━━━━━━━━━━━━━━━━
+【送信するメッセージ】（このまま・変更しない）
+━━━━━━━━━━━━━━━━━━━━━━━
+${MSG}
+
+━━━━━━━━━━━━━━━━━━━━━━━
+【ルール・注意事項】
+━━━━━━━━━━━━━━━━━━━━━━━
+■ 検索・対象について
+・対象はリスト全員。アポツールの連絡手段がLINEに設定されていない人も含め、LINEで連絡できるかどうかに関わらず、全員をLINEで検索して送る。連絡手段の設定で対象から外さないこと。
+・患者番号が１〜３桁の人 → まず患者番号で検索 → 出てこなければ「番号＋名字」で検索。
+・患者番号が４桁以上の人 → リストの表記どおりに検索。
+・同名・複数ヒットで本人を特定できない場合は送らず指示待ち。
+
+■ 送らず指示待ちにするケース（迷ったら送らない）
+・やり取りの途中の相手
+・直近のトークで、すでに予約済み・治療再開済みとわかる相手
+・確認が必要そうな相手（個別事情・要対応メモ・トラブル対応中など）
+・検索しても本人を特定できない（ヒットなし／複数ヒットで判別不可）
+
+■ 文面について
+・企業・法人なども含め、誰に対しても内容は一切変えずにこのまま送信。
+・文面の追記・省略・絵文字の変更はしない。
+・改行はすべて「Shift＋Enter」で入れる（Enter単独は送信になるため、途中で送信しないよう必ずShift＋Enterで改行する）。
+
+━━━━━━━━━━━━━━━━━━━━━━━
+【進め方】
+━━━━━━━━━━━━━━━━━━━━━━━
+1.【最初に】送信者リスト＋文面プレビューを提示して確認を取る。
+  ・全員を送る順番で一覧化し、特定結果と「送信予定／保留」の判定を付ける。
+  ・リストの後に、実際に送る文面（プレビュー）をそのまま提示する。
+  ・「この文面・この対象で送信して大丈夫ですか？」と確認し、OKをもらってから送信開始。
+
+2. リスト上から1人ずつ処理。
+
+3. 検索ルールで相手を特定。
+
+4. 指示待ちケースに該当しないか確認（該当→保留、非該当→定型文を送信。改行は必ずShift＋Enter）。
+
+5. 送信後は必ずその相手の「手動チャット」をオフにする（送信とセットで毎回）。
+
+6. 各人の結果を記録（送信済み／保留：理由）。
+
+7. 全員終わったら、送信件数と保留リスト（理由つき）を報告。
+
+━━━━━━━━━━━━━━━━━━━━━━━
+【確認フォーマット例】
+━━━━━━━━━━━━━━━━━━━━━━━
+【送信前 確認リスト】これから以下に送信します。よろしいですか？
+
+■ 送信予定（◯件）
+- 12 田中 → 送信予定
+- 305 佐藤 → 番号で出ず「305 佐藤」で特定、送信予定
+
+■ 保留・要確認（◯件）
+- 88 鈴木 → やり取り中のため保留
+- 142 高橋 → 同名2件ヒット、本人特定できず
+
+――――――――――――――
+■ 送信する文面（プレビュー）
+${MSG}
+
+→ この文面・この対象で送信して大丈夫ですか？
+
+━━━━━━━━━━━━━━━━━━━━━━━
+【完了報告フォーマット例】
+━━━━━━━━━━━━━━━━━━━━━━━
+【送信完了報告】
+■ 送信済み（◯件）※全員、手動チャットOFF済み
+- 12 田中
+- 305 佐藤
+
+■ 保留（◯件）
+- 88 鈴木 → やり取り中のため
+- 142 高橋 → 同名2件ヒット、本人特定できず`;
+
+    document.getElementById('instruction-box').textContent = text;
+    document.getElementById('gen-area').hidden = false;
+    document.getElementById('gen-area').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function copyInstruction() {
+    const text = document.getElementById('instruction-box').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      showToast('コピーしました！');
+    }).catch(() => {
+      const el = document.getElementById('instruction-box');
+      const sel = window.getSelection();
+      const r = document.createRange();
+      r.selectNodeContents(el);
+      sel.removeAllRanges(); sel.addRange(r);
+      showToast('選択しました — Ctrl+C でコピーしてください');
+    });
+  }
+
+  let toastT;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastT);
+    toastT = setTimeout(() => t.classList.remove('show'), 2600);
+  }
+
+  function switchTab(tab) {
+    document.getElementById('pane-single').hidden = tab !== 'single';
+    document.getElementById('pane-bulk').hidden = tab !== 'bulk';
+    document.getElementById('tab-single').classList.toggle('active', tab === 'single');
+    document.getElementById('tab-bulk').classList.toggle('active', tab === 'bulk');
+  }
+
+  function bulkAdd() {
+    const lines = document.getElementById('bulk-input').value.split('\n');
+    let added = 0, skipped = 0;
+    for (const raw of lines) {
+      const line = raw.trim();
+      if (!line) continue;
+      // 1語目 = 患者番号、2語目 = 名字
+      const parts = line.split(/[\s\t　,，、]+/);
+      const num = parts[0];
+      if (!num) continue;
+      const name = parts[1] || '';
+      if (patients.find(p => p.num === num)) { skipped++; continue; }
+      patients.push({ num, name });
+      added++;
+    }
+    save(); render(); hideGen();
+    if (added > 0) {
+      document.getElementById('bulk-input').value = '';
+      showToast(added + '件追加しました' + (skipped > 0 ? '（' + skipped + '件重複スキップ）' : ''));
+    } else {
+      showToast(skipped > 0 ? 'すべて重複のためスキップされました' : '入力内容を確認してください');
+    }
+  }
+
+  document.getElementById('inp-num').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('inp-name').focus(); });
+  document.getElementById('inp-name').addEventListener('keydown', e => { if (e.key === 'Enter') addPatient(); });
+
+  load();
+</script>
+
+</body>
+</html>
