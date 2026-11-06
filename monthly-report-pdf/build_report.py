@@ -223,6 +223,8 @@ def build(d):
     rc = d["recall"]
     rc_val = lambda x: f"{x:,} 件" if x is not None else '<span class="dim">要確認（Apotool）</span>'
     recall_tbl = kv([["リコール件数", rc_val(rc["recall"])], ["リコオリ件数", rc_val(rc["recall_ori"])]])
+    if rc.get("note"):
+        recall_tbl += f'<div class="note">※{esc(rc["note"])}</div>'
     recall_chart = ('<div class="ct">リコール・リコオリ（件）</div>'
                     + bars([("リコール", rc["recall"] or 0), ("リコオリ", rc["recall_ori"] or 0)],
                            fmt=lambda x: f"{x:,}"))
@@ -289,7 +291,7 @@ body { margin:0; font-family:"Noto Sans CJK JP","Hiragino Kaku Gothic ProN","Yu 
 .kv { font-size:21px; font-weight:800; color:var(--green-d); line-height:1.2; margin:2px 0 1px;
       font-variant-numeric:tabular-nums; white-space:nowrap; }
 .ks { font-size:9.5px; color:var(--muted); }
-.sec { margin:0 0 13px; break-inside:avoid; }
+.sec { margin:0 0 11px; break-inside:avoid; }
 .sec h3 { font-size:13.5px; font-weight:700; color:var(--green-d); border-left:4px solid var(--green);
           padding-left:8px; margin:0 0 8px; }
 .cols { display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:start; }
