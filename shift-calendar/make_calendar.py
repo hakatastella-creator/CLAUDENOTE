@@ -5,6 +5,7 @@
 
 - CSVはアポツールが書き出す Shift-JIS のもの(UTF-8 でも可)
 - 記号: フ=1日出勤(名前のみ) / A=午前(名前AM) / P=午後(名前PM) / 休=記入しない
+  (空欄は休みとして扱い、「注意」を表示する)
 - 1マスは職種ごとに改行(歯科医 / 衛生士 / 助手 の順。CSVの見出し順に従う)
 - 全員が休みの日は「休診」
 - 名前の先頭の DR/DH/DA は外す。「担当希望なし」の行は使わない
@@ -126,6 +127,11 @@ def read_csv(path):
         if not sections:
             raise SystemExit(f"職種の見出しより前に行があります: {head}")
         codes = [x.strip() for x in r[1:ndays + 1]]
+        if head not in SKIP_ROWS:
+            for d, c in enumerate(codes, 1):
+                if not c:
+                    print(f"注意: {head} の {month}/{d} が空欄 → 休み扱い")
+        codes = [c or "休" for c in codes]
         bad = {c for c in codes if c not in CODES}
         if bad or len(codes) != ndays:
             raise SystemExit(f"{head} の行に想定外の記号/日数があります: {bad or len(codes)}")
