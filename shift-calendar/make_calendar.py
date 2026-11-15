@@ -1,7 +1,10 @@
 """アポツールのシフト表CSVを、月ごとのシフトカレンダー(Excel)に変換する。
 
 使い方:
-    python3 make_calendar.py <シフト表.csv> [出力先.xlsx]
+    python3 make_calendar.py <シフト表.csv> [出力先.xlsx] [--png] [--only 名前]
+
+    --png        カレンダーを画像(.png)でも出す
+    --only 院長  その人だけのカレンダーにする(休診日は全員の出勤で判定)
 
 - CSVはアポツールが書き出す Shift-JIS のもの(UTF-8 でも可)
 - 記号: フ=1日出勤(名前のみ) / A=午前(名前AM) / P=午後(名前PM) / 休=記入しない
@@ -151,8 +154,14 @@ def day_lines(sections, d):
 
 
 # ---------------------------------------------------------------- Excel
-def build(csv_path, out_path):
-    year, month, ndays, sections = read_csv(csv_path)
+def build(csv_path, out_path, only=None):
+    year, month, ndays, all_sections = read_csv(csv_path)
+    sections = all_sections
+    if only:                                   # 1人分だけのカレンダー
+        sections = [(s, [p for p in ps if p[0] == only]) for s, ps in all_sections]
+        sections = [x for x in sections if x[1]]
+        if not sections:
+            raise SystemExit(f"CSVに「{only}」がいません")
     hol = holidays_around(year)
     wb = openpyxl.load_workbook(TEMPLATE)
     ws = wb.active
@@ -199,7 +208,7 @@ def build(csv_path, out_path):
             cell.value = None
             if inside:
                 lines = day_lines(sections, d.day)
-                closed = not any(lines)
+                closed = not any(day_lines(all_sections, d.day))   # 休診は全員で判定
                 cell.value = "休診" if closed else "\n".join(lines)
                 cell.font = Font(name=date_cell.font.name, sz=36 if closed else 11)
                 cell.alignment = Alignment(wrap_text=True, vertical="top",
@@ -232,7 +241,7 @@ def verify(out_path, year, month, ndays, sections):
                     errors.append(f"{d}: 前後の月のマスに記入あり")
                 continue
             seen.add(d.day)
-            lines = ["" for _ in sections] if text == "休診" else text.split("\n")
+            lines = ["" for _ in sections] if text in ("休診", "") else text.split("\n")
             if len(lines) != len(sections):
                 errors.append(f"{month}/{d.day}: 段の数が {len(lines)}")
                 continue
@@ -255,14 +264,49 @@ def verify(out_path, year, month, ndays, sections):
     print(f"照合OK: {n}人 × {ndays}日、食い違い0件")
 
 
+def to_png(xlsx_path, png_path):
+    """カレンダーを1枚の画像にする(LibreOffice と pdftoppm を使う)。元の xlsx は変えない。"""
+    import shutil
+    import subprocess
+    import tempfile
+    from PIL import Image, ImageChops
+
+    with tempfile.TemporaryDirectory() as tmp:
+        wb = openpyxl.load_workbook(xlsx_path)
+        ws = wb.active
+        ws.sheet_properties.pageSetUpPr.fitToPage = True
+        ws.page_setup.fitToWidth = ws.page_setup.fitToHeight = 1
+        ws.page_setup.orientation = "landscape"
+        ws.print_area = f"B2:O{ws.max_row}"
+        wb.save(f"{tmp}/cal.xlsx")
+        subprocess.run(["soffice", "--headless", "--convert-to", "pdf", "--outdir", tmp,
+                        f"{tmp}/cal.xlsx"], check=True, capture_output=True, timeout=180)
+        subprocess.run(["pdftoppm", "-r", "200", "-png", "-singlefile", f"{tmp}/cal.pdf",
+                        f"{tmp}/cal"], check=True, timeout=120)
+        img = Image.open(f"{tmp}/cal.png").convert("RGB")
+        bbox = ImageChops.difference(img, Image.new("RGB", img.size, "white")).getbbox()
+        if bbox:                                    # 余白を切って少しだけ残す
+            pad = 40
+            img = img.crop((max(bbox[0] - pad, 0), max(bbox[1] - pad, 0),
+                            min(bbox[2] + pad, img.width), min(bbox[3] + pad, img.height)))
+        img.save(png_path)
+
+
 if __name__ == "__main__":
-    if len(sys.argv) not in (2, 3):
-        raise SystemExit(__doc__)
-    src = sys.argv[1]
-    if len(sys.argv) == 3:
-        out = sys.argv[2]
-    else:
-        y, m, _, _ = read_csv(src)
-        out = str(Path(src).with_name(f"{y}年{m}月シフト表.xlsx"))
-    build(src, out)
+    import argparse
+    ap = argparse.ArgumentParser(description="シフト表CSV → カレンダー")
+    ap.add_argument("csv")
+    ap.add_argument("out", nargs="?", help="出力先 .xlsx(省略時はCSVと同じ場所)")
+    ap.add_argument("--only", help="この人だけのカレンダーにする(CSVの名前から DR/DH/DA を除いたもの。例: 院長)")
+    ap.add_argument("--png", action="store_true", help="同じ名前の .png 画像も作る")
+    a = ap.parse_args()
+    out = a.out
+    if not out:
+        y, m, _, _ = read_csv(a.csv)
+        out = str(Path(a.csv).with_name(f"{y}年{m}月シフト表{'_' + a.only if a.only else ''}.xlsx"))
+    build(a.csv, out, a.only)
     print(f"作成: {out}")
+    if a.png:
+        png = str(Path(out).with_suffix(".png"))
+        to_png(out, png)
+        print(f"画像: {png}")
