@@ -5,7 +5,7 @@
         [--note "年末年始は…休診です。"]
 
 - 1人なら出勤日のマスを色で塗る(患者さん向けの「院長診療日」と同じデザイン)
-- 複数人なら、マスの中に人ごとの色のラベルを並べる(午前/午後は小さく添える)
+- 複数人なら、マスの中に人ごとの色のラベルを並べる(AM/PM は小さく添える)
 - 休診日(全員休み)はグレー
 - 画像は Playwright(Chromium)で描く。フォントは Google Fonts の Zen Maru Gothic
 """
@@ -21,7 +21,7 @@ from pathlib import Path
 from make_calendar import read_csv, holidays_around
 
 COLORS = ["#2f6f8f", "#d97a6c", "#3f8a6b", "#8a6bb8", "#c79a2e"]
-PART = {"A": "午前", "P": "午後", "フ": ""}
+PART = {"A": "AM", "P": "PM", "フ": ""}
 WD = "月火水木金土日"
 
 

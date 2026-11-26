@@ -38,6 +38,6 @@ cd shift-calendar && python3 cute_calendar.py <CSV> <出力.png> --names 院長 
 cd shift-calendar && python3 cute_calendar.py <CSV> <出力.png> --names 阿比留,片山 --title 受付シフト --note "…"
 ```
 
-- 1人なら出勤日のマスを塗る。複数人なら人ごとの色ラベルを並べる（午前/午後を添える）
+- 1人なら出勤日のマスを塗る。複数人なら人ごとの色ラベルを並べる（AM/PM を添える）
 - 描いた画像の各マスを読み戻してCSVと照合し、文字のはみ出しも検査する
 - 患者さん向けは院長以外の名前を出さない。年末年始などの休診はユーザーに確認して `--note` に書く
