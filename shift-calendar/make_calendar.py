@@ -5,6 +5,7 @@
 
     --png        カレンダーを画像(.png)でも出す
     --only 院長  その人だけのカレンダーにする(休診日は全員の出勤で判定)
+                 「阿比留,片山」のようにカンマ区切りで複数人も可
 
 - CSVはアポツールが書き出す Shift-JIS のもの(UTF-8 でも可)
 - 記号: フ=1日出勤(名前のみ) / A=午前(名前AM) / P=午後(名前PM) / 休=記入しない
@@ -157,11 +158,14 @@ def day_lines(sections, d):
 def build(csv_path, out_path, only=None):
     year, month, ndays, all_sections = read_csv(csv_path)
     sections = all_sections
-    if only:                                   # 1人分だけのカレンダー
-        sections = [(s, [p for p in ps if p[0] == only]) for s, ps in all_sections]
+    if only:                                   # 指定した人だけのカレンダー
+        names = [n.strip() for n in only.replace("、", ",").split(",") if n.strip()]
+        known = {p[0] for _, ps in all_sections for p in ps}
+        missing = [n for n in names if n not in known]
+        if missing:
+            raise SystemExit(f"CSVにいない名前: {'・'.join(missing)}")
+        sections = [(s, [p for p in ps if p[0] in names]) for s, ps in all_sections]
         sections = [x for x in sections if x[1]]
-        if not sections:
-            raise SystemExit(f"CSVに「{only}」がいません")
     hol = holidays_around(year)
     wb = openpyxl.load_workbook(TEMPLATE)
     ws = wb.active
@@ -297,13 +301,13 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser(description="シフト表CSV → カレンダー")
     ap.add_argument("csv")
     ap.add_argument("out", nargs="?", help="出力先 .xlsx(省略時はCSVと同じ場所)")
-    ap.add_argument("--only", help="この人だけのカレンダーにする(CSVの名前から DR/DH/DA を除いたもの。例: 院長)")
+    ap.add_argument("--only", help="この人だけのカレンダーにする(CSVの名前から DR/DH/DA を除いたもの。例: 院長 / 阿比留,片山)")
     ap.add_argument("--png", action="store_true", help="同じ名前の .png 画像も作る")
     a = ap.parse_args()
     out = a.out
     if not out:
         y, m, _, _ = read_csv(a.csv)
-        out = str(Path(a.csv).with_name(f"{y}年{m}月シフト表{'_' + a.only if a.only else ''}.xlsx"))
+        out = str(Path(a.csv).with_name(f"{y}年{m}月シフト表{'_' + a.only.replace(',', '・') if a.only else ''}.xlsx"))
     build(a.csv, out, a.only)
     print(f"作成: {out}")
     if a.png:
